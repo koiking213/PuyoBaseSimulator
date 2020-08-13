@@ -1,5 +1,6 @@
 package com.example.puyo_base_simulator.ui.home;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +13,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.gridlayout.widget.GridLayout;
 
+import com.example.puyo_base_simulator.BuildConfig;
 import com.example.puyo_base_simulator.R;
 
 import java.util.ArrayList;
@@ -56,8 +58,8 @@ class FieldEvaluation {
 
 // TODO: public
 class Field {
-    Puyo field[][];
-    int heights[] = {0,0,0,0,0,0,0};
+    Puyo[][] field;
+    int[] heights = {0,0,0,0,0,0,0};
     Field () {
         field = new Puyo[14][7];
         for (int i=1; i<14; i++) {
@@ -96,7 +98,7 @@ class Field {
     List<Puyo> getNeighborPuyo(Puyo puyo) {
         int row = puyo.row;
         int column = puyo.column;
-        List<Puyo> ret = new ArrayList<Puyo>();
+        List<Puyo> ret = new ArrayList<>();
         // left
         if (column != 1 && field[row][column-1].color != PuyoColor.EMPTY) {
             ret.add(field[row][column-1]);
@@ -118,7 +120,7 @@ class Field {
     // 連結数
     int getConnectionCount(Puyo puyo) {
         if (puyo.color == PuyoColor.EMPTY) return 0;
-        Stack<Puyo> sameColorStack = new Stack<Puyo>();
+        Stack<Puyo> sameColorStack = new Stack<>();
         sameColorStack.push(puyo);
         ArrayList<Puyo> connected = new ArrayList<>();
         connected.add(puyo);
@@ -140,7 +142,7 @@ public class HomeFragment extends Fragment {
     ImageView[][] fieldView;
     Integer currentCursorColumnIndex = 3;
     Rotation currentCursorRotate = Rotation.DEGREE0;
-    PuyoColor currentColor[] = new PuyoColor[2];
+    PuyoColor[] currentColor = new PuyoColor[2];
     Field field = new Field();
     GridLayout currentPuyoLayout;
 
@@ -203,31 +205,29 @@ public class HomeFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        Button buttonLeft = (Button)getActivity().findViewById(R.id.buttonLeft);
+        Activity activity = getActivity();
+        assert activity != null;
+        Button buttonLeft = (Button)activity.findViewById(R.id.buttonLeft);
         buttonLeft.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (currentCursorColumnIndex == 1 || (currentCursorColumnIndex == 2 && currentCursorRotate == Rotation.DEGREE270)) {
-                    // do nothing
-                } else {
+                if (!(currentCursorColumnIndex == 1 || (currentCursorColumnIndex == 2 && currentCursorRotate == Rotation.DEGREE270))) {
                     currentCursorColumnIndex--;
                 }
                 drawCurrentPuyo();
             }
         });
-        Button buttonRight = (Button)getActivity().findViewById(R.id.buttonRight);
+        Button buttonRight = (Button)activity.findViewById(R.id.buttonRight);
         buttonRight.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (currentCursorColumnIndex == 6 || (currentCursorColumnIndex == 5 && currentCursorRotate == Rotation.DEGREE90)) {
-                    // do nothing
-                } else {
+                if (!(currentCursorColumnIndex == 6 || (currentCursorColumnIndex == 5 && currentCursorRotate == Rotation.DEGREE90))) {
                     currentCursorColumnIndex++;
                 }
                 drawCurrentPuyo();
             }
         });
-        Button buttonDown = (Button)getActivity().findViewById(R.id.buttonDown);
+        Button buttonDown = (Button)activity.findViewById(R.id.buttonDown);
         buttonDown.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -264,7 +264,7 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        Button buttonA = (Button)getActivity().findViewById(R.id.buttonA);
+        Button buttonA = (Button)activity.findViewById(R.id.buttonA);
         buttonA.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -292,7 +292,7 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        Button buttonB = (Button)getActivity().findViewById(R.id.buttonB);
+        Button buttonB = (Button)activity.findViewById(R.id.buttonB);
         buttonB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -323,6 +323,8 @@ public class HomeFragment extends Fragment {
     }
 
     public void evaluateFieldRecursively() {
+        final Activity activity = getActivity();
+        assert activity != null;
         new Thread(new Runnable(){
             @Override public void run() {
                 FieldEvaluation fieldEvaluation = field.evalChain();
@@ -330,9 +332,10 @@ public class HomeFragment extends Fragment {
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
                     }
                     field = fieldEvaluation.nextField;
-                    getActivity().runOnUiThread(new Runnable(){
+                    activity.runOnUiThread(new Runnable(){
                         @Override
                         public void run() {
                             drawField();
@@ -419,24 +422,28 @@ public class HomeFragment extends Fragment {
             case DEGREE0:
                 currentPuyoView[0][currentCursorColumnIndex].setImageResource(nonJikuColor);
                 drawDot(row, currentCursorColumnIndex, PuyoColor.RED);
-                drawDot(row+1, currentCursorColumnIndex, PuyoColor.BLUE);
+                drawDot(row + 1, currentCursorColumnIndex, PuyoColor.BLUE);
                 break;
             case DEGREE90:
-                assert(currentCursorColumnIndex != 5);
-                currentPuyoView[1][currentCursorColumnIndex+1].setImageResource(nonJikuColor);
+                if (BuildConfig.DEBUG && currentCursorColumnIndex == 5) {
+                    throw new AssertionError("Assertion failed");
+                }
+                currentPuyoView[1][currentCursorColumnIndex + 1].setImageResource(nonJikuColor);
                 drawDot(row, currentCursorColumnIndex, PuyoColor.RED);
-                drawDot(row, currentCursorColumnIndex+1, PuyoColor.BLUE);
+                drawDot(row, currentCursorColumnIndex + 1, PuyoColor.BLUE);
                 break;
             case DEGREE180:
                 currentPuyoView[2][currentCursorColumnIndex].setImageResource(nonJikuColor);
-                drawDot(row+1, currentCursorColumnIndex, PuyoColor.RED);
+                drawDot(row + 1, currentCursorColumnIndex, PuyoColor.RED);
                 drawDot(row, currentCursorColumnIndex, PuyoColor.BLUE);
                 break;
             case DEGREE270:
-                assert(currentCursorColumnIndex != 0);
-                currentPuyoView[1][currentCursorColumnIndex-1].setImageResource(nonJikuColor);
+                if (BuildConfig.DEBUG && currentCursorColumnIndex == 0) {
+                    throw new AssertionError("Assertion failed");
+                }
+                currentPuyoView[1][currentCursorColumnIndex - 1].setImageResource(nonJikuColor);
                 drawDot(row, currentCursorColumnIndex, PuyoColor.RED);
-                drawDot(row, currentCursorColumnIndex-1, PuyoColor.BLUE);
+                drawDot(row, currentCursorColumnIndex - 1, PuyoColor.BLUE);
                 break;
         }
     }
