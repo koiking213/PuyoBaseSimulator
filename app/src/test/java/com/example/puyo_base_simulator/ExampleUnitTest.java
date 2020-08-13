@@ -1,4 +1,4 @@
-package com.example.puyododaisim;
+package com.example.puyo_base_simulator;
 
 import org.junit.Test;
 

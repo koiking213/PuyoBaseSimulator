@@ -1,8 +1,6 @@
-package com.example.puyododaisim;
+package com.example.puyo_base_simulator;
 
 import android.os.Bundle;
-import android.widget.GridLayout;
-import android.widget.ImageView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
