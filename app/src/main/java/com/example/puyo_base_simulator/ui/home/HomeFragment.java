@@ -432,7 +432,7 @@ public class HomeFragment extends Fragment {
                 drawDot(row + 1, currentCursorColumnIndex, PuyoColor.BLUE);
                 break;
             case DEGREE90:
-                if (BuildConfig.DEBUG && currentCursorColumnIndex == 5) {
+                if (BuildConfig.DEBUG && currentCursorColumnIndex == 6) {
                     throw new AssertionError("Assertion failed");
                 }
                 currentPuyoView[1][currentCursorColumnIndex + 1].setImageResource(nonJikuColor);
@@ -445,7 +445,7 @@ public class HomeFragment extends Fragment {
                 drawDot(row, currentCursorColumnIndex, PuyoColor.BLUE);
                 break;
             case DEGREE270:
-                if (BuildConfig.DEBUG && currentCursorColumnIndex == 0) {
+                if (BuildConfig.DEBUG && currentCursorColumnIndex == 1) {
                     throw new AssertionError("Assertion failed");
                 }
                 currentPuyoView[1][currentCursorColumnIndex - 1].setImageResource(nonJikuColor);
