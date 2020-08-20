@@ -418,8 +418,8 @@ public class HomeFragment extends Fragment {
                 currentPuyoView[i][j].setImageResource(R.drawable.blank);
             }
         }
-        int jikuColor = getPuyoImage(PuyoColor.RED);
-        int nonJikuColor = getPuyoImage(PuyoColor.BLUE);
+        int jikuColor = getPuyoImage(currentColor[0]);
+        int nonJikuColor = getPuyoImage(currentColor[1]);
         // draw jiku-puyo
         currentPuyoView[1][currentCursorColumnIndex].setImageResource(jikuColor);
 
@@ -428,29 +428,29 @@ public class HomeFragment extends Fragment {
         switch (currentCursorRotate) {
             case DEGREE0:
                 currentPuyoView[0][currentCursorColumnIndex].setImageResource(nonJikuColor);
-                drawDot(row, currentCursorColumnIndex, PuyoColor.RED);
-                drawDot(row + 1, currentCursorColumnIndex, PuyoColor.BLUE);
+                drawDot(row, currentCursorColumnIndex, currentColor[0]);
+                drawDot(row + 1, currentCursorColumnIndex, currentColor[1]);
                 break;
             case DEGREE90:
                 if (BuildConfig.DEBUG && currentCursorColumnIndex == 6) {
                     throw new AssertionError("Assertion failed");
                 }
                 currentPuyoView[1][currentCursorColumnIndex + 1].setImageResource(nonJikuColor);
-                drawDot(row, currentCursorColumnIndex, PuyoColor.RED);
-                drawDot(row, currentCursorColumnIndex + 1, PuyoColor.BLUE);
+                drawDot(row, currentCursorColumnIndex, currentColor[0]);
+                drawDot(field.heights[currentCursorColumnIndex + 1] + 1, currentCursorColumnIndex + 1, currentColor[1]);
                 break;
             case DEGREE180:
                 currentPuyoView[2][currentCursorColumnIndex].setImageResource(nonJikuColor);
-                drawDot(row + 1, currentCursorColumnIndex, PuyoColor.RED);
-                drawDot(row, currentCursorColumnIndex, PuyoColor.BLUE);
+                drawDot(row + 1, currentCursorColumnIndex, currentColor[0]);
+                drawDot(row, currentCursorColumnIndex, currentColor[1]);
                 break;
             case DEGREE270:
                 if (BuildConfig.DEBUG && currentCursorColumnIndex == 1) {
                     throw new AssertionError("Assertion failed");
                 }
                 currentPuyoView[1][currentCursorColumnIndex - 1].setImageResource(nonJikuColor);
-                drawDot(row, currentCursorColumnIndex, PuyoColor.RED);
-                drawDot(row, currentCursorColumnIndex - 1, PuyoColor.BLUE);
+                drawDot(row, currentCursorColumnIndex, currentColor[0]);
+                drawDot(field.heights[currentCursorColumnIndex - 1] + 1, currentCursorColumnIndex - 1, currentColor[1]);
                 break;
         }
     }
