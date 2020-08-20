@@ -329,6 +329,13 @@ public class HomeFragment extends Fragment {
             @Override public void run() {
                 FieldEvaluation fieldEvaluation = field.evalChain();
                 if (fieldEvaluation.disappearPuyo.size() != 0) {
+                    activity.runOnUiThread(new Runnable(){
+                        @Override
+                        public void run() {
+                            Button buttonDown = (Button)activity.findViewById(R.id.buttonDown);
+                            buttonDown.setEnabled(false);
+                        }
+                    });
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
@@ -339,12 +346,17 @@ public class HomeFragment extends Fragment {
                         @Override
                         public void run() {
                             drawField();
-                            currentPuyoLayout.invalidate(); // いる？
                         }
                     });
                     evaluateFieldRecursively();
                 } else {
-                    // todo: ボタンの有効化
+                    activity.runOnUiThread(new Runnable(){
+                        @Override
+                        public void run() {
+                            Button buttonDown = (Button)activity.findViewById(R.id.buttonDown);
+                            buttonDown.setEnabled(true);
+                        }
+                    });
                     // get next puyo
                     currentCursorColumnIndex = 3;
                     currentCursorRotate = Rotation.DEGREE0;
