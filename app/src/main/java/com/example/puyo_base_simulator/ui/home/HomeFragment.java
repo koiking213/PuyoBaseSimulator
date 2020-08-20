@@ -16,7 +16,10 @@ import com.example.puyo_base_simulator.BuildConfig;
 import com.example.puyo_base_simulator.R;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.Stack;
 
 enum Rotation {
@@ -142,8 +145,16 @@ public class HomeFragment extends Fragment {
     Integer currentCursorColumnIndex = 3;
     Rotation currentCursorRotate = Rotation.DEGREE0;
     PuyoColor[] currentColor = new PuyoColor[2];
-    Field field = new Field();
+    Field currentField = new Field();
     GridLayout currentPuyoLayout;
+
+    // ツモはいずれ完全ランダムではなくすので暫定
+    private static final List<PuyoColor> PUYO_VALUES =
+            Collections.unmodifiableList(Arrays.asList(PuyoColor.values()));
+    private static final Random RANDOM = new Random();
+    public static PuyoColor getRandomPuyo() {
+        return PUYO_VALUES.get(RANDOM.nextInt(4) + 1);
+    }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -190,10 +201,9 @@ public class HomeFragment extends Fragment {
         }
 
         // next puyo
-        currentPuyoView[1][3].setImageResource(R.drawable.pr);
-        currentPuyoView[0][3].setImageResource(R.drawable.pb);
-        currentColor[0] = PuyoColor.RED;
-        currentColor[1] = PuyoColor.BLUE;
+        currentColor[0] = getRandomPuyo();
+        currentColor[1] = getRandomPuyo();
+        drawCurrentPuyo();
         return root;
     }
 
@@ -229,31 +239,31 @@ public class HomeFragment extends Fragment {
                 switch (currentCursorRotate) {
                     case DEGREE0:
                         // jiku puyo
-                        field.addPuyo(currentCursorColumnIndex, currentColor[0]);
+                        currentField.addPuyo(currentCursorColumnIndex, currentColor[0]);
                         // non-jiku puyo
-                        field.addPuyo(currentCursorColumnIndex, currentColor[1]);
+                        currentField.addPuyo(currentCursorColumnIndex, currentColor[1]);
                         break;
                     case DEGREE90:
                         // jiku puyo
-                        field.addPuyo(currentCursorColumnIndex, currentColor[0]);
+                        currentField.addPuyo(currentCursorColumnIndex, currentColor[0]);
                         // non-jiku puyo
-                        field.addPuyo(currentCursorColumnIndex+1, currentColor[1]);
+                        currentField.addPuyo(currentCursorColumnIndex+1, currentColor[1]);
                         break;
                     case DEGREE180:
                         // 上下が逆転している
                         // non-jiku puyo
-                        field.addPuyo(currentCursorColumnIndex, currentColor[1]);
+                        currentField.addPuyo(currentCursorColumnIndex, currentColor[1]);
                         // jiku puyo
-                        field.addPuyo(currentCursorColumnIndex, currentColor[0]);
+                        currentField.addPuyo(currentCursorColumnIndex, currentColor[0]);
                         break;
                     case DEGREE270:
                         // jiku puyo
-                        field.addPuyo(currentCursorColumnIndex, currentColor[0]);
+                        currentField.addPuyo(currentCursorColumnIndex, currentColor[0]);
                         // non-jiku puyo
-                        field.addPuyo(currentCursorColumnIndex-1, currentColor[1]);
+                        currentField.addPuyo(currentCursorColumnIndex-1, currentColor[1]);
                         break;
                 }
-                drawField();
+                drawField(currentField);
                 evaluateFieldRecursively();
 
             }
@@ -322,7 +332,7 @@ public class HomeFragment extends Fragment {
         assert activity != null;
         new Thread(new Runnable(){
             @Override public void run() {
-                FieldEvaluation fieldEvaluation = field.evalChain();
+                FieldEvaluation fieldEvaluation = currentField.evalChain();
                 if (fieldEvaluation.disappearPuyo.size() != 0) {
                     activity.runOnUiThread(new Runnable(){
                         @Override
@@ -336,11 +346,11 @@ public class HomeFragment extends Fragment {
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                     }
-                    field = fieldEvaluation.nextField;
+                    currentField = fieldEvaluation.nextField;
                     activity.runOnUiThread(new Runnable(){
                         @Override
                         public void run() {
-                            drawField();
+                            drawField(currentField);
                         }
                     });
                     evaluateFieldRecursively();
@@ -355,14 +365,15 @@ public class HomeFragment extends Fragment {
                     // get next puyo
                     currentCursorColumnIndex = 3;
                     currentCursorRotate = Rotation.DEGREE0;
+                    currentColor[0] = getRandomPuyo();
+                    currentColor[1] = getRandomPuyo();
                     drawCurrentPuyo();
                 }
             }
         }).start();
     }
 
-    // todo: fieldに持たせるか、fieldを引数に取る?
-    public void drawField() {
+    public void drawField(Field field) {
         // draw field puyo
         for (int i=1; i<14; i++) {
             for (int j=1; j<7; j++) {
@@ -411,7 +422,7 @@ public class HomeFragment extends Fragment {
 
 
     public void drawCurrentPuyo() {
-        drawField();
+        drawField(currentField);
         // clear
         for (int i=0; i<3; i++) {
             for (int j=0; j<7; j++) {
@@ -423,40 +434,40 @@ public class HomeFragment extends Fragment {
         // draw jiku-puyo
         currentPuyoView[1][currentCursorColumnIndex].setImageResource(jikuColor);
 
-        int row = field.heights[currentCursorColumnIndex] + 1;
         // draw not-jiku-puyo
         switch (currentCursorRotate) {
             case DEGREE0:
                 currentPuyoView[0][currentCursorColumnIndex].setImageResource(nonJikuColor);
-                drawDot(row, currentCursorColumnIndex, currentColor[0]);
-                drawDot(row + 1, currentCursorColumnIndex, currentColor[1]);
+                drawDot(currentCursorColumnIndex, Arrays.asList(currentColor[0], currentColor[1]), currentField);
                 break;
             case DEGREE90:
                 if (BuildConfig.DEBUG && currentCursorColumnIndex == 6) {
                     throw new AssertionError("Assertion failed");
                 }
                 currentPuyoView[1][currentCursorColumnIndex + 1].setImageResource(nonJikuColor);
-                drawDot(row, currentCursorColumnIndex, currentColor[0]);
-                drawDot(field.heights[currentCursorColumnIndex + 1] + 1, currentCursorColumnIndex + 1, currentColor[1]);
+                drawDot(currentCursorColumnIndex, Collections.singletonList(currentColor[0]), currentField);
+                drawDot(currentCursorColumnIndex + 1, Collections.singletonList(currentColor[1]), currentField);
                 break;
             case DEGREE180:
                 currentPuyoView[2][currentCursorColumnIndex].setImageResource(nonJikuColor);
-                drawDot(row + 1, currentCursorColumnIndex, currentColor[0]);
-                drawDot(row, currentCursorColumnIndex, currentColor[1]);
+                drawDot(currentCursorColumnIndex, Arrays.asList(currentColor[1], currentColor[0]), currentField);
                 break;
             case DEGREE270:
                 if (BuildConfig.DEBUG && currentCursorColumnIndex == 1) {
                     throw new AssertionError("Assertion failed");
                 }
                 currentPuyoView[1][currentCursorColumnIndex - 1].setImageResource(nonJikuColor);
-                drawDot(row, currentCursorColumnIndex, currentColor[0]);
-                drawDot(field.heights[currentCursorColumnIndex - 1] + 1, currentCursorColumnIndex - 1, currentColor[1]);
+                drawDot(currentCursorColumnIndex, Collections.singletonList(currentColor[0]), currentField);
+                drawDot(currentCursorColumnIndex - 1, Collections.singletonList(currentColor[1]), currentField);
                 break;
         }
     }
 
     // 内部関数にできない？ (Javaにあるのか？)
-    public void drawDot(int row, int column, PuyoColor color) {
-        fieldView[row][column].setImageResource(getDotImage(color));
+    public void drawDot(int column, List<PuyoColor> colors, Field field) {
+        int row = field.heights[column] + 1;
+        for (PuyoColor color : colors) {
+            fieldView[row++][column].setImageResource(getDotImage(color));
+        }
     }
 }
