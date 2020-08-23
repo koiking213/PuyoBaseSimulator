@@ -407,6 +407,14 @@ public class HomeFragment extends Fragment {
                         public void run() {
                             Button buttonDown = activity.findViewById(R.id.buttonDown);
                             buttonDown.setEnabled(false);
+                            Button buttonLeft = activity.findViewById(R.id.buttonLeft);
+                            buttonLeft.setEnabled(false);
+                            Button buttonRight = activity.findViewById(R.id.buttonRight);
+                            buttonRight.setEnabled(false);
+                            Button buttonA = activity.findViewById(R.id.buttonA);
+                            buttonA.setEnabled(false);
+                            Button buttonB = activity.findViewById(R.id.buttonB);
+                            buttonB.setEnabled(false);
                         }
                     });
                     try {
@@ -428,6 +436,14 @@ public class HomeFragment extends Fragment {
                         public void run() {
                             Button buttonDown = activity.findViewById(R.id.buttonDown);
                             buttonDown.setEnabled(true);
+                            Button buttonLeft = activity.findViewById(R.id.buttonLeft);
+                            buttonLeft.setEnabled(true);
+                            Button buttonRight = activity.findViewById(R.id.buttonRight);
+                            buttonRight.setEnabled(true);
+                            Button buttonA = activity.findViewById(R.id.buttonA);
+                            buttonA.setEnabled(true);
+                            Button buttonB = activity.findViewById(R.id.buttonB);
+                            buttonB.setEnabled(true);
                         }
                     });
                     // get next puyo
