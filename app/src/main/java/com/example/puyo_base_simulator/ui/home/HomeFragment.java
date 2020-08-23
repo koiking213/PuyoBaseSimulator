@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Random;
 import java.util.Stack;
 
@@ -64,9 +63,26 @@ class FieldEvaluation {
 }
 
 // TODO: public
-class Field {
+class Field implements Cloneable {
     Puyo[][] field;
     int[] heights = {0,0,0,0,0,0,0};
+
+    @Override
+    public Field clone() {
+        Field cloned = null;
+        try {
+            cloned = (Field) super.clone();
+            cloned.field = this.field.clone();
+            for (int i=1; i<13; i++) {
+                cloned.field[i] = this.field[i].clone();
+            }
+            cloned.heights = this.heights.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        return cloned;
+    }
+
     Field () {
         field = new Puyo[14][7];
         for (int i=1; i<14; i++) {
@@ -153,6 +169,8 @@ public class HomeFragment extends Fragment {
     Rotation currentCursorRotate = Rotation.DEGREE0;
     PuyoColor[] currentColor = new PuyoColor[2];
     PuyoColor[][] nextColor = new PuyoColor[2][2];
+    Stack<Field> fieldStack = new Stack<>();
+    Stack<Field> fieldRedoStack = new Stack<>();
     Field currentField = new Field();
     GridLayout currentPuyoLayout;
     GridLayout nextPuyoLayout;
@@ -239,9 +257,7 @@ public class HomeFragment extends Fragment {
         }
 
         tsumoCounter = 0;
-        getNewPuyoPair(); // 初手
-        getNewPuyoPair(); // ねくすと
-        getNewPuyoPair(); // ねくねく
+        setTsumo();
         drawNextPuyo();
         return root;
     }
@@ -251,6 +267,31 @@ public class HomeFragment extends Fragment {
         super.onStart();
         Activity activity = getActivity();
         assert activity != null;
+
+        Button buttonUndo = activity.findViewById(R.id.buttonUndo);
+        buttonUndo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fieldRedoStack.push(currentField);
+                currentField = fieldStack.pop();
+                tsumoCounter -= 2;
+                setTsumo();
+                drawNextPuyo();
+                if (fieldStack.isEmpty()) {  // 履歴がなくなったらUNDOボタンを無効化
+                    final Activity activity = getActivity();
+                    assert activity != null;
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Button buttonUndo = activity.findViewById(R.id.buttonUndo);
+                            buttonUndo.setEnabled(false);
+                        }
+                    });
+                }
+            }
+        });
+        buttonUndo.setEnabled(false);
+
         Button buttonLeft = activity.findViewById(R.id.buttonLeft);
         buttonLeft.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -261,6 +302,7 @@ public class HomeFragment extends Fragment {
                 drawNextPuyo();
             }
         });
+
         Button buttonRight = activity.findViewById(R.id.buttonRight);
         buttonRight.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -271,10 +313,15 @@ public class HomeFragment extends Fragment {
                 drawNextPuyo();
             }
         });
+
         Button buttonDown = activity.findViewById(R.id.buttonDown);
         buttonDown.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                fieldStack.push(currentField);
+                currentField = currentField.clone();
+                fieldRedoStack.clear();
+                // redo
                 switch (currentCursorRotate) {
                     case DEGREE0:
                         // jiku puyo
@@ -304,7 +351,6 @@ public class HomeFragment extends Fragment {
                 }
                 drawField(currentField);
                 evaluateFieldRecursively();
-
             }
         });
 
@@ -386,13 +432,13 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    public void getNewPuyoPair() {
-        currentColor[1] = nextColor[0][0];
-        currentColor[0] = nextColor[0][1];
-        nextColor[0][0] = nextColor[1][0];
-        nextColor[0][1] = nextColor[1][1];
-        nextColor[1][0] = getPuyoColor(haipuyo[haipuyoIndex].charAt(tsumoCounter++));
-        nextColor[1][1] = getPuyoColor(haipuyo[haipuyoIndex].charAt(tsumoCounter++));
+    public void setTsumo() {
+        currentColor[1] = getPuyoColor(haipuyo[haipuyoIndex].charAt(tsumoCounter));
+        currentColor[0] = getPuyoColor(haipuyo[haipuyoIndex].charAt(tsumoCounter+1));
+        nextColor[0][0] = getPuyoColor(haipuyo[haipuyoIndex].charAt(tsumoCounter+2));
+        nextColor[0][1] = getPuyoColor(haipuyo[haipuyoIndex].charAt(tsumoCounter+3));
+        nextColor[1][0] = getPuyoColor(haipuyo[haipuyoIndex].charAt(tsumoCounter+4));
+        nextColor[1][1] = getPuyoColor(haipuyo[haipuyoIndex].charAt(tsumoCounter+5));
     }
 
     public void evaluateFieldRecursively() {
@@ -430,7 +476,7 @@ public class HomeFragment extends Fragment {
                         }
                     });
                     evaluateFieldRecursively();
-                } else {
+                } else {  // 連鎖終わり
                     activity.runOnUiThread(new Runnable(){
                         @Override
                         public void run() {
@@ -444,12 +490,15 @@ public class HomeFragment extends Fragment {
                             buttonA.setEnabled(true);
                             Button buttonB = activity.findViewById(R.id.buttonB);
                             buttonB.setEnabled(true);
+                            Button buttonUndo = activity.findViewById(R.id.buttonUndo);
+                            buttonUndo.setEnabled(true);
                         }
                     });
                     // get next puyo
                     currentCursorColumnIndex = 3;
                     currentCursorRotate = Rotation.DEGREE0;
-                    getNewPuyoPair();
+                    tsumoCounter += 2;
+                    setTsumo();
                     drawNextPuyo();
                 }
             }
