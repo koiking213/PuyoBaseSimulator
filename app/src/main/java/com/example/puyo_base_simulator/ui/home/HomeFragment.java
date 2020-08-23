@@ -15,10 +15,15 @@ import androidx.gridlayout.widget.GridLayout;
 import com.example.puyo_base_simulator.BuildConfig;
 import com.example.puyo_base_simulator.R;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Stack;
 
@@ -139,6 +144,7 @@ class Field {
         return connected.size();
     }
 }
+
 public class HomeFragment extends Fragment {
     ImageView[][] currentPuyoView;
     ImageView[][] nextPuyoView;
@@ -150,18 +156,26 @@ public class HomeFragment extends Fragment {
     Field currentField = new Field();
     GridLayout currentPuyoLayout;
     GridLayout nextPuyoLayout;
+    String[] haipuyo = new String[65536];
+    int tsumoCounter;
+    int haipuyoIndex;
 
-    // ツモはいずれ完全ランダムではなくすので暫定
-    private static final List<PuyoColor> PUYO_VALUES =
-            Collections.unmodifiableList(Arrays.asList(PuyoColor.values()));
     private static final Random RANDOM = new Random();
-    public static PuyoColor getRandomPuyo() {
-        return PUYO_VALUES.get(RANDOM.nextInt(4) + 1);
-    }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_home, container, false);
+        haipuyoIndex = RANDOM.nextInt(65536);
+        InputStream is;
+        try {
+            is = requireActivity().getAssets().open("haipuyo.txt");
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            for (int i=0; i<65536; i++) {
+                haipuyo[i] = br.readLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         // current puyo area
         currentPuyoLayout = root.findViewById(R.id.currentPuyoLayout);
@@ -224,6 +238,7 @@ public class HomeFragment extends Fragment {
             fieldView[0][j].setImageResource(R.drawable.wall);
         }
 
+        tsumoCounter = 0;
         getNewPuyoPair(); // 初手
         getNewPuyoPair(); // ねくすと
         getNewPuyoPair(); // ねくねく
@@ -236,7 +251,7 @@ public class HomeFragment extends Fragment {
         super.onStart();
         Activity activity = getActivity();
         assert activity != null;
-        Button buttonLeft = (Button)activity.findViewById(R.id.buttonLeft);
+        Button buttonLeft = activity.findViewById(R.id.buttonLeft);
         buttonLeft.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -246,7 +261,7 @@ public class HomeFragment extends Fragment {
                 drawNextPuyo();
             }
         });
-        Button buttonRight = (Button)activity.findViewById(R.id.buttonRight);
+        Button buttonRight = activity.findViewById(R.id.buttonRight);
         buttonRight.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -256,7 +271,7 @@ public class HomeFragment extends Fragment {
                 drawNextPuyo();
             }
         });
-        Button buttonDown = (Button)activity.findViewById(R.id.buttonDown);
+        Button buttonDown = activity.findViewById(R.id.buttonDown);
         buttonDown.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -293,7 +308,7 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        Button buttonA = (Button)activity.findViewById(R.id.buttonA);
+        Button buttonA = activity.findViewById(R.id.buttonA);
         buttonA.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -321,7 +336,7 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        Button buttonB = (Button)activity.findViewById(R.id.buttonB);
+        Button buttonB = activity.findViewById(R.id.buttonB);
         buttonB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -351,13 +366,33 @@ public class HomeFragment extends Fragment {
 
     }
 
+    public PuyoColor getPuyoColor(char c) {
+        switch (c) {
+            case 'r':
+                return PuyoColor.RED;
+            case 'b':
+                return PuyoColor.BLUE;
+            case 'g':
+                return PuyoColor.GREEN;
+            case 'y':
+                return PuyoColor.YELLOW;
+            case 'p':
+                return PuyoColor.PURPLE;
+            default:
+                if (BuildConfig.DEBUG) {
+                    throw new AssertionError("Assertion failed");
+                }
+                return PuyoColor.EMPTY;
+        }
+    }
+
     public void getNewPuyoPair() {
-        currentColor[0] = nextColor[0][0];
-        currentColor[1] = nextColor[0][1];
+        currentColor[1] = nextColor[0][0];
+        currentColor[0] = nextColor[0][1];
         nextColor[0][0] = nextColor[1][0];
         nextColor[0][1] = nextColor[1][1];
-        nextColor[1][0] = getRandomPuyo();
-        nextColor[1][1] = getRandomPuyo();
+        nextColor[1][0] = getPuyoColor(haipuyo[haipuyoIndex].charAt(tsumoCounter++));
+        nextColor[1][1] = getPuyoColor(haipuyo[haipuyoIndex].charAt(tsumoCounter++));
     }
 
     public void evaluateFieldRecursively() {
@@ -370,7 +405,7 @@ public class HomeFragment extends Fragment {
                     activity.runOnUiThread(new Runnable(){
                         @Override
                         public void run() {
-                            Button buttonDown = (Button)activity.findViewById(R.id.buttonDown);
+                            Button buttonDown = activity.findViewById(R.id.buttonDown);
                             buttonDown.setEnabled(false);
                         }
                     });
@@ -391,7 +426,7 @@ public class HomeFragment extends Fragment {
                     activity.runOnUiThread(new Runnable(){
                         @Override
                         public void run() {
-                            Button buttonDown = (Button)activity.findViewById(R.id.buttonDown);
+                            Button buttonDown = activity.findViewById(R.id.buttonDown);
                             buttonDown.setEnabled(true);
                         }
                     });
@@ -415,7 +450,6 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    // id型みたいなのはない？
     public int getPuyoImage(PuyoColor color) {
         switch (color) {
             case RED:
