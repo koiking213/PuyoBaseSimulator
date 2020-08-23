@@ -141,12 +141,15 @@ class Field {
 }
 public class HomeFragment extends Fragment {
     ImageView[][] currentPuyoView;
+    ImageView[][] nextPuyoView;
     ImageView[][] fieldView;
     Integer currentCursorColumnIndex = 3;
     Rotation currentCursorRotate = Rotation.DEGREE0;
     PuyoColor[] currentColor = new PuyoColor[2];
+    PuyoColor[][] nextColor = new PuyoColor[2][2];
     Field currentField = new Field();
     GridLayout currentPuyoLayout;
+    GridLayout nextPuyoLayout;
 
     // ツモはいずれ完全ランダムではなくすので暫定
     private static final List<PuyoColor> PUYO_VALUES =
@@ -176,6 +179,27 @@ public class HomeFragment extends Fragment {
             }
         }
 
+        // next puyo area
+        nextPuyoLayout = root.findViewById(R.id.nextPuyoLayout);
+        ImageView[][] views = new ImageView[4][2];
+        for(int i=0;i<4;i++){
+            for(int j=0;j<2;j++){
+                ImageView view = new ImageView(getActivity());
+                GridLayout.LayoutParams params = new GridLayout.LayoutParams();
+                params.rowSpec = GridLayout.spec(i);
+                params.columnSpec = GridLayout.spec(j);
+                view.setLayoutParams(params);
+                view.setImageResource(R.drawable.blank);
+                nextPuyoLayout.addView(view);
+                views[i][j] = view;
+            }
+        }
+        nextPuyoView = new ImageView[2][2];
+        nextPuyoView[0][0] = views[0][0];
+        nextPuyoView[0][1] = views[1][0];
+        nextPuyoView[1][0] = views[2][1];
+        nextPuyoView[1][1] = views[3][1];
+
         // main field
         final GridLayout fieldLayout = root.findViewById(R.id.fieldLayout);
         fieldView = new ImageView[14][8];
@@ -200,10 +224,10 @@ public class HomeFragment extends Fragment {
             fieldView[0][j].setImageResource(R.drawable.wall);
         }
 
-        // next puyo
-        currentColor[0] = getRandomPuyo();
-        currentColor[1] = getRandomPuyo();
-        drawCurrentPuyo();
+        getNewPuyoPair(); // 初手
+        getNewPuyoPair(); // ねくすと
+        getNewPuyoPair(); // ねくねく
+        drawNextPuyo();
         return root;
     }
 
@@ -219,7 +243,7 @@ public class HomeFragment extends Fragment {
                 if (!(currentCursorColumnIndex == 1 || (currentCursorColumnIndex == 2 && currentCursorRotate == Rotation.DEGREE270))) {
                     currentCursorColumnIndex--;
                 }
-                drawCurrentPuyo();
+                drawNextPuyo();
             }
         });
         Button buttonRight = (Button)activity.findViewById(R.id.buttonRight);
@@ -229,7 +253,7 @@ public class HomeFragment extends Fragment {
                 if (!(currentCursorColumnIndex == 6 || (currentCursorColumnIndex == 5 && currentCursorRotate == Rotation.DEGREE90))) {
                     currentCursorColumnIndex++;
                 }
-                drawCurrentPuyo();
+                drawNextPuyo();
             }
         });
         Button buttonDown = (Button)activity.findViewById(R.id.buttonDown);
@@ -293,7 +317,7 @@ public class HomeFragment extends Fragment {
                         currentCursorRotate = Rotation.DEGREE0;
                         break;
                 }
-                drawCurrentPuyo();
+                drawNextPuyo();
             }
         });
 
@@ -321,10 +345,19 @@ public class HomeFragment extends Fragment {
                         currentCursorRotate = Rotation.DEGREE180;
                         break;
                 }
-                drawCurrentPuyo();
+                drawNextPuyo();
             }
         });
 
+    }
+
+    public void getNewPuyoPair() {
+        currentColor[0] = nextColor[0][0];
+        currentColor[1] = nextColor[0][1];
+        nextColor[0][0] = nextColor[1][0];
+        nextColor[0][1] = nextColor[1][1];
+        nextColor[1][0] = getRandomPuyo();
+        nextColor[1][1] = getRandomPuyo();
     }
 
     public void evaluateFieldRecursively() {
@@ -365,9 +398,8 @@ public class HomeFragment extends Fragment {
                     // get next puyo
                     currentCursorColumnIndex = 3;
                     currentCursorRotate = Rotation.DEGREE0;
-                    currentColor[0] = getRandomPuyo();
-                    currentColor[1] = getRandomPuyo();
-                    drawCurrentPuyo();
+                    getNewPuyoPair();
+                    drawNextPuyo();
                 }
             }
         }).start();
@@ -421,8 +453,16 @@ public class HomeFragment extends Fragment {
     }
 
 
-    public void drawCurrentPuyo() {
+    public void drawNextPuyo() {
         drawField(currentField);
+
+        // draw next and double next
+        for (int i=0; i<2; i++) {
+            for (int j=0; j<2; j++) {
+                nextPuyoView[i][j].setImageResource(getPuyoImage(nextColor[i][j]));
+            }
+        }
+
         // clear
         for (int i=0; i<3; i++) {
             for (int j=0; j<7; j++) {
