@@ -265,10 +265,12 @@ public class HomeFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        Activity activity = getActivity();
+        final Activity activity = getActivity();
         assert activity != null;
 
-        Button buttonUndo = activity.findViewById(R.id.buttonUndo);
+        final Button buttonUndo = activity.findViewById(R.id.buttonUndo);
+        final Button buttonRedo = activity.findViewById(R.id.buttonRedo);
+
         buttonUndo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -277,24 +279,14 @@ public class HomeFragment extends Fragment {
                 tsumoCounter -= 2;
                 setTsumo();
                 drawNextPuyo();
-                final Activity activity = getActivity();
-                assert activity != null;
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (fieldStack.isEmpty()) {  // 履歴がなくなったらUNDOボタンを無効化
-                            Button buttonUndo = activity.findViewById(R.id.buttonUndo);
-                            buttonUndo.setEnabled(false);
-                        }
-                        Button buttonRedo = activity.findViewById(R.id.buttonRedo);
-                        buttonRedo.setEnabled(true);
-                    }
-                });
+                if (fieldStack.isEmpty()) {  // 履歴がなくなったらUNDOボタンを無効化
+                    buttonUndo.setEnabled(false);
+                }
+                buttonRedo.setEnabled(true);
             }
         });
         buttonUndo.setEnabled(false);
 
-        Button buttonRedo = activity.findViewById(R.id.buttonRedo);
         buttonRedo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -303,16 +295,9 @@ public class HomeFragment extends Fragment {
                 tsumoCounter += 2;
                 setTsumo();
                 drawNextPuyo();
+                buttonUndo.setEnabled(true);
                 if (fieldRedoStack.isEmpty()) {  // 履歴がなくなったらREDOボタンを無効化
-                    final Activity activity = getActivity();
-                    assert activity != null;
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Button buttonRedo = activity.findViewById(R.id.buttonRedo);
-                            buttonRedo.setEnabled(false);
-                        }
-                    });
+                    buttonRedo.setEnabled(false);
                 }
             }
         });
@@ -347,15 +332,7 @@ public class HomeFragment extends Fragment {
                 fieldStack.push(currentField);
                 currentField = currentField.clone();
                 fieldRedoStack.clear();
-                final Activity activity = getActivity();
-                assert activity != null;
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Button buttonRedo = activity.findViewById(R.id.buttonRedo);
-                        buttonRedo.setEnabled(false);
-                    }
-                });
+                buttonRedo.setEnabled(false);
                 switch (currentCursorRotate) {
                     case DEGREE0:
                         // jiku puyo
@@ -482,21 +459,7 @@ public class HomeFragment extends Fragment {
             @Override public void run() {
                 FieldEvaluation fieldEvaluation = currentField.evalChain();
                 if (fieldEvaluation.disappearPuyo.size() != 0) {
-                    activity.runOnUiThread(new Runnable(){
-                        @Override
-                        public void run() {
-                            Button buttonDown = activity.findViewById(R.id.buttonDown);
-                            buttonDown.setEnabled(false);
-                            Button buttonLeft = activity.findViewById(R.id.buttonLeft);
-                            buttonLeft.setEnabled(false);
-                            Button buttonRight = activity.findViewById(R.id.buttonRight);
-                            buttonRight.setEnabled(false);
-                            Button buttonA = activity.findViewById(R.id.buttonA);
-                            buttonA.setEnabled(false);
-                            Button buttonB = activity.findViewById(R.id.buttonB);
-                            buttonB.setEnabled(false);
-                        }
-                    });
+                    setButtonStatus(false);
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
@@ -511,23 +474,7 @@ public class HomeFragment extends Fragment {
                     });
                     evaluateFieldRecursively();
                 } else {  // 連鎖終わり
-                    activity.runOnUiThread(new Runnable(){
-                        @Override
-                        public void run() {
-                            Button buttonDown = activity.findViewById(R.id.buttonDown);
-                            buttonDown.setEnabled(true);
-                            Button buttonLeft = activity.findViewById(R.id.buttonLeft);
-                            buttonLeft.setEnabled(true);
-                            Button buttonRight = activity.findViewById(R.id.buttonRight);
-                            buttonRight.setEnabled(true);
-                            Button buttonA = activity.findViewById(R.id.buttonA);
-                            buttonA.setEnabled(true);
-                            Button buttonB = activity.findViewById(R.id.buttonB);
-                            buttonB.setEnabled(true);
-                            Button buttonUndo = activity.findViewById(R.id.buttonUndo);
-                            buttonUndo.setEnabled(true);
-                        }
-                    });
+                    setButtonStatus(true);
                     // get next puyo
                     currentCursorColumnIndex = 3;
                     currentCursorRotate = Rotation.DEGREE0;
@@ -537,6 +484,23 @@ public class HomeFragment extends Fragment {
                 }
             }
         }).start();
+    }
+
+    private void setButtonStatus(final boolean val) {
+        final Activity activity = getActivity();
+        assert activity != null;
+        activity.runOnUiThread(new Runnable(){
+            @Override
+            public void run() {
+                activity.findViewById(R.id.buttonDown).setEnabled(val);
+                activity.findViewById(R.id.buttonLeft).setEnabled(val);
+                activity.findViewById(R.id.buttonRight).setEnabled(val);
+                activity.findViewById(R.id.buttonA).setEnabled(val);
+                activity.findViewById(R.id.buttonB).setEnabled(val);
+                activity.findViewById(R.id.buttonUndo).setEnabled(val);
+                activity.findViewById(R.id.buttonRedo).setEnabled(val);
+            }
+        });
     }
 
     public void drawField(Field field) {
