@@ -277,20 +277,46 @@ public class HomeFragment extends Fragment {
                 tsumoCounter -= 2;
                 setTsumo();
                 drawNextPuyo();
-                if (fieldStack.isEmpty()) {  // 履歴がなくなったらUNDOボタンを無効化
+                final Activity activity = getActivity();
+                assert activity != null;
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (fieldStack.isEmpty()) {  // 履歴がなくなったらUNDOボタンを無効化
+                            Button buttonUndo = activity.findViewById(R.id.buttonUndo);
+                            buttonUndo.setEnabled(false);
+                        }
+                        Button buttonRedo = activity.findViewById(R.id.buttonRedo);
+                        buttonRedo.setEnabled(true);
+                    }
+                });
+            }
+        });
+        buttonUndo.setEnabled(false);
+
+        Button buttonRedo = activity.findViewById(R.id.buttonRedo);
+        buttonRedo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fieldStack.push(currentField);
+                currentField = fieldRedoStack.pop();
+                tsumoCounter += 2;
+                setTsumo();
+                drawNextPuyo();
+                if (fieldRedoStack.isEmpty()) {  // 履歴がなくなったらREDOボタンを無効化
                     final Activity activity = getActivity();
                     assert activity != null;
                     activity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Button buttonUndo = activity.findViewById(R.id.buttonUndo);
-                            buttonUndo.setEnabled(false);
+                            Button buttonRedo = activity.findViewById(R.id.buttonRedo);
+                            buttonRedo.setEnabled(false);
                         }
                     });
                 }
             }
         });
-        buttonUndo.setEnabled(false);
+        buttonRedo.setEnabled(false);
 
         Button buttonLeft = activity.findViewById(R.id.buttonLeft);
         buttonLeft.setOnClickListener(new View.OnClickListener() {
@@ -321,7 +347,15 @@ public class HomeFragment extends Fragment {
                 fieldStack.push(currentField);
                 currentField = currentField.clone();
                 fieldRedoStack.clear();
-                // redo
+                final Activity activity = getActivity();
+                assert activity != null;
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Button buttonRedo = activity.findViewById(R.id.buttonRedo);
+                        buttonRedo.setEnabled(false);
+                    }
+                });
                 switch (currentCursorRotate) {
                     case DEGREE0:
                         // jiku puyo
