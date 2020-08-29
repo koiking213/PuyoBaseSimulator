@@ -480,7 +480,12 @@ public class HomeFragment extends Fragment {
                     currentCursorRotate = Rotation.DEGREE0;
                     tsumoCounter += 2;
                     setTsumo();
-                    drawNextPuyo();
+                    activity.runOnUiThread(new Runnable(){
+                        @Override
+                        public void run() {
+                            drawNextPuyo();
+                        }
+                    });
                 }
             }
         }).start();
