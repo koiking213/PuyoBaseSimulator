@@ -86,9 +86,10 @@ class Field implements Cloneable {
         }
     }
 
+    @NonNull
     @Override
     public Field clone() {
-        Field cloned = null;
+        Field cloned = new Field();
         try {
             cloned = (Field) super.clone();
             cloned.field = this.field.clone();
