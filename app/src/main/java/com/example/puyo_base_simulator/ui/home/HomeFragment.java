@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -22,8 +23,10 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.Stack;
 
 enum Rotation {
@@ -53,12 +56,17 @@ class Puyo {
     }
 }
 
+
 class FieldEvaluation {
     Field nextField;
     ArrayList<Puyo> disappearPuyo;
-    FieldEvaluation(Field nextField, ArrayList<Puyo> disappearPuyo) {
+    int accumulatedPoint;
+    int bonus;
+    FieldEvaluation(Field nextField, ArrayList<Puyo> disappearPuyo, int point, int bonus) {
         this.nextField = nextField;
         this.disappearPuyo = disappearPuyo;
+        this.accumulatedPoint = point;
+        this.bonus = bonus;
     }
 }
 
@@ -66,6 +74,17 @@ class FieldEvaluation {
 class Field implements Cloneable {
     Puyo[][] field;
     int[] heights = {0,0,0,0,0,0,0};
+    final int[] chainBonusConstant = {0, 0, 8, 16, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 480, 512};
+    final int[] colorBonusConstant = {0, 0, 3, 6, 12};
+    int connectionBonusConstant(int connectionNum) {
+        if (connectionNum <= 4) {
+            return 0;
+        } else if (connectionNum <= 10){
+            return connectionNum - 3;
+        } else {
+            return 10;
+        }
+    }
 
     @Override
     public Field clone() {
@@ -100,23 +119,42 @@ class Field implements Cloneable {
         return true;
     }
     // 4つくっついたぷよは消える
-    FieldEvaluation evalChain() {
+    FieldEvaluation evalChain(int chainNum, int accumulatedPoint) {
         ArrayList<Puyo> disappear = new ArrayList<>();
         Field newField = new Field();
+        Set<PuyoColor> colors = new HashSet<>();
+        int connectionBonus = 0;
         // 消えるぷよを探す
         for (int i=1; i<13; i++) {
             for (int j=1; j<7; j++) {
                 Puyo puyo = field[i][j];
-                if (getConnectionCount(puyo) >= 4) {
+                List<Puyo> connection = getConnection(puyo);
+                if (connection.size() >= 4) {
                     disappear.add(puyo);
+                    // 色ボーナスの評価
+                    colors.add(puyo.color);
+                    // 連結ボーナスの評価
+                    boolean connectionIsNew = true;
+                    for (Puyo p: disappear) {
+                        if (p.row < i || p.row == i && p.column < j) {
+                            connectionIsNew = false;
+                            break;
+                        }
+                    }
+                    if (connectionIsNew) {
+                        connectionBonus += connectionBonusConstant(connection.size());
+                    }
                 } else if (puyo.color != PuyoColor.EMPTY){
                     newField.addPuyo(j, puyo.color);
                 }
             }
         }
+        int bonus = colorBonusConstant[colors.size()] + connectionBonusConstant(connectionBonus) + chainBonusConstant[chainNum];
+        if (bonus == 0) bonus = 1;
+        int point = accumulatedPoint + bonus * disappear.size() * 10;
 
         // todo: 点数計算
-        return new FieldEvaluation(newField, disappear);
+        return new FieldEvaluation(newField, disappear, point, bonus);
     }
     List<Puyo> getNeighborPuyo(Puyo puyo) {
         int row = puyo.row;
@@ -141,11 +179,11 @@ class Field implements Cloneable {
         return ret;
     }
     // 連結数
-    int getConnectionCount(Puyo puyo) {
-        if (puyo.color == PuyoColor.EMPTY) return 0;
+    List<Puyo> getConnection(Puyo puyo) {
+        ArrayList<Puyo> connected = new ArrayList<>();
+        if (puyo.color == PuyoColor.EMPTY) return connected;
         Stack<Puyo> sameColorStack = new Stack<>();
         sameColorStack.push(puyo);
-        ArrayList<Puyo> connected = new ArrayList<>();
         connected.add(puyo);
         while (!sameColorStack.isEmpty()) {
             Puyo currentPuyo = sameColorStack.pop();
@@ -157,7 +195,7 @@ class Field implements Cloneable {
                 }
             }
         }
-        return connected.size();
+        return connected;
     }
 }
 
@@ -255,6 +293,8 @@ public class HomeFragment extends Fragment {
         for (int j=1; j<7; j++) {
             fieldView[0][j].setImageResource(R.drawable.wall);
         }
+
+        ((TextView)root.findViewById(R.id.pointTextView)).setText("0点");
 
         tsumoCounter = 0;
         setTsumo();
@@ -361,7 +401,7 @@ public class HomeFragment extends Fragment {
                         break;
                 }
                 drawField(currentField);
-                evaluateFieldRecursively();
+                evaluateFieldRecursively(1, 0);
             }
         });
 
@@ -452,13 +492,14 @@ public class HomeFragment extends Fragment {
         nextColor[1][1] = getPuyoColor(haipuyo[haipuyoIndex].charAt(tsumoCounter+5));
     }
 
-    public void evaluateFieldRecursively() {
+    public void evaluateFieldRecursively(final int chainNum, final int accumulatedPoint) {
         final Activity activity = getActivity();
         assert activity != null;
         new Thread(new Runnable(){
             @Override public void run() {
-                FieldEvaluation fieldEvaluation = currentField.evalChain();
+                final FieldEvaluation fieldEvaluation = currentField.evalChain(chainNum, accumulatedPoint);
                 if (fieldEvaluation.disappearPuyo.size() != 0) {
+                    drawPoint(fieldEvaluation);
                     setButtonStatus(false);
                     try {
                         Thread.sleep(1000);
@@ -472,7 +513,7 @@ public class HomeFragment extends Fragment {
                             drawField(currentField);
                         }
                     });
-                    evaluateFieldRecursively();
+                    evaluateFieldRecursively(chainNum + 1, fieldEvaluation.accumulatedPoint);
                 } else {  // 連鎖終わり
                     setButtonStatus(true);
                     // get next puyo
@@ -516,6 +557,19 @@ public class HomeFragment extends Fragment {
                 fieldView[i][j].setImageResource(getPuyoImage(puyo.color));
             }
         }
+    }
+
+    public void drawPoint(FieldEvaluation fieldEvaluation) {
+        final Activity activity = getActivity();
+        assert activity != null;
+        //String text = "" + fieldEvaluation.accumulatedPoint + "点";
+        final String text = "" + fieldEvaluation.bonus + " * " + fieldEvaluation.disappearPuyo.size() + " = " + fieldEvaluation.accumulatedPoint +  "点";
+        activity.runOnUiThread(new Runnable(){
+            @Override
+            public void run() {
+                ((TextView)activity.findViewById(R.id.pointTextView)).setText(text);
+            }
+        });
     }
 
     public int getPuyoImage(PuyoColor color) {
