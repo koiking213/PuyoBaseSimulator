@@ -34,40 +34,6 @@ enum Rotation {
     DEGREE270
 }
 
-enum PuyoColor {
-    EMPTY,
-    RED,
-    BLUE,
-    YELLOW,
-    GREEN,
-    PURPLE
-}
-
-class Puyo {
-    int row;
-    int column;
-    PuyoColor color;
-    Puyo(int row, int column, PuyoColor color) {
-        this.row = row;
-        this.column = column;
-        this.color = color;
-    }
-}
-
-
-class FieldEvaluation {
-    Field nextField;
-    ArrayList<Puyo> disappearPuyo;
-    int accumulatedPoint;
-    int bonus;
-    FieldEvaluation(Field nextField, ArrayList<Puyo> disappearPuyo, int point, int bonus) {
-        this.nextField = nextField;
-        this.disappearPuyo = disappearPuyo;
-        this.accumulatedPoint = point;
-        this.bonus = bonus;
-    }
-}
-
 public class HomeFragment extends Fragment {
     ImageView[][] currentPuyoView;
     ImageView[][] nextPuyoView;
