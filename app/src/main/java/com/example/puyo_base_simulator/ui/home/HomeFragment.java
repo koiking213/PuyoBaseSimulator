@@ -299,7 +299,7 @@ public class HomeFragment extends Fragment {
 
     }
 
-    public PuyoColor getPuyoColor(char c) {
+    PuyoColor getPuyoColor(char c) {
         switch (c) {
             case 'r':
                 return PuyoColor.RED;
@@ -319,7 +319,7 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    public void setTsumo() {
+    void setTsumo() {
         currentColor[1] = getPuyoColor(haipuyo[haipuyoIndex].charAt(tsumoCounter));
         currentColor[0] = getPuyoColor(haipuyo[haipuyoIndex].charAt(tsumoCounter+1));
         nextColor[0][0] = getPuyoColor(haipuyo[haipuyoIndex].charAt(tsumoCounter+2));
@@ -328,7 +328,7 @@ public class HomeFragment extends Fragment {
         nextColor[1][1] = getPuyoColor(haipuyo[haipuyoIndex].charAt(tsumoCounter+5));
     }
 
-    public void drawFieldRecursively() {
+    void drawFieldRecursively() {
         final Activity activity = getActivity();
         assert activity != null;
         if (currentField.nextField == null) {  // 連鎖終わり
@@ -370,7 +370,7 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    private void setButtonStatus(final boolean val) {
+    void setButtonStatus(final boolean val) {
         final Activity activity = getActivity();
         assert activity != null;
         activity.runOnUiThread(new Runnable(){
@@ -387,7 +387,7 @@ public class HomeFragment extends Fragment {
         });
     }
 
-    public void drawField(Field field) {
+    void drawField(Field field) {
         // draw field puyo
         for (int i=1; i<14; i++) {
             for (int j=1; j<7; j++) {
@@ -397,7 +397,7 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    public void drawPoint(Field field) {
+    void drawPoint(Field field) {
         final Activity activity = getActivity();
         assert activity != null;
         //String text = "" + fieldEvaluation.accumulatedPoint + "点";
@@ -410,7 +410,7 @@ public class HomeFragment extends Fragment {
         });
     }
 
-    public int getPuyoImage(PuyoColor color) {
+    int getPuyoImage(PuyoColor color) {
         switch (color) {
             case RED:
                 return R.drawable.pr;
@@ -429,7 +429,7 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    public int getDotImage(PuyoColor color) {
+    int getDotImage(PuyoColor color) {
         switch (color) {
             case RED:
                 return R.drawable.dotr;
@@ -447,7 +447,7 @@ public class HomeFragment extends Fragment {
     }
 
 
-    public void drawNextPuyo() {
+    void drawNextPuyo() {
         drawField(currentField);
 
         // draw next and double next
@@ -498,7 +498,7 @@ public class HomeFragment extends Fragment {
     }
 
     // 内部関数にできない？ (Javaにあるのか？)
-    public void drawDot(int column, List<PuyoColor> colors, Field field) {
+    void drawDot(int column, List<PuyoColor> colors, Field field) {
         int row = field.heights[column] + 1;
         for (PuyoColor color : colors) {
             fieldView[row++][column].setImageResource(getDotImage(color));
