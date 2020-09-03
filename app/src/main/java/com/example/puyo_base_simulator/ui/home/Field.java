@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.Stack;
 
 public class Field implements Cloneable {
+    Field nextField = null;
     Puyo[][] field;
     int[] heights = {0,0,0,0,0,0,0};
     ArrayList<Puyo> disappearPuyo;
@@ -32,7 +33,7 @@ public class Field implements Cloneable {
     @NonNull
     @Override
     public Field clone() {
-        Field cloned = new Field();
+        Field cloned = new Field(this.chainNum);
         try {
             cloned = (Field) super.clone();
             cloned.field = this.field.clone();
@@ -46,13 +47,14 @@ public class Field implements Cloneable {
         return cloned;
     }
 
-    Field () {
+    Field (int chainNum) {
         field = new Puyo[14][7];
         for (int i=1; i<14; i++) {
             for (int j=1; j<7; j++) {
                 field[i][j] = new Puyo(i, j, PuyoColor.EMPTY);
             }
         }
+        this.chainNum = chainNum;
     }
 
     Boolean addPuyo(int column, PuyoColor color) {
@@ -64,13 +66,18 @@ public class Field implements Cloneable {
         return true;
     }
 
+    boolean allClear() {
+        for (int h : this.heights) {
+            if (h > 0) return false;
+        }
+        return true;
+    }
+
     // todo: evalChainはこっちにして元のevalChainは消す
     //       現状連鎖しながら描画しているが、先に連鎖結果をすべて保持するようにする
-    List<Field> getFieldTransition() {
-        Field nextField = evalChain(this.chainNum+1, 0).nextField;
-
+    void evalNextField() {
         ArrayList<Puyo> disappear = new ArrayList<>();
-        Field newField = new Field();
+        Field newField = new Field(this.chainNum + 1);
         Set<PuyoColor> colors = new HashSet<>();
         int connectionBonus = 0;
         // 消えるぷよを探す
@@ -98,6 +105,10 @@ public class Field implements Cloneable {
                 }
             }
         }
+        if (newField.allClear()) this.accumulatedPoint += 3000;
+        if (disappear.size() == 0) return;
+
+        // 消えるぷよがある場合のみ次の盤面を評価
         int bonus = colorBonusConstant[colors.size()] + connectionBonus + chainBonusConstant[chainNum];
         if (bonus == 0) bonus = 1;
         int point = accumulatedPoint + bonus * disappear.size() * 10;
@@ -107,46 +118,9 @@ public class Field implements Cloneable {
         this.bonus = bonus;
         this.disappearPuyo = disappear;
         this.accumulatedPoint = point;
-        List<Field> ret = newField.getFieldTransition();
-        ret.add(0, this);
-        return ret;
-    }
-
-    FieldEvaluation evalChain(int chainNum, int accumulatedPoint) {
-        ArrayList<Puyo> disappear = new ArrayList<>();
-        Field newField = new Field();
-        Set<PuyoColor> colors = new HashSet<>();
-        int connectionBonus = 0;
-        // 消えるぷよを探す
-        for (int i=1; i<13; i++) {
-            for (int j=1; j<7; j++) {
-                Puyo puyo = field[i][j];
-                List<Puyo> connection = getConnection(puyo);
-                if (connection.size() >= 4) {
-                    disappear.add(puyo);
-                    // 色ボーナスの評価
-                    colors.add(puyo.color);
-                    // 連結ボーナスの評価
-                    boolean connectionIsNew = true;
-                    for (Puyo p: disappear) {
-                        if (p.row < i || p.row == i && p.column < j) {
-                            connectionIsNew = false;
-                            break;
-                        }
-                    }
-                    if (connectionIsNew) {
-                        connectionBonus += connectionBonusConstant(connection.size());
-                    }
-                } else if (puyo.color != PuyoColor.EMPTY){
-                    newField.addPuyo(j, puyo.color);
-                }
-            }
-        }
-        int bonus = colorBonusConstant[colors.size()] + connectionBonusConstant(connectionBonus) + chainBonusConstant[chainNum];
-        if (bonus == 0) bonus = 1;
-        int point = accumulatedPoint + bonus * disappear.size() * 10;
-
-        return new FieldEvaluation(newField, disappear, point, bonus);
+        this.nextField = newField;
+        this.nextField.accumulatedPoint = point;
+        newField.evalNextField();
     }
 
     List<Puyo> getNeighborPuyo(Puyo puyo) {

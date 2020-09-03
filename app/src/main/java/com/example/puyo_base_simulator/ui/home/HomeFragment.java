@@ -78,7 +78,7 @@ public class HomeFragment extends Fragment {
     PuyoColor[][] nextColor = new PuyoColor[2][2];
     Stack<Field> fieldStack = new Stack<>();
     Stack<Field> fieldRedoStack = new Stack<>();
-    Field currentField = new Field();
+    Field currentField = new Field(1);
     GridLayout currentPuyoLayout;
     GridLayout nextPuyoLayout;
     String[] haipuyo = new String[65536];
@@ -270,7 +270,8 @@ public class HomeFragment extends Fragment {
                         break;
                 }
                 drawField(currentField);
-                evaluateFieldRecursively(1, 0);
+                currentField.evalNextField();
+                drawFieldRecursively();
             }
         });
 
@@ -361,44 +362,46 @@ public class HomeFragment extends Fragment {
         nextColor[1][1] = getPuyoColor(haipuyo[haipuyoIndex].charAt(tsumoCounter+5));
     }
 
-    public void evaluateFieldRecursively(final int chainNum, final int accumulatedPoint) {
+    public void drawFieldRecursively() {
         final Activity activity = getActivity();
         assert activity != null;
-        new Thread(new Runnable(){
-            @Override public void run() {
-                final FieldEvaluation fieldEvaluation = currentField.evalChain(chainNum, accumulatedPoint);
-                if (fieldEvaluation.disappearPuyo.size() != 0) {
-                    drawPoint(fieldEvaluation);
-                    setButtonStatus(false);
+        if (currentField.nextField == null) {  // 連鎖終わり
+            setButtonStatus(true);
+            // reset chain
+            currentField.chainNum = 1;
+            // get next puyo
+            currentCursorColumnIndex = 3;
+            currentCursorRotate = Rotation.DEGREE0;
+            tsumoCounter += 2;
+            setTsumo();
+            activity.runOnUiThread(new Runnable(){
+                @Override
+                public void run() {
+                    drawNextPuyo();
+                }
+            });
+        } else {
+            setButtonStatus(false);
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    drawPoint(currentField);
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                     }
-                    currentField = fieldEvaluation.nextField;
-                    activity.runOnUiThread(new Runnable(){
+                    currentField = currentField.nextField;
+                    activity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             drawField(currentField);
                         }
                     });
-                    evaluateFieldRecursively(chainNum + 1, fieldEvaluation.accumulatedPoint);
-                } else {  // 連鎖終わり
-                    setButtonStatus(true);
-                    // get next puyo
-                    currentCursorColumnIndex = 3;
-                    currentCursorRotate = Rotation.DEGREE0;
-                    tsumoCounter += 2;
-                    setTsumo();
-                    activity.runOnUiThread(new Runnable(){
-                        @Override
-                        public void run() {
-                            drawNextPuyo();
-                        }
-                    });
+                    drawFieldRecursively();
                 }
-            }
-        }).start();
+            }).start();
+        }
     }
 
     private void setButtonStatus(final boolean val) {
@@ -428,11 +431,11 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    public void drawPoint(FieldEvaluation fieldEvaluation) {
+    public void drawPoint(Field field) {
         final Activity activity = getActivity();
         assert activity != null;
         //String text = "" + fieldEvaluation.accumulatedPoint + "点";
-        final String text = "" + fieldEvaluation.bonus + " * " + fieldEvaluation.disappearPuyo.size() + " = " + fieldEvaluation.accumulatedPoint +  "点";
+        final String text = "" + field.bonus + " * " + field.disappearPuyo.size() + " = " + field.accumulatedPoint +  "点";
         activity.runOnUiThread(new Runnable(){
             @Override
             public void run() {
