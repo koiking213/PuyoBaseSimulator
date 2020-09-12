@@ -45,8 +45,6 @@ class TsumoController {
     PuyoColor[][] nextColor = new PuyoColor[2][2];
     ImageView[][] nextPuyoView = new ImageView[2][2];
     ImageView[][] currentPuyoView = new ImageView[3][7];
-    int[] currentMainPos = {3, 1}; // row, column
-    int[] currentSubPos = {3, 0};
 
     void setTsumo() {
         currentCursorColumnIndex = 3;
@@ -69,60 +67,35 @@ class TsumoController {
         setTsumo();
     }
 
-    void drawNext() {
-        // draw next and double next
-        for (int i=0; i<2; i++) {
-            for (int j=0; j<2; j++) {
-                nextPuyoView[i][j].setImageResource(getPuyoImage(nextColor[i][j]));
-            }
-        }
-    }
-    void drawCurrent() {
-        // clear
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 7; j++) {
-                currentPuyoView[i][j].setImageResource(R.drawable.blank);
-            }
-        }
-        int jikuColor = getPuyoImage(currentColor[0]);
-        int nonJikuColor = getPuyoImage(currentColor[1]);
-        // draw jiku-puyo
-        currentPuyoView[1][currentCursorColumnIndex].setImageResource(jikuColor);
-
-        // draw not-jiku-puyo
+    TsumoInfo makeTsumoInfo() {
+        TsumoInfo info = new TsumoInfo();
+        info.currentColor[0] = currentColor[0];
+        info.currentColor[1] = currentColor[1];
+        info.nextColor[0][0] = nextColor[0][0];
+        info.nextColor[0][1] = nextColor[0][1];
+        info.nextColor[1][0] = nextColor[1][0];
+        info.nextColor[1][1] = nextColor[1][1];
+        info.currentMainPos[0] = 1;
+        info.currentMainPos[1] = currentCursorColumnIndex;
         switch (currentCursorRotate) {
             case DEGREE0:
-                currentPuyoView[0][currentCursorColumnIndex].setImageResource(nonJikuColor);
+                info.currentSubPos[0] = 0;
+                info.currentSubPos[1] = currentCursorColumnIndex;
                 break;
             case DEGREE90:
-                currentPuyoView[1][currentCursorColumnIndex + 1].setImageResource(nonJikuColor);
+                info.currentSubPos[0] = 1;
+                info.currentSubPos[1] = currentCursorColumnIndex + 1;
                 break;
             case DEGREE180:
-                currentPuyoView[2][currentCursorColumnIndex].setImageResource(nonJikuColor);
+                info.currentSubPos[0] = 2;
+                info.currentSubPos[1] = currentCursorColumnIndex;
                 break;
             case DEGREE270:
-                currentPuyoView[1][currentCursorColumnIndex - 1].setImageResource(nonJikuColor);
+                info.currentSubPos[0] = 1;
+                info.currentSubPos[1] = currentCursorColumnIndex - 1;
                 break;
         }
-    }
-
-    int getPuyoImage(PuyoColor color) {
-        switch (color) {
-            case RED:
-                return R.drawable.pr;
-            case BLUE:
-                return R.drawable.pb;
-            case YELLOW:
-                return R.drawable.py;
-            case GREEN:
-                return R.drawable.pg;
-            case PURPLE:
-                return R.drawable.pp;
-            case EMPTY:
-                return R.drawable.blank;
-            default:
-                return -1;
-        }
+        return info;
     }
 
     PuyoColor getPuyoColor(char c) {  //ここにいるべきか？
@@ -224,7 +197,7 @@ class TsumoController {
 
 }
 
-public class HomeFragment extends Fragment {
+public class HomeFragment extends Fragment implements HomeContract.View {
     ImageView[][] fieldView;
     Stack<Field> fieldStack = new Stack<>();
     Stack<Field> fieldRedoStack = new Stack<>();
@@ -232,6 +205,14 @@ public class HomeFragment extends Fragment {
     GridLayout currentPuyoLayout;
     GridLayout nextPuyoLayout;
     TsumoController tsumoController = TsumoController.getInstance();
+    private HomePresenter mPresenter = new HomePresenter(this);
+    private Button mUndoButton;
+    private Button mRedoButton;
+    private Button mLeftButton;
+    private Button mRightButton;
+    private Button mDownButton;
+    private Button mAButton;
+    private Button mBButton;
 
     private static final Random RANDOM = new Random();
 
@@ -312,9 +293,8 @@ public class HomeFragment extends Fragment {
         ((TextView)root.findViewById(R.id.pointTextView)).setText("0点");
 
         tsumoController.setTsumo();
-        tsumoController.drawNext();
-        tsumoController.drawCurrent();
-        updateField();
+        drawTsumo(tsumoController.makeTsumoInfo());
+        updateField(currentField);
         return root;
     }
 
@@ -324,73 +304,69 @@ public class HomeFragment extends Fragment {
         final Activity activity = getActivity();
         assert activity != null;
 
-        final Button buttonUndo = activity.findViewById(R.id.buttonUndo);
-        final Button buttonRedo = activity.findViewById(R.id.buttonRedo);
+        mUndoButton = activity.findViewById(R.id.buttonUndo);
+        mRedoButton = activity.findViewById(R.id.buttonRedo);
 
-        buttonUndo.setOnClickListener(new View.OnClickListener() {
+        mUndoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 fieldRedoStack.push(currentField);
                 currentField = fieldStack.pop();
                 tsumoController.decrementTsumo();
-                tsumoController.drawNext();
-                tsumoController.drawCurrent();
-                updateField();
+                drawTsumo(tsumoController.makeTsumoInfo());
+                updateField(currentField);
                 if (fieldStack.isEmpty()) {  // 履歴がなくなったらUNDOボタンを無効化
-                    buttonUndo.setEnabled(false);
+                    disableUndoButton();
                 }
-                buttonRedo.setEnabled(true);
+                enableRedoButton();
             }
         });
-        buttonUndo.setEnabled(false);
+        disableUndoButton();
 
-        buttonRedo.setOnClickListener(new View.OnClickListener() {
+        mRedoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 fieldStack.push(currentField);
                 currentField = fieldRedoStack.pop();
                 tsumoController.incrementTsumo();
-                tsumoController.drawNext();
-                tsumoController.drawCurrent();
-                updateField();
-                buttonUndo.setEnabled(true);
+                drawTsumo(tsumoController.makeTsumoInfo());
+                updateField(currentField);
+                enableUndoButton();
                 if (fieldRedoStack.isEmpty()) {  // 履歴がなくなったらREDOボタンを無効化
-                    buttonRedo.setEnabled(false);
+                    disableRedoButton();
                 }
             }
         });
-        buttonRedo.setEnabled(false);
+        disableRedoButton();
 
-        Button buttonLeft = activity.findViewById(R.id.buttonLeft);
-        buttonLeft.setOnClickListener(new View.OnClickListener() {
+        mLeftButton = activity.findViewById(R.id.buttonLeft);
+        mLeftButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 tsumoController.moveCurrentLeft();
-                tsumoController.drawNext();
-                tsumoController.drawCurrent();
-                updateField();
+                drawTsumo(tsumoController.makeTsumoInfo());
+                updateField(currentField);
             }
         });
 
-        Button buttonRight = activity.findViewById(R.id.buttonRight);
-        buttonRight.setOnClickListener(new View.OnClickListener() {
+        mRightButton = activity.findViewById(R.id.buttonRight);
+        mRightButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 tsumoController.moveCurrentRight();
-                tsumoController.drawNext();
-                tsumoController.drawCurrent();
-                updateField();
+                drawTsumo(tsumoController.makeTsumoInfo());
+                updateField(currentField);
             }
         });
 
-        Button buttonDown = activity.findViewById(R.id.buttonDown);
-        buttonDown.setOnClickListener(new View.OnClickListener() {
+        mDownButton = activity.findViewById(R.id.buttonDown);
+        mDownButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 fieldStack.push(currentField);
                 currentField = currentField.clone();
                 fieldRedoStack.clear();
-                buttonRedo.setEnabled(false);
+                disableRedoButton();
 
                 Rotation currentCursorRotate = tsumoController.currentCursorRotate;
                 int currentCursorColumnIndex = tsumoController.currentCursorColumnIndex;
@@ -423,94 +399,60 @@ public class HomeFragment extends Fragment {
                 }
                 drawField(currentField);
                 currentField.evalNextField();
-                drawFieldRecursively();
+                animateFieldChain(currentField);
             }
         });
 
-        Button buttonA = activity.findViewById(R.id.buttonA);
-        buttonA.setOnClickListener(new View.OnClickListener() {
+        mAButton = activity.findViewById(R.id.buttonA);
+        mAButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 tsumoController.rotateCurrentRight();
-                tsumoController.drawNext();
-                tsumoController.drawCurrent();
-                updateField();
+                drawTsumo(tsumoController.makeTsumoInfo());
+                updateField(currentField);
             }
         });
 
-        Button buttonB = activity.findViewById(R.id.buttonB);
-        buttonB.setOnClickListener(new View.OnClickListener() {
+        mBButton = activity.findViewById(R.id.buttonB);
+        mBButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 tsumoController.rotateCurrentLeft();
-                tsumoController.drawNext();
-                tsumoController.drawCurrent();
-                updateField();
+                drawTsumo(tsumoController.makeTsumoInfo());
+                updateField(currentField);
             }
         });
 
     }
 
 
-    void drawFieldRecursively() {
+    void drawFieldRecursively(final Field field) {
         final Activity activity = getActivity();
         assert activity != null;
-        if (currentField.nextField == null) {  // 連鎖終わり
-            setButtonStatus(true);
-            // reset chain
-            currentField.chainNum = 1;
-            // get next puyo
-            tsumoController.incrementTsumo();
-            activity.runOnUiThread(new Runnable(){
-                @Override
-                public void run() {
-                    tsumoController.drawNext();
-                    tsumoController.drawCurrent();
-                    updateField();
-                }
-            });
-        } else {
-            setButtonStatus(false);
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    drawPoint(currentField);
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                    currentField = currentField.nextField;
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            drawField(currentField);
-                        }
-                    });
-                    drawFieldRecursively();
-                }
-            }).start();
-        }
-    }
-
-    void setButtonStatus(final boolean val) {
-        final Activity activity = getActivity();
-        assert activity != null;
-        activity.runOnUiThread(new Runnable(){
+        new Thread(new Runnable() {
             @Override
             public void run() {
-                activity.findViewById(R.id.buttonDown).setEnabled(val);
-                activity.findViewById(R.id.buttonLeft).setEnabled(val);
-                activity.findViewById(R.id.buttonRight).setEnabled(val);
-                activity.findViewById(R.id.buttonA).setEnabled(val);
-                activity.findViewById(R.id.buttonB).setEnabled(val);
-                activity.findViewById(R.id.buttonUndo).setEnabled(val);
-                activity.findViewById(R.id.buttonRedo).setEnabled(val);
+                String text = "" + field.bonus + " * " + field.disappearPuyo.size() + " = " + field.accumulatedPoint + "点";
+                drawPoint(text);
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        drawField(field.nextField);
+                    }
+                });
+                if (field.nextField.nextField != null) {
+                    drawFieldRecursively(field.nextField);
+                }
             }
-        });
+        }).start();
     }
 
-    void drawField(Field field) {
+    public void drawField(Field field) {
         // draw field puyo
         for (int i=1; i<14; i++) {
             for (int j=1; j<7; j++) {
@@ -520,11 +462,9 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    void drawPoint(Field field) {
+    public void drawPoint(final String text) {
         final Activity activity = getActivity();
         assert activity != null;
-        //String text = "" + fieldEvaluation.accumulatedPoint + "点";
-        final String text = "" + field.bonus + " * " + field.disappearPuyo.size() + " = " + field.accumulatedPoint +  "点";
         activity.runOnUiThread(new Runnable(){
             @Override
             public void run() {
@@ -571,7 +511,7 @@ public class HomeFragment extends Fragment {
     }
 
 
-    void updateField () {
+    public void updateField (Field field) {
         drawField(currentField);
         PuyoColor[] currentColor = new PuyoColor[2];
         currentColor[0] = tsumoController.getMainColor();
@@ -580,24 +520,24 @@ public class HomeFragment extends Fragment {
         int currentCursorColumnIndex = tsumoController.currentCursorColumnIndex;
         switch (currentCursorRotate) {
             case DEGREE0:
-                drawDot(currentCursorColumnIndex, Arrays.asList(currentColor[0], currentColor[1]), currentField);
+                drawDot(currentCursorColumnIndex, Arrays.asList(currentColor[0], currentColor[1]), field);
                 break;
             case DEGREE90:
                 if (BuildConfig.DEBUG && currentCursorColumnIndex == 6) {
                     throw new AssertionError("Assertion failed");
                 }
-                drawDot(currentCursorColumnIndex, Collections.singletonList(currentColor[0]), currentField);
-                drawDot(currentCursorColumnIndex + 1, Collections.singletonList(currentColor[1]), currentField);
+                drawDot(currentCursorColumnIndex, Collections.singletonList(currentColor[0]), field);
+                drawDot(currentCursorColumnIndex + 1, Collections.singletonList(currentColor[1]), field);
                 break;
             case DEGREE180:
-                drawDot(currentCursorColumnIndex, Arrays.asList(currentColor[1], currentColor[0]), currentField);
+                drawDot(currentCursorColumnIndex, Arrays.asList(currentColor[1], currentColor[0]), field);
                 break;
             case DEGREE270:
                 if (BuildConfig.DEBUG && currentCursorColumnIndex == 1) {
                     throw new AssertionError("Assertion failed");
                 }
-                drawDot(currentCursorColumnIndex, Collections.singletonList(currentColor[0]), currentField);
-                drawDot(currentCursorColumnIndex - 1, Collections.singletonList(currentColor[1]), currentField);
+                drawDot(currentCursorColumnIndex, Collections.singletonList(currentColor[0]), field);
+                drawDot(currentCursorColumnIndex - 1, Collections.singletonList(currentColor[1]), field);
                 break;
         }
     }
@@ -606,7 +546,104 @@ public class HomeFragment extends Fragment {
     void drawDot(int column, List<PuyoColor> colors, Field field) {
         int row = field.heights[column] + 1;
         for (PuyoColor color : colors) {
-            fieldView[row++][column].setImageResource(getDotImage(color));
+            if (row <= 13) {
+                fieldView[row++][column].setImageResource(getDotImage(color));
+            }
+        }
+    }
+
+    public void drawTsumo(TsumoInfo tsumoInfo) {
+        // draw current
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 7; j++) {
+                tsumoController.currentPuyoView[i][j].setImageResource(R.drawable.blank);
+            }
+        }
+        int jikuColor = getPuyoImage(tsumoInfo.currentColor[0]);
+        int nonJikuColor = getPuyoImage(tsumoInfo.currentColor[1]);
+        // draw jiku-puyo
+        tsumoController.currentPuyoView[tsumoInfo.currentMainPos[0]][tsumoInfo.currentMainPos[1]].setImageResource(jikuColor);
+
+        // draw not-jiku-puyo
+        tsumoController.currentPuyoView[tsumoInfo.currentSubPos[0]][tsumoInfo.currentSubPos[1]].setImageResource(nonJikuColor);
+
+        // draw next and next next
+        for (int i=0; i<2; i++) {
+            for (int j=0; j<2; j++) {
+                tsumoController.nextPuyoView[i][j].setImageResource(getPuyoImage(tsumoInfo.nextColor[i][j]));
+            }
+        }
+
+    }
+    public void disableUndoButton() {
+        mUndoButton.setEnabled(false);
+    };
+    public void enableUndoButton() {
+        mUndoButton.setEnabled(true);
+    };
+
+    public void disableRedoButton() {
+        mRedoButton.setEnabled(false);
+    };
+    public void enableRedoButton() {
+        mRedoButton.setEnabled(true);
+    };
+
+    public void disableAllButtons() {
+        mLeftButton.setEnabled(false);
+        mRightButton.setEnabled(false);
+        mDownButton.setEnabled(false);
+        mAButton.setEnabled(false);
+        mBButton.setEnabled(false);
+        mUndoButton.setEnabled(false);
+        mRedoButton.setEnabled(false);
+    };
+
+    public void enableAllButtons() {
+        mLeftButton.setEnabled(true);
+        mRightButton.setEnabled(true);
+        mDownButton.setEnabled(true);
+        mAButton.setEnabled(true);
+        mBButton.setEnabled(true);
+        mUndoButton.setEnabled(true);
+        mRedoButton.setEnabled(true);
+    };
+
+    // TODO: これ自体Presenterでやる
+    void animateFieldChain(final Field field) {
+        disableAllButtons();
+
+        if (field.nextField != null) {
+            drawFieldRecursively(field);
+        }
+
+        final Activity activity = getActivity();
+        assert activity != null;
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                enableAllButtons();
+            }
+        });
+        // reset chain
+        field.chainNum = 1;
+        // get next puyo
+        tsumoController.incrementTsumo();
+        activity.runOnUiThread(new Runnable(){
+            @Override
+            public void run() {
+                drawTsumo(tsumoController.makeTsumoInfo());
+                updateField(field);
+            }
+        });
+        currentField = getLastField(field);
+    };
+
+    Field getLastField(Field field) {
+        if (field.nextField == null) {
+            return field;
+        } else {
+            return getLastField(field.nextField);
         }
     }
 }
