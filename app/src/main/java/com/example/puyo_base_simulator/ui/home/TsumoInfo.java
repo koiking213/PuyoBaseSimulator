@@ -5,4 +5,5 @@ public class TsumoInfo {
     PuyoColor[][] nextColor = new PuyoColor[2][2];
     int[] currentMainPos = {1, 3}; // row, column
     int[] currentSubPos = {0, 3};
+    Rotation currentCursorRotate;
 }
