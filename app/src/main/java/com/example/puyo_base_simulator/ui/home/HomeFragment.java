@@ -310,15 +310,7 @@ public class HomeFragment extends Fragment implements HomeContract.View {
         mUndoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                fieldRedoStack.push(currentField);
-                currentField = fieldStack.pop();
-                tsumoController.decrementTsumo();
-                drawTsumo(tsumoController.makeTsumoInfo());
-                updateField(currentField);
-                if (fieldStack.isEmpty()) {  // 履歴がなくなったらUNDOボタンを無効化
-                    disableUndoButton();
-                }
-                enableRedoButton();
+                mPresenter.undo();
             }
         });
         disableUndoButton();
@@ -326,15 +318,7 @@ public class HomeFragment extends Fragment implements HomeContract.View {
         mRedoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                fieldStack.push(currentField);
-                currentField = fieldRedoStack.pop();
-                tsumoController.incrementTsumo();
-                drawTsumo(tsumoController.makeTsumoInfo());
-                updateField(currentField);
-                enableUndoButton();
-                if (fieldRedoStack.isEmpty()) {  // 履歴がなくなったらREDOボタンを無効化
-                    disableRedoButton();
-                }
+                mPresenter.redo();
             }
         });
         disableRedoButton();
@@ -343,9 +327,7 @@ public class HomeFragment extends Fragment implements HomeContract.View {
         mLeftButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                tsumoController.moveCurrentLeft();
-                drawTsumo(tsumoController.makeTsumoInfo());
-                updateField(currentField);
+                mPresenter.moveLeft();
             }
         });
 
