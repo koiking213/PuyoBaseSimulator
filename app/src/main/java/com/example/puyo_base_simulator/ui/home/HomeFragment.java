@@ -117,7 +117,7 @@ public class HomeFragment extends Fragment implements HomeContract.View {
         }
 
         ((TextView)root.findViewById(R.id.pointTextView)).setText("0点");
-        mPresenter = new HomePresenter(this, requireActivity().getAssets());
+        mPresenter = new HomePresenter(this, requireActivity().getAssets(), getActivity());
         return root;
     }
 
@@ -189,34 +189,54 @@ public class HomeFragment extends Fragment implements HomeContract.View {
     }
 
 
-    public void drawFieldRecursively(final Field field) {
+//    public void drawFieldRecursively(final Field field) {
+//        final Activity activity = getActivity();
+//        assert activity != null;
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                String text = "" + field.bonus + " * " + field.disappearPuyo.size() + " = " + field.accumulatedPoint + "点";
+//                drawPoint(text);
+//                try {
+//                    Thread.sleep(1000);
+//                } catch (InterruptedException e) {
+//                    Thread.currentThread().interrupt();
+//                }
+//                activity.runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        drawField(field.nextField);
+//                    }
+//                });
+//                if (field.nextField.nextField != null) {
+//                    drawFieldRecursively(field.nextField);
+//                }
+//            }
+//        }).start();
+//    }
+
+    public void drawFieldAsync(final Field field) {
         final Activity activity = getActivity();
         assert activity != null;
         new Thread(new Runnable() {
             @Override
             public void run() {
-                String text = "" + field.bonus + " * " + field.disappearPuyo.size() + " = " + field.accumulatedPoint + "点";
-                drawPoint(text);
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
                 activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        drawField(field.nextField);
+                        for (int i=1; i<14; i++) {
+                            for (int j=1; j<7; j++) {
+                                Puyo puyo = field.field[i][j];
+                                fieldView[i][j].setImageResource(getPuyoImage(puyo.color));
+                            }
+                        }
                     }
                 });
-                if (field.nextField.nextField != null) {
-                    drawFieldRecursively(field.nextField);
-                }
             }
         }).start();
     }
 
-    public void drawField(Field field) {
-        // draw field puyo
+    public void drawField(final Field field) {
         for (int i=1; i<14; i++) {
             for (int j=1; j<7; j++) {
                 Puyo puyo = field.field[i][j];
@@ -276,23 +296,7 @@ public class HomeFragment extends Fragment implements HomeContract.View {
 
     public void updateField (Field field, TsumoInfo tsumoInfo) {
         drawField(field);
-        PuyoColor[] currentColor = new PuyoColor[2];
-        currentColor[0] = tsumoInfo.currentColor[0];
-        currentColor[1] = tsumoInfo.currentColor[1];
-        Rotation currentCursorRotate = tsumoInfo.currentCursorRotate;
-        switch (currentCursorRotate) {
-            case DEGREE0:
-                drawDot(tsumoInfo.currentMainPos[1], Arrays.asList(currentColor[0], currentColor[1]), field);
-                break;
-            case DEGREE90:
-            case DEGREE270:
-                drawDot(tsumoInfo.currentMainPos[1], Collections.singletonList(currentColor[0]), field);
-                drawDot(tsumoInfo.currentSubPos[1], Collections.singletonList(currentColor[1]), field);
-                break;
-            case DEGREE180:
-                drawDot(tsumoInfo.currentMainPos[1], Arrays.asList(currentColor[1], currentColor[0]), field);
-                break;
-        }
+
     }
 
     // リストで渡された順に下から積み上げる
@@ -305,7 +309,7 @@ public class HomeFragment extends Fragment implements HomeContract.View {
         }
     }
 
-    public void drawTsumo(TsumoInfo tsumoInfo) {
+    public void drawTsumo(TsumoInfo tsumoInfo, Field field) {
         // draw current
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 7; j++) {
@@ -325,6 +329,25 @@ public class HomeFragment extends Fragment implements HomeContract.View {
             for (int j=0; j<2; j++) {
                 nextPuyoView[i][j].setImageResource(getPuyoImage(tsumoInfo.nextColor[i][j]));
             }
+        }
+
+        // draw dot
+        PuyoColor[] currentColor = new PuyoColor[2];
+        currentColor[0] = tsumoInfo.currentColor[0];
+        currentColor[1] = tsumoInfo.currentColor[1];
+        Rotation currentCursorRotate = tsumoInfo.currentCursorRotate;
+        switch (currentCursorRotate) {
+            case DEGREE0:
+                drawDot(tsumoInfo.currentMainPos[1], Arrays.asList(currentColor[0], currentColor[1]), field);
+                break;
+            case DEGREE90:
+            case DEGREE270:
+                drawDot(tsumoInfo.currentMainPos[1], Collections.singletonList(currentColor[0]), field);
+                drawDot(tsumoInfo.currentSubPos[1], Collections.singletonList(currentColor[1]), field);
+                break;
+            case DEGREE180:
+                drawDot(tsumoInfo.currentMainPos[1], Arrays.asList(currentColor[1], currentColor[0]), field);
+                break;
         }
 
     }
@@ -361,4 +384,12 @@ public class HomeFragment extends Fragment implements HomeContract.View {
         mUndoButton.setEnabled(true);
         mRedoButton.setEnabled(true);
     };
+
+    public void eraseCurrentPuyo() {
+        for(int i=0;i<3;i++){
+            for(int j=0;j<7;j++){
+                currentPuyoView[i][j].setImageResource(R.drawable.blank);
+            }
+        }
+    }
 }

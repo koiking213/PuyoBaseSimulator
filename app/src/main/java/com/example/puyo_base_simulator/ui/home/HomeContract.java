@@ -2,9 +2,6 @@ package com.example.puyo_base_simulator.ui.home;
 
 public interface HomeContract {
     interface View {
-        // 連鎖の描画
-         void drawFieldRecursively(final Field field);
-
         // 現在のぷよの落下点にdotを描画しない
         void drawField(Field field);
 
@@ -12,9 +9,11 @@ public interface HomeContract {
         // TODO: 整理してdrawFieldとupdateFieldのどちらかのみ公開するよう修正する
         void updateField(Field field, TsumoInfo tsumoInfo);
 
-        void drawTsumo(TsumoInfo tsumoInfo);
+        void drawTsumo(TsumoInfo tsumoInfo, Field field);
 
         void drawPoint(String text);
+
+        void eraseCurrentPuyo();
 
         void disableUndoButton();
         void enableUndoButton();

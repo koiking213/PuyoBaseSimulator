@@ -175,20 +175,23 @@ class TsumoController {
 }
 
 public class HomePresenter implements HomeContract.Presenter {
+    Activity mActivity;
     Field currentField = new Field(1);
     Stack<Field> fieldStack = new Stack<>();
     Stack<Field> fieldRedoStack = new Stack<>();
     TsumoController tsumoController = TsumoController.getInstance();
     private static final Random RANDOM = new Random();
     HomeFragment mView;
-    HomePresenter (HomeFragment view, AssetManager asset) {
+
+    HomePresenter(HomeFragment view, AssetManager asset, Activity activity) {
         mView = view;
+        mActivity = activity;
         tsumoController.seed = RANDOM.nextInt(65536);
         InputStream is;
         try {
             is = asset.open("haipuyo.txt");
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
-            for (int i=0; i<65536; i++) {
+            for (int i = 0; i < 65536; i++) {
                 tsumoController.haipuyo[i] = br.readLine();
             }
         } catch (IOException e) {
@@ -197,36 +200,45 @@ public class HomePresenter implements HomeContract.Presenter {
         tsumoController.setTsumo();
 
         TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
-        mView.drawTsumo(tsumoInfo);
         mView.updateField(currentField, tsumoInfo);
+        mView.drawTsumo(tsumoInfo, currentField);
     }
+
     public void rotateLeft() {
         tsumoController.rotateCurrentRight();
         TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
-        mView.drawTsumo(tsumoInfo);
         mView.updateField(currentField, tsumoInfo);
-    };
+        mView.drawTsumo(tsumoInfo, currentField);
+    }
+
+    ;
 
     public void rotateRight() {
         tsumoController.rotateCurrentLeft();
         TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
-        mView.drawTsumo(tsumoInfo);
         mView.updateField(currentField, tsumoInfo);
-    };
+        mView.drawTsumo(tsumoInfo, currentField);
+    }
+
+    ;
 
     public void moveLeft() {
         tsumoController.moveCurrentLeft();
         TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
-        mView.drawTsumo(tsumoInfo);
         mView.updateField(currentField, tsumoInfo);
-    };
+        mView.drawTsumo(tsumoInfo, currentField);
+    }
+
+    ;
 
     public void moveRight() {
         tsumoController.moveCurrentRight();
         TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
-        mView.drawTsumo(tsumoInfo);
         mView.updateField(currentField, tsumoInfo);
-    };
+        mView.drawTsumo(tsumoInfo, currentField);
+    }
+
+    ;
 
     public void dropDown() {
         fieldStack.push(currentField);
@@ -247,7 +259,7 @@ public class HomePresenter implements HomeContract.Presenter {
                 // jiku puyo
                 currentField.addPuyo(currentCursorColumnIndex, tsumoController.getMainColor());
                 // non-jiku puyo
-                currentField.addPuyo(currentCursorColumnIndex+1, tsumoController.getSubColor());
+                currentField.addPuyo(currentCursorColumnIndex + 1, tsumoController.getSubColor());
                 break;
             case DEGREE180:
                 // 上下が逆転している
@@ -260,64 +272,98 @@ public class HomePresenter implements HomeContract.Presenter {
                 // jiku puyo
                 currentField.addPuyo(currentCursorColumnIndex, tsumoController.getMainColor());
                 // non-jiku puyo
-                currentField.addPuyo(currentCursorColumnIndex-1, tsumoController.getSubColor());
+                currentField.addPuyo(currentCursorColumnIndex - 1, tsumoController.getSubColor());
                 break;
         }
         mView.drawField(currentField);
         currentField.evalNextField();
-        animateFieldChain(currentField);
-    };
+        tsumoController.incrementTsumo();
+        if (currentField.nextField == null) {
+            mView.drawTsumo(tsumoController.makeTsumoInfo(), currentField);
+        } else {
+            mView.eraseCurrentPuyo();
+            mView.disableAllButtons();
+            drawFieldRecursively(currentField);
+            currentField = getLastField(currentField);
+        }
+    }
 
     public void undo() {
         fieldRedoStack.push(currentField);
         currentField = fieldStack.pop();
         tsumoController.decrementTsumo();
         TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
-        mView.drawTsumo(tsumoInfo);
         mView.updateField(currentField, tsumoInfo);
+        mView.drawTsumo(tsumoInfo, currentField);
         if (fieldStack.isEmpty()) {  // 履歴がなくなったらUNDOボタンを無効化
             mView.disableUndoButton();
         }
         mView.enableRedoButton();
 
-    };
+    }
+
+    ;
 
     public void redo() {
         fieldStack.push(currentField);
         currentField = fieldRedoStack.pop();
         tsumoController.incrementTsumo();
         TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
-        mView.drawTsumo(tsumoInfo);
         mView.updateField(currentField, tsumoInfo);
+        mView.drawTsumo(tsumoInfo, currentField);
         mView.enableUndoButton();
         if (fieldRedoStack.isEmpty()) {  // 履歴がなくなったらREDOボタンを無効化
             mView.disableRedoButton();
         }
-    };
-    void animateFieldChain(final Field field) {
-        mView.disableAllButtons();
-
-        if (field.nextField != null) {
-            mView.drawFieldRecursively(field);
-        }
-
-        mView.enableAllButtons();
-
-        // reset chain
-        field.chainNum = 1;
-        // get next puyo
-        tsumoController.incrementTsumo();
-        TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
-        mView.drawTsumo(tsumoInfo);
-        mView.updateField(field, tsumoInfo);
-        currentField = getLastField(field);
-    };
+    }
 
     Field getLastField(Field field) {
         if (field.nextField == null) {
             return field;
         } else {
             return getLastField(field.nextField);
+        }
+    }
+
+    void drawFieldRecursively(final Field field) {
+        if (field.nextField == null) {  // 連鎖終わり
+            mActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mView.enableAllButtons();
+                }
+            });
+            // reset chain
+            field.chainNum = 1;
+            // get next puyo
+            mActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
+                    mView.updateField(field, tsumoInfo);
+                    mView.drawTsumo(tsumoInfo, field);
+                }
+            });
+        } else {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    String text = "" + field.bonus + " * " + field.disappearPuyo.size() + " = " + field.accumulatedPoint + "点";
+                    mView.drawPoint(text);
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                    mActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mView.drawField(field.nextField);
+                        }
+                    });
+                    drawFieldRecursively(field.nextField);
+                }
+            }).start();
         }
     }
 }
