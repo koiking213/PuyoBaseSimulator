@@ -9,24 +9,15 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.gridlayout.widget.GridLayout;
-
-import com.example.puyo_base_simulator.BuildConfig;
 import com.example.puyo_base_simulator.R;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
-import java.util.Stack;
 
-import static java.lang.Math.max;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.gridlayout.widget.GridLayout;
 
 enum Rotation {
     DEGREE0,
@@ -187,33 +178,6 @@ public class HomeFragment extends Fragment implements HomeContract.View {
         });
 
     }
-
-
-//    public void drawFieldRecursively(final Field field) {
-//        final Activity activity = getActivity();
-//        assert activity != null;
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                String text = "" + field.bonus + " * " + field.disappearPuyo.size() + " = " + field.accumulatedPoint + "点";
-//                drawPoint(text);
-//                try {
-//                    Thread.sleep(1000);
-//                } catch (InterruptedException e) {
-//                    Thread.currentThread().interrupt();
-//                }
-//                activity.runOnUiThread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        drawField(field.nextField);
-//                    }
-//                });
-//                if (field.nextField.nextField != null) {
-//                    drawFieldRecursively(field.nextField);
-//                }
-//            }
-//        }).start();
-//    }
 
     public void drawFieldAsync(final Field field) {
         final Activity activity = getActivity();
