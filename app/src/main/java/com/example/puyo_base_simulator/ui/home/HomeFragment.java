@@ -118,24 +118,22 @@ public class HomeFragment extends Fragment implements HomeContract.View {
         final Activity activity = getActivity();
         assert activity != null;
 
-        mUndoButton = activity.findViewById(R.id.buttonUndo);
-        mRedoButton = activity.findViewById(R.id.buttonRedo);
 
+        mUndoButton = activity.findViewById(R.id.buttonUndo);
         mUndoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mPresenter.undo();
             }
         });
-        disableUndoButton();
 
+        mRedoButton = activity.findViewById(R.id.buttonRedo);
         mRedoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mPresenter.redo();
             }
         });
-        disableRedoButton();
 
         mLeftButton = activity.findViewById(R.id.buttonLeft);
         mLeftButton.setOnClickListener(new View.OnClickListener() {
@@ -177,6 +175,7 @@ public class HomeFragment extends Fragment implements HomeContract.View {
             }
         });
 
+        mPresenter.start();
     }
 
     public void drawFieldAsync(final Field field) {
@@ -258,9 +257,9 @@ public class HomeFragment extends Fragment implements HomeContract.View {
     }
 
 
-    public void updateField (Field field, TsumoInfo tsumoInfo) {
+    public void updateField(Field field, TsumoInfo tsumoInfo) {
         drawField(field);
-
+        drawTsumo(tsumoInfo, field);
     }
 
     // リストで渡された順に下から積み上げる

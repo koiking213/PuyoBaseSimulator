@@ -201,44 +201,36 @@ public class HomePresenter implements HomeContract.Presenter {
 
         TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
         mView.updateField(currentField, tsumoInfo);
-        mView.drawTsumo(tsumoInfo, currentField);
+    }
+
+    public void start() {
+        mView.disableRedoButton();
+        mView.disableUndoButton();
     }
 
     public void rotateLeft() {
         tsumoController.rotateCurrentRight();
         TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
         mView.updateField(currentField, tsumoInfo);
-        mView.drawTsumo(tsumoInfo, currentField);
     }
-
-    ;
 
     public void rotateRight() {
         tsumoController.rotateCurrentLeft();
         TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
         mView.updateField(currentField, tsumoInfo);
-        mView.drawTsumo(tsumoInfo, currentField);
     }
-
-    ;
 
     public void moveLeft() {
         tsumoController.moveCurrentLeft();
         TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
         mView.updateField(currentField, tsumoInfo);
-        mView.drawTsumo(tsumoInfo, currentField);
     }
-
-    ;
 
     public void moveRight() {
         tsumoController.moveCurrentRight();
         TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
         mView.updateField(currentField, tsumoInfo);
-        mView.drawTsumo(tsumoInfo, currentField);
     }
-
-    ;
 
     public void dropDown() {
         fieldStack.push(currentField);
@@ -294,15 +286,11 @@ public class HomePresenter implements HomeContract.Presenter {
         tsumoController.decrementTsumo();
         TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
         mView.updateField(currentField, tsumoInfo);
-        mView.drawTsumo(tsumoInfo, currentField);
         if (fieldStack.isEmpty()) {  // 履歴がなくなったらUNDOボタンを無効化
             mView.disableUndoButton();
         }
         mView.enableRedoButton();
-
     }
-
-    ;
 
     public void redo() {
         fieldStack.push(currentField);
@@ -310,7 +298,6 @@ public class HomePresenter implements HomeContract.Presenter {
         tsumoController.incrementTsumo();
         TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
         mView.updateField(currentField, tsumoInfo);
-        mView.drawTsumo(tsumoInfo, currentField);
         mView.enableUndoButton();
         if (fieldRedoStack.isEmpty()) {  // 履歴がなくなったらREDOボタンを無効化
             mView.disableRedoButton();
@@ -341,7 +328,6 @@ public class HomePresenter implements HomeContract.Presenter {
                 public void run() {
                     TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
                     mView.updateField(field, tsumoInfo);
-                    mView.drawTsumo(tsumoInfo, field);
                 }
             });
         } else {
