@@ -234,38 +234,44 @@ public class HomePresenter implements HomeContract.Presenter {
     public void dropDown() {
         fieldStack.push(currentField);
         currentField = currentField.clone();
-        fieldRedoStack.clear();
-        mView.disableRedoButton();
 
         Rotation currentCursorRotate = tsumoController.currentCursorRotate;
         int currentCursorColumnIndex = tsumoController.currentCursorColumnIndex;
+        boolean success = true;
         switch (currentCursorRotate) {
             case DEGREE0:
                 // jiku puyo
-                currentField.addPuyo(currentCursorColumnIndex, tsumoController.getMainColor());
+                success = currentField.addPuyo(currentCursorColumnIndex, tsumoController.getMainColor());
                 // non-jiku puyo
-                currentField.addPuyo(currentCursorColumnIndex, tsumoController.getSubColor());
+                success &= currentField.addPuyo(currentCursorColumnIndex, tsumoController.getSubColor());
                 break;
             case DEGREE90:
                 // jiku puyo
-                currentField.addPuyo(currentCursorColumnIndex, tsumoController.getMainColor());
+                success = currentField.addPuyo(currentCursorColumnIndex, tsumoController.getMainColor());
                 // non-jiku puyo
-                currentField.addPuyo(currentCursorColumnIndex + 1, tsumoController.getSubColor());
+                success &= currentField.addPuyo(currentCursorColumnIndex + 1, tsumoController.getSubColor());
                 break;
             case DEGREE180:
                 // 上下が逆転している
                 // non-jiku puyo
-                currentField.addPuyo(currentCursorColumnIndex, tsumoController.getSubColor());
+                success = currentField.addPuyo(currentCursorColumnIndex, tsumoController.getSubColor());
                 // jiku puyo
-                currentField.addPuyo(currentCursorColumnIndex, tsumoController.getMainColor());
+                success &= currentField.addPuyo(currentCursorColumnIndex, tsumoController.getMainColor());
                 break;
             case DEGREE270:
                 // jiku puyo
-                currentField.addPuyo(currentCursorColumnIndex, tsumoController.getMainColor());
+                success = currentField.addPuyo(currentCursorColumnIndex, tsumoController.getMainColor());
                 // non-jiku puyo
-                currentField.addPuyo(currentCursorColumnIndex - 1, tsumoController.getSubColor());
+                success &= currentField.addPuyo(currentCursorColumnIndex - 1, tsumoController.getSubColor());
                 break;
         }
+        if (!success) {
+            currentField = fieldStack.pop();
+            return;
+        }
+        mView.enableUndoButton();
+        fieldRedoStack.clear();
+        mView.disableRedoButton();
         mView.drawField(currentField);
         currentField.evalNextField();
         tsumoController.incrementTsumo();
