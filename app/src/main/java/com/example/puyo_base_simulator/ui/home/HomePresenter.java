@@ -2,7 +2,6 @@ package com.example.puyo_base_simulator.ui.home;
 
 import android.app.Activity;
 import android.content.res.AssetManager;
-import android.widget.ImageView;
 
 import com.example.puyo_base_simulator.BuildConfig;
 
@@ -200,7 +199,7 @@ public class HomePresenter implements HomeContract.Presenter {
         tsumoController.setTsumo();
 
         TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
-        mView.updateField(currentField, tsumoInfo);
+        mView.update(currentField, tsumoInfo);
     }
 
     public void start() {
@@ -211,25 +210,25 @@ public class HomePresenter implements HomeContract.Presenter {
     public void rotateLeft() {
         tsumoController.rotateCurrentRight();
         TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
-        mView.updateField(currentField, tsumoInfo);
+        mView.update(currentField, tsumoInfo);
     }
 
     public void rotateRight() {
         tsumoController.rotateCurrentLeft();
         TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
-        mView.updateField(currentField, tsumoInfo);
+        mView.update(currentField, tsumoInfo);
     }
 
     public void moveLeft() {
         tsumoController.moveCurrentLeft();
         TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
-        mView.updateField(currentField, tsumoInfo);
+        mView.update(currentField, tsumoInfo);
     }
 
     public void moveRight() {
         tsumoController.moveCurrentRight();
         TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
-        mView.updateField(currentField, tsumoInfo);
+        mView.update(currentField, tsumoInfo);
     }
 
     public void dropDown() {
@@ -285,7 +284,7 @@ public class HomePresenter implements HomeContract.Presenter {
         currentField = fieldStack.pop();
         tsumoController.decrementTsumo();
         TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
-        mView.updateField(currentField, tsumoInfo);
+        mView.update(currentField, tsumoInfo);
         if (fieldStack.isEmpty()) {  // 履歴がなくなったらUNDOボタンを無効化
             mView.disableUndoButton();
         }
@@ -297,7 +296,7 @@ public class HomePresenter implements HomeContract.Presenter {
         currentField = fieldRedoStack.pop();
         tsumoController.incrementTsumo();
         TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
-        mView.updateField(currentField, tsumoInfo);
+        mView.update(currentField, tsumoInfo);
         mView.enableUndoButton();
         if (fieldRedoStack.isEmpty()) {  // 履歴がなくなったらREDOボタンを無効化
             mView.disableRedoButton();
@@ -327,7 +326,7 @@ public class HomePresenter implements HomeContract.Presenter {
                 @Override
                 public void run() {
                     TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
-                    mView.updateField(field, tsumoInfo);
+                    mView.update(field, tsumoInfo);
                 }
             });
         } else {
