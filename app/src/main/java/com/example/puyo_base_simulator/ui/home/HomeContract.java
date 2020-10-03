@@ -23,6 +23,8 @@ public interface HomeContract {
 
         void disableAllButtons();
         void enableAllButtons();
+
+        int getSpecifiedSeed();
     }
     interface Presenter {
         void rotateLeft();
@@ -44,6 +46,8 @@ public interface HomeContract {
         void load();
 
         void start();
+
+        void setSeed();
 
     }
 }

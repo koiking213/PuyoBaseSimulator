@@ -18,7 +18,7 @@ import java.util.Stack;
 
 public class HomePresenter implements HomeContract.Presenter {
     Activity mActivity;
-    Field currentField = new Field(1);
+    Field currentField;
     Stack<Field> fieldStack = new Stack<>();
     Stack<Field> fieldRedoStack = new Stack<>();
     TsumoController tsumoController = TsumoController.getInstance();
@@ -33,7 +33,6 @@ public class HomePresenter implements HomeContract.Presenter {
               .build();
         mView = view;
         mActivity = activity;
-        tsumoController.seed = RANDOM.nextInt(65536);
         InputStream is;
         try {
             is = asset.open("haipuyo.txt");
@@ -44,15 +43,17 @@ public class HomePresenter implements HomeContract.Presenter {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        tsumoController.setTsumo();
-
-        TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
-        mView.update(currentField, tsumoInfo);
+        tsumoController.reset(RANDOM.nextInt(65536));
     }
 
     public void start() {
-        mView.disableRedoButton();
+        tsumoController.setTsumo();
+        currentField =  new Field(1);
+        fieldRedoStack.clear();
+        fieldStack.clear();
         mView.disableUndoButton();
+        mView.disableRedoButton();
+        mView.update(currentField, tsumoController.makeTsumoInfo());
     }
 
     public void rotateLeft() {
@@ -217,5 +218,11 @@ public class HomePresenter implements HomeContract.Presenter {
                 }
             }).start();
         }
+    }
+
+    public void setSeed() {
+        int newSeed = mView.getSpecifiedSeed();
+        tsumoController.reset(newSeed);
+        this.start();
     }
 }

@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -42,6 +43,7 @@ public class HomeFragment extends Fragment implements HomeContract.View {
     private Button mDownButton;
     private Button mAButton;
     private Button mBButton;
+    private Activity mActivity;
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -110,18 +112,18 @@ public class HomeFragment extends Fragment implements HomeContract.View {
         }
 
         ((TextView)root.findViewById(R.id.pointTextView)).setText("0点");
-        mPresenter = new HomePresenter(this, requireActivity().getAssets(), getActivity());
+        Activity activity = getActivity();
+        assert activity != null;
+        mActivity = activity;
+        mPresenter = new HomePresenter(this, requireActivity().getAssets(), mActivity);
         return root;
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        final Activity activity = getActivity();
-        assert activity != null;
 
-
-        mUndoButton = activity.findViewById(R.id.buttonUndo);
+        mUndoButton = mActivity.findViewById(R.id.buttonUndo);
         mUndoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -129,7 +131,7 @@ public class HomeFragment extends Fragment implements HomeContract.View {
             }
         });
 
-        mRedoButton = activity.findViewById(R.id.buttonRedo);
+        mRedoButton = mActivity.findViewById(R.id.buttonRedo);
         mRedoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -137,7 +139,7 @@ public class HomeFragment extends Fragment implements HomeContract.View {
             }
         });
 
-        mSaveButton = activity.findViewById(R.id.buttonSave);
+        mSaveButton = mActivity.findViewById(R.id.buttonSave);
         mSaveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -145,7 +147,7 @@ public class HomeFragment extends Fragment implements HomeContract.View {
             }
         });
 
-        mLoadButton = activity.findViewById(R.id.buttonLoad);
+        mLoadButton = mActivity.findViewById(R.id.buttonLoad);
         mLoadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -153,7 +155,7 @@ public class HomeFragment extends Fragment implements HomeContract.View {
             }
         });
 
-        mLeftButton = activity.findViewById(R.id.buttonLeft);
+        mLeftButton = mActivity.findViewById(R.id.buttonLeft);
         mLeftButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -161,7 +163,7 @@ public class HomeFragment extends Fragment implements HomeContract.View {
             }
         });
 
-        mRightButton = activity.findViewById(R.id.buttonRight);
+        mRightButton = mActivity.findViewById(R.id.buttonRight);
         mRightButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -169,7 +171,7 @@ public class HomeFragment extends Fragment implements HomeContract.View {
             }
         });
 
-        mDownButton = activity.findViewById(R.id.buttonDown);
+        mDownButton = mActivity.findViewById(R.id.buttonDown);
         mDownButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -177,7 +179,7 @@ public class HomeFragment extends Fragment implements HomeContract.View {
             }
         });
 
-        mAButton = activity.findViewById(R.id.buttonA);
+        mAButton = mActivity.findViewById(R.id.buttonA);
         mAButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -185,7 +187,7 @@ public class HomeFragment extends Fragment implements HomeContract.View {
             }
         });
 
-        mBButton = activity.findViewById(R.id.buttonB);
+        mBButton = mActivity.findViewById(R.id.buttonB);
         mBButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -193,7 +195,19 @@ public class HomeFragment extends Fragment implements HomeContract.View {
             }
         });
 
+        Button setSeedButton = mActivity.findViewById(R.id.buttonSetSeed);
+        setSeedButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mPresenter.setSeed();
+            }
+        });
         mPresenter.start();
+    }
+
+    public int getSpecifiedSeed() {
+        EditText editText = mActivity.findViewById(R.id.editTextSeed);
+        return Integer.parseInt(editText.getText().toString());
     }
 
     public void drawField(final Field field) {
@@ -206,12 +220,10 @@ public class HomeFragment extends Fragment implements HomeContract.View {
     }
 
     public void drawPoint(final String text) {
-        final Activity activity = getActivity();
-        assert activity != null;
-        activity.runOnUiThread(new Runnable(){
+        mActivity.runOnUiThread(new Runnable(){
             @Override
             public void run() {
-                ((TextView)activity.findViewById(R.id.pointTextView)).setText(text);
+                ((TextView)mActivity.findViewById(R.id.pointTextView)).setText(text);
             }
         });
     }

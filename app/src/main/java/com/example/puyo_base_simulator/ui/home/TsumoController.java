@@ -22,6 +22,12 @@ public class TsumoController {
         nextColor[1][1] = getPuyoColor(haipuyo[seed].charAt(tsumoCounter+5));
     }
 
+    public void reset(int seed) {
+        this.seed = seed;
+        this.tsumoCounter = 0;
+        this.setTsumo();
+    }
+
     void incrementTsumo() {
         tsumoCounter += 2;
         setTsumo();
@@ -125,7 +131,6 @@ public class TsumoController {
                 return;
             case DEGREE270:
                 currentCursorRotate = Rotation.DEGREE180;
-                return;
         }
     }
 
@@ -148,7 +153,6 @@ public class TsumoController {
                 return;
             case DEGREE270:
                 currentCursorRotate = Rotation.DEGREE0;
-                return;
         }
     }
 
