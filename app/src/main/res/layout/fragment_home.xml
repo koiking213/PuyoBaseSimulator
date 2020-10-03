@@ -51,6 +51,14 @@
             app:layout_row="0" />
 
         <Button
+            android:id="@+id/buttonLoad"
+            android:layout_width="80dp"
+            android:layout_height="60dp"
+            android:text="@string/load"
+            app:layout_column="1"
+            app:layout_row="0" />
+
+        <Button
             android:id="@+id/buttonUndo"
             android:layout_width="80dp"
             android:layout_height="60dp"

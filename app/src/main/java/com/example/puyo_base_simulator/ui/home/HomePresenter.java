@@ -3,7 +3,10 @@ package com.example.puyo_base_simulator.ui.home;
 import android.app.Activity;
 import android.content.res.AssetManager;
 
-import com.example.puyo_base_simulator.BuildConfig;
+import androidx.room.Room;
+
+import com.example.puyo_base_simulator.data.AppDatabase;
+import com.example.puyo_base_simulator.data.Base;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,8 +23,13 @@ public class HomePresenter implements HomeContract.Presenter {
     TsumoController tsumoController = TsumoController.getInstance();
     private static final Random RANDOM = new Random();
     HomeFragment mView;
+    AppDatabase mDB;
 
     HomePresenter(HomeFragment view, AssetManager asset, Activity activity) {
+        mDB = Room.databaseBuilder(activity.getApplicationContext(),
+              AppDatabase.class, "database-name")
+              .allowMainThreadQueries() // Main thread でも動作させたい場合
+              .build();
         mView = view;
         mActivity = activity;
         tsumoController.seed = RANDOM.nextInt(65536);
@@ -146,6 +154,18 @@ public class HomePresenter implements HomeContract.Presenter {
         if (fieldRedoStack.isEmpty()) {  // 履歴がなくなったらREDOボタンを無効化
             mView.disableRedoButton();
         }
+    }
+
+    public void save() {
+        Base base = new Base();
+        base.setHash(tsumoController.seed);
+        base.setField(currentField.toString());
+        base.setTsumoNum(tsumoController.tsumoCounter);
+        mDB.baseDao().insert(base);
+    }
+
+    public void load() {
+
     }
 
     Field getLastField(Field field) {

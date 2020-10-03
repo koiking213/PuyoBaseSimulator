@@ -39,6 +39,10 @@ public interface HomeContract {
 
         void redo();
 
+        void save();
+
+        void load();
+
         void start();
 
     }

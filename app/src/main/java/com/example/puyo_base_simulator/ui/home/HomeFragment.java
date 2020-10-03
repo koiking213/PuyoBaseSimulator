@@ -35,6 +35,8 @@ public class HomeFragment extends Fragment implements HomeContract.View {
     private HomePresenter mPresenter;
     private Button mUndoButton;
     private Button mRedoButton;
+    private Button mSaveButton;
+    private Button mLoadButton;
     private Button mLeftButton;
     private Button mRightButton;
     private Button mDownButton;
@@ -132,6 +134,22 @@ public class HomeFragment extends Fragment implements HomeContract.View {
             @Override
             public void onClick(View v) {
                 mPresenter.redo();
+            }
+        });
+
+        mSaveButton = activity.findViewById(R.id.buttonSave);
+        mSaveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mPresenter.save();
+            }
+        });
+
+        mLoadButton = activity.findViewById(R.id.buttonLoad);
+        mLoadButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mPresenter.load();
             }
         });
 

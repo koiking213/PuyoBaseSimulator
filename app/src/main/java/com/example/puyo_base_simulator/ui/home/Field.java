@@ -163,4 +163,14 @@ public class Field implements Cloneable {
         }
         return connected;
     }
+
+    public String toString() {
+        String str = "";
+        for (int i=1; i<14; i++) {
+            for (int j = 1; j < 7; j++) {
+                str += field[i][j].color.ordinal();
+            }
+        }
+        return str;
+    }
 }

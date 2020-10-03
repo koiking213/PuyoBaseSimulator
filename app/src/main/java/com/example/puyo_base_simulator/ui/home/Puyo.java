@@ -10,6 +10,7 @@ public class Puyo {
         this.color = color;
     }
 }
+
 enum PuyoColor {
     EMPTY,
     RED,
