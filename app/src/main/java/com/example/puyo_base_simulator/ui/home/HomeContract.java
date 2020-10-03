@@ -2,14 +2,14 @@ package com.example.puyo_base_simulator.ui.home;
 
 public interface HomeContract {
     interface View {
-        // 現在のぷよの落下点にdotを描画しない
+        // 6x13のフィールド部分を描画する
         void drawField(Field field);
 
-        // 現在のぷよの落下点にdotを描画する
-        // TODO: 整理してdrawFieldとupdateFieldのどちらかのみ公開するよう修正する
-        void updateField(Field field, TsumoInfo tsumoInfo);
-
+        // 現在のツモ、ねくすと、ねくねく、フィールド上のどこにぷよが落ちるか、を描画する
         void drawTsumo(TsumoInfo tsumoInfo, Field field);
+
+        // 画面上にfieldとtsumoInfoを反映する
+        void update(Field field, TsumoInfo tsumoInfo);
 
         void drawPoint(String text);
 
@@ -38,6 +38,10 @@ public interface HomeContract {
         void undo();
 
         void redo();
+
+        void save();
+
+        void load();
 
         void start();
 

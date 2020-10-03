@@ -5,11 +5,11 @@
     <string name="title_notifications">Notifications</string>
     <string name="left_cursor">←</string>
     <string name="down_cursor">↓</string>
-    <string name="up_cursor">↑</string>
     <string name="right_cursor">→</string>
     <string name="a">A</string>
     <string name="b">B</string>
     <string name="save">save</string>
     <string name="undo">undo</string>
     <string name="redo">redo</string>
+    <string name="load">load</string>
 </resources>

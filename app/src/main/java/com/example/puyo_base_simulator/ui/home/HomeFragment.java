@@ -35,6 +35,8 @@ public class HomeFragment extends Fragment implements HomeContract.View {
     private HomePresenter mPresenter;
     private Button mUndoButton;
     private Button mRedoButton;
+    private Button mSaveButton;
+    private Button mLoadButton;
     private Button mLeftButton;
     private Button mRightButton;
     private Button mDownButton;
@@ -135,6 +137,22 @@ public class HomeFragment extends Fragment implements HomeContract.View {
             }
         });
 
+        mSaveButton = activity.findViewById(R.id.buttonSave);
+        mSaveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mPresenter.save();
+            }
+        });
+
+        mLoadButton = activity.findViewById(R.id.buttonLoad);
+        mLoadButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mPresenter.load();
+            }
+        });
+
         mLeftButton = activity.findViewById(R.id.buttonLeft);
         mLeftButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -178,27 +196,6 @@ public class HomeFragment extends Fragment implements HomeContract.View {
         mPresenter.start();
     }
 
-    public void drawFieldAsync(final Field field) {
-        final Activity activity = getActivity();
-        assert activity != null;
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        for (int i=1; i<14; i++) {
-                            for (int j=1; j<7; j++) {
-                                Puyo puyo = field.field[i][j];
-                                fieldView[i][j].setImageResource(getPuyoImage(puyo.color));
-                            }
-                        }
-                    }
-                });
-            }
-        }).start();
-    }
-
     public void drawField(final Field field) {
         for (int i=1; i<14; i++) {
             for (int j=1; j<7; j++) {
@@ -219,7 +216,6 @@ public class HomeFragment extends Fragment implements HomeContract.View {
         });
     }
 
-    // TODO: Puyoのフィールドにする
     int getPuyoImage(PuyoColor color) {
         switch (color) {
             case RED:
@@ -256,8 +252,7 @@ public class HomeFragment extends Fragment implements HomeContract.View {
         }
     }
 
-
-    public void updateField(Field field, TsumoInfo tsumoInfo) {
+    public void update(Field field, TsumoInfo tsumoInfo) {
         drawField(field);
         drawTsumo(tsumoInfo, field);
     }
@@ -312,21 +307,23 @@ public class HomeFragment extends Fragment implements HomeContract.View {
                 drawDot(tsumoInfo.currentMainPos[1], Arrays.asList(currentColor[1], currentColor[0]), field);
                 break;
         }
-
     }
+
     public void disableUndoButton() {
         mUndoButton.setEnabled(false);
-    };
+    }
+
     public void enableUndoButton() {
         mUndoButton.setEnabled(true);
-    };
+    }
 
     public void disableRedoButton() {
         mRedoButton.setEnabled(false);
-    };
+    }
+
     public void enableRedoButton() {
         mRedoButton.setEnabled(true);
-    };
+    }
 
     public void disableAllButtons() {
         mLeftButton.setEnabled(false);
@@ -336,7 +333,7 @@ public class HomeFragment extends Fragment implements HomeContract.View {
         mBButton.setEnabled(false);
         mUndoButton.setEnabled(false);
         mRedoButton.setEnabled(false);
-    };
+    }
 
     public void enableAllButtons() {
         mLeftButton.setEnabled(true);
@@ -346,7 +343,7 @@ public class HomeFragment extends Fragment implements HomeContract.View {
         mBButton.setEnabled(true);
         mUndoButton.setEnabled(true);
         mRedoButton.setEnabled(true);
-    };
+    }
 
     public void eraseCurrentPuyo() {
         for(int i=0;i<3;i++){

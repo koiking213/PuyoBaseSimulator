@@ -73,8 +73,6 @@ public class Field implements Cloneable {
         return true;
     }
 
-    // todo: evalChainはこっちにして元のevalChainは消す
-    //       現状連鎖しながら描画しているが、先に連鎖結果をすべて保持するようにする
     void evalNextField() {
         ArrayList<Puyo> disappear = new ArrayList<>();
         Field newField = new Field(this.chainNum + 1);
@@ -164,5 +162,15 @@ public class Field implements Cloneable {
             }
         }
         return connected;
+    }
+
+    public String toString() {
+        String str = "";
+        for (int i=1; i<14; i++) {
+            for (int j = 1; j < 7; j++) {
+                str += field[i][j].color.ordinal();
+            }
+        }
+        return str;
     }
 }
