@@ -12,4 +12,5 @@
     <string name="undo">undo</string>
     <string name="redo">redo</string>
     <string name="load">load</string>
+    <string name="set_seed">SET SEED</string>
 </resources>
