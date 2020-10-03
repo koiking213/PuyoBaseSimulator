@@ -13,4 +13,6 @@
     <string name="redo">redo</string>
     <string name="load">load</string>
     <string name="set_seed">SET SEED</string>
+    <string name="current_seed">seed:</string>
+    <string name="seed_hint">0–65535</string>
 </resources>

@@ -53,6 +53,7 @@ public class HomePresenter implements HomeContract.Presenter {
         fieldStack.clear();
         mView.disableUndoButton();
         mView.disableRedoButton();
+        mView.setSeedText(tsumoController.seed);
         mView.update(currentField, tsumoController.makeTsumoInfo());
     }
 

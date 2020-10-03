@@ -15,6 +15,7 @@ import com.example.puyo_base_simulator.R;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -208,6 +209,11 @@ public class HomeFragment extends Fragment implements HomeContract.View {
     public int getSpecifiedSeed() {
         EditText editText = mActivity.findViewById(R.id.editTextSeed);
         return Integer.parseInt(editText.getText().toString());
+    }
+
+    public void setSeedText(int seed) {
+        TextView view = mActivity.findViewById(R.id.textViewSeed);
+        view.setText(String.format(Locale.JAPAN, "seed: %d", seed));
     }
 
     public void drawField(final Field field) {

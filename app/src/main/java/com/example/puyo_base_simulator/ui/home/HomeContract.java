@@ -25,6 +25,7 @@ public interface HomeContract {
         void enableAllButtons();
 
         int getSpecifiedSeed();
+        void setSeedText(int seed);
     }
     interface Presenter {
         void rotateLeft();
