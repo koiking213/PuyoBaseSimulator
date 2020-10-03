@@ -2,6 +2,7 @@ package com.example.puyo_base_simulator.ui.home;
 
 import android.app.Activity;
 import android.content.res.AssetManager;
+import android.util.Log;
 
 import androidx.room.Room;
 
@@ -165,7 +166,8 @@ public class HomePresenter implements HomeContract.Presenter {
     }
 
     public void load() {
-
+        Base base = mDB.baseDao().findByHash(tsumoController.seed);
+        Log.d("load", "seed: " + tsumoController.seed + "field: " + base.getField());
     }
 
     Field getLastField(Field field) {
