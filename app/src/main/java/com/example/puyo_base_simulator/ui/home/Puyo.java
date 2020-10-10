@@ -12,10 +12,31 @@ public class Puyo {
 }
 
 enum PuyoColor {
-    EMPTY,
-    RED,
-    BLUE,
-    YELLOW,
-    GREEN,
-    PURPLE
+    EMPTY(' '),
+    RED('r'),
+    BLUE('b'),
+    YELLOW('y'),
+    GREEN('g'),
+    PURPLE('p')
+    ;
+
+    private final char c;
+
+    PuyoColor(char c) {
+        this.c = c;
+    }
+
+    public char getChar() {
+        return this.c;
+    }
+
+    public static PuyoColor getPuyoColor(final char c) {
+        PuyoColor[] types = PuyoColor.values();
+        for (PuyoColor pc : types) {
+            if (pc.getChar() == c) {
+                return pc;
+            }
+        }
+        return null;
+    }
 }

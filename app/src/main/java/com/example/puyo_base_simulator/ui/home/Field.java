@@ -164,13 +164,32 @@ public class Field implements Cloneable {
         return connected;
     }
 
+    @NonNull
     public String toString() {
-        String str = "";
+        StringBuilder str = new StringBuilder();
         for (int i=1; i<14; i++) {
             for (int j = 1; j < 7; j++) {
-                str += field[i][j].color.ordinal();
+                str.append(field[i][j].color.getChar());
             }
         }
-        return str;
+        return str.toString();
     }
+
+    // fromString
+    Field (String fieldStr) {
+        int idx = 0;
+        field = new Puyo[14][7];
+        for (int i=1; i<14; i++) {
+            for (int j=1; j<7; j++) {
+                PuyoColor color = PuyoColor.getPuyoColor(fieldStr.charAt(idx));
+                field[i][j] = new Puyo(i, j, color);
+                if (color != PuyoColor.EMPTY) {
+                    heights[j]++;
+                }
+                idx++;
+            }
+        }
+        this.chainNum = 1;
+    }
+
 }

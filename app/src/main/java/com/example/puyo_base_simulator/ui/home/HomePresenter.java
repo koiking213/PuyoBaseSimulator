@@ -13,6 +13,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.List;
 import java.util.Random;
 import java.util.Stack;
 
@@ -160,6 +161,10 @@ public class HomePresenter implements HomeContract.Presenter {
     }
 
     public void save() {
+        // DEBUG
+        mDB.baseDao().findByHash(tsumoController.seed);
+        // END DEBUG
+
         Base base = new Base();
         base.setHash(tsumoController.seed);
         base.setField(currentField.toString());
@@ -168,8 +173,19 @@ public class HomePresenter implements HomeContract.Presenter {
     }
 
     public void load() {
-        Base base = mDB.baseDao().findByHash(tsumoController.seed);
-        Log.d("load", "seed: " + tsumoController.seed + "field: " + base.getField());
+        // DEBUG
+        List<Base> bases = mDB.baseDao().findByHash(tsumoController.seed);
+        Base base = bases.get(bases.size() - 1);
+        if (base == null) {
+            Log.d("load", "seed: " + tsumoController.seed + ", field: null");
+        } else {
+            Log.d("load", "seed: " + tsumoController.seed + ", field: " + base.getField());
+            currentField = new Field(base.getField());
+            mView.disableUndoButton();
+            mView.disableRedoButton();
+            tsumoController.tsumoCounter = base.getTsumoNum();
+            mView.update(currentField, tsumoController.makeTsumoInfo());
+        }
     }
 
     Field getLastField(Field field) {
