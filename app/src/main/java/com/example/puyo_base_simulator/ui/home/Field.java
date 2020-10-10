@@ -37,7 +37,7 @@ public class Field implements Cloneable {
         try {
             cloned = (Field) super.clone();
             cloned.field = this.field.clone();
-            for (int i=1; i<13; i++) {
+            for (int i=1; i<14; i++) {
                 cloned.field[i] = this.field[i].clone();
             }
             cloned.heights = this.heights.clone();
