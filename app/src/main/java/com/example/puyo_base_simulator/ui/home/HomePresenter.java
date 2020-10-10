@@ -202,6 +202,9 @@ public class HomePresenter implements HomeContract.Presenter {
                 @Override
                 public void run() {
                     mView.enableAllButtons();
+                    if (fieldRedoStack.isEmpty()) {
+                        mView.disableRedoButton();
+                    }
                 }
             });
             // reset chain
