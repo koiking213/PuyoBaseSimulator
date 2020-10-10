@@ -28,6 +28,22 @@ public class TsumoController {
         currentCursorRotate = plc.currentCursorRotate;
     }
 
+    public String placementOrderToString() {
+        StringBuilder str= new StringBuilder();
+        // スタックの奥から順に取り出される
+        for (Placement p: placementOrder) {
+            str.append(p.toString());
+        }
+        return str.toString();
+    }
+
+    void stringToPlacementOrder(String str) {
+        placementOrder.clear();
+        for (String placementStr : str.split(";")) {
+            placementOrder.push(new Placement(placementStr));
+        }
+    }
+
     void setTsumo() {
         currentCursorColumnIndex = 3;
         currentCursorRotate = Rotation.DEGREE0;

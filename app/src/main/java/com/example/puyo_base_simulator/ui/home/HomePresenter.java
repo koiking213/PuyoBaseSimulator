@@ -180,14 +180,10 @@ public class HomePresenter implements HomeContract.Presenter {
     }
 
     public void save() {
-        // DEBUG
-        mDB.baseDao().findByHash(tsumoController.seed);
-        // END DEBUG
-
         Base base = new Base();
         base.setHash(tsumoController.seed);
         base.setField(currentField.toString());
-        base.setTsumoNum(tsumoController.tsumoCounter);
+        base.setPlacementOrder(tsumoController.placementOrderToString());
         mDB.baseDao().insert(base);
     }
 
@@ -199,10 +195,16 @@ public class HomePresenter implements HomeContract.Presenter {
             Log.d("load", "seed: " + tsumoController.seed + ", field: null");
         } else {
             Log.d("load", "seed: " + tsumoController.seed + ", field: " + base.getField());
-            currentField = new Field(base.getField());
+            currentField = new Field(1);
+            tsumoController.stringToPlacementOrder(base.getPlacementOrder());
+            fieldRedoStack.clear();
+            while (!tsumoController.placementOrder.isEmpty()) {
+                fieldRedoStack.push(tsumoController.popPlacementOrder());
+            }
+            mView.enableRedoButton();
+            fieldStack.clear();
             mView.disableUndoButton();
-            mView.disableRedoButton();
-            tsumoController.tsumoCounter = base.getTsumoNum();
+            tsumoController.reset(base.getHash());
             mView.update(currentField, tsumoController.makeTsumoInfo());
         }
     }

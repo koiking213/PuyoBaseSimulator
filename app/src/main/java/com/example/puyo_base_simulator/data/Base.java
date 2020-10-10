@@ -18,8 +18,8 @@ public class Base {
     @ColumnInfo(name = "hash")
     private int hash;
 
-    @ColumnInfo(name = "tsumoNum")
-    private int tsumoNum;
+    @ColumnInfo(name = "placementOrder")
+    private String placementOrder;
 
     @ColumnInfo(name = "field")
     private String field;
@@ -40,12 +40,12 @@ public class Base {
         return hash;
     }
 
-    public void setTsumoNum(int num) {
-        this.tsumoNum = num;
+    public void setPlacementOrder(String order) {
+        this.placementOrder = order;
     }
 
-    public int getTsumoNum() {
-        return this.tsumoNum;
+    public String getPlacementOrder() {
+        return this.placementOrder;
     }
 
     public void setField(String field) {
