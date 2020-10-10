@@ -21,7 +21,7 @@ public class HomePresenter implements HomeContract.Presenter {
     Activity mActivity;
     Field currentField;
     Stack<Field> fieldStack = new Stack<>();
-    Stack<Field> fieldRedoStack = new Stack<>();
+    Stack<Placement> fieldRedoStack = new Stack<>();
     TsumoController tsumoController = TsumoController.getInstance();
     private static final Random RANDOM = new Random();
     HomeFragment mView;
@@ -82,44 +82,53 @@ public class HomePresenter implements HomeContract.Presenter {
         mView.update(currentField, tsumoInfo);
     }
 
-    public void dropDown() {
-        fieldStack.push(currentField);
-        currentField = currentField.clone();
-
+    private Field setPairOnField() {
+        Field newField = currentField.clone();
         Rotation currentCursorRotate = tsumoController.currentCursorRotate;
         int currentCursorColumnIndex = tsumoController.currentCursorColumnIndex;
         boolean success = true;
         switch (currentCursorRotate) {
             case DEGREE0:
                 // jiku puyo
-                success = currentField.addPuyo(currentCursorColumnIndex, tsumoController.getMainColor());
+                success = newField.addPuyo(currentCursorColumnIndex, tsumoController.getMainColor());
                 // non-jiku puyo
-                success &= currentField.addPuyo(currentCursorColumnIndex, tsumoController.getSubColor());
+                success &= newField.addPuyo(currentCursorColumnIndex, tsumoController.getSubColor());
                 break;
             case DEGREE90:
                 // jiku puyo
-                success = currentField.addPuyo(currentCursorColumnIndex, tsumoController.getMainColor());
+                success = newField.addPuyo(currentCursorColumnIndex, tsumoController.getMainColor());
                 // non-jiku puyo
-                success &= currentField.addPuyo(currentCursorColumnIndex + 1, tsumoController.getSubColor());
+                success &= newField.addPuyo(currentCursorColumnIndex + 1, tsumoController.getSubColor());
                 break;
             case DEGREE180:
                 // 上下が逆転している
                 // non-jiku puyo
-                success = currentField.addPuyo(currentCursorColumnIndex, tsumoController.getSubColor());
+                success = newField.addPuyo(currentCursorColumnIndex, tsumoController.getSubColor());
                 // jiku puyo
-                success &= currentField.addPuyo(currentCursorColumnIndex, tsumoController.getMainColor());
+                success &= newField.addPuyo(currentCursorColumnIndex, tsumoController.getMainColor());
                 break;
             case DEGREE270:
                 // jiku puyo
-                success = currentField.addPuyo(currentCursorColumnIndex, tsumoController.getMainColor());
+                success = newField.addPuyo(currentCursorColumnIndex, tsumoController.getMainColor());
                 // non-jiku puyo
-                success &= currentField.addPuyo(currentCursorColumnIndex - 1, tsumoController.getSubColor());
+                success &= newField.addPuyo(currentCursorColumnIndex - 1, tsumoController.getSubColor());
                 break;
         }
-        if (!success) {
-            currentField = fieldStack.pop();
+        if (success) {
+            return newField;
+        } else {
+            return null;
+        }
+    }
+
+    public void dropDown() {
+        Field newFiled = setPairOnField();
+        if (newFiled == null) {
             return;
         }
+        fieldStack.push(currentField);
+        currentField = newFiled;
+        tsumoController.pushPlacementOrder();
         mView.enableUndoButton();
         fieldRedoStack.clear();
         mView.disableRedoButton();
@@ -137,7 +146,7 @@ public class HomePresenter implements HomeContract.Presenter {
     }
 
     public void undo() {
-        fieldRedoStack.push(currentField);
+        fieldRedoStack.push(tsumoController.popPlacementOrder());
         currentField = fieldStack.pop();
         tsumoController.decrementTsumo();
         TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
@@ -149,14 +158,24 @@ public class HomePresenter implements HomeContract.Presenter {
     }
 
     public void redo() {
+        tsumoController.restorePlacement(fieldRedoStack.pop());
         fieldStack.push(currentField);
-        currentField = fieldRedoStack.pop();
-        tsumoController.incrementTsumo();
-        TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
-        mView.update(currentField, tsumoInfo);
+        currentField = setPairOnField();
+        tsumoController.pushPlacementOrder();
         mView.enableUndoButton();
+        mView.drawField(currentField);
+        currentField.evalNextField();
+        tsumoController.incrementTsumo();
         if (fieldRedoStack.isEmpty()) {  // 履歴がなくなったらREDOボタンを無効化
             mView.disableRedoButton();
+        }
+        if (currentField.nextField == null) {
+            mView.drawTsumo(tsumoController.makeTsumoInfo(), currentField);
+        } else {
+            mView.eraseCurrentPuyo();
+            mView.disableAllButtons();
+            drawFieldRecursively(currentField);
+            currentField = getLastField(currentField);
         }
     }
 

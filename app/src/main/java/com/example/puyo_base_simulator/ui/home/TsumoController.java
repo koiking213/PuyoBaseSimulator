@@ -2,14 +2,31 @@ package com.example.puyo_base_simulator.ui.home;
 
 import com.example.puyo_base_simulator.BuildConfig;
 
+import java.util.Stack;
+
 public class TsumoController {
     String[] haipuyo = new String[65536];
     int tsumoCounter = 0;
     int seed;
-    Integer currentCursorColumnIndex = 3;
+    int currentCursorColumnIndex = 3;
     Rotation currentCursorRotate = Rotation.DEGREE0;
     PuyoColor[] currentColor = new PuyoColor[2];
     PuyoColor[][] nextColor = new PuyoColor[2][2];
+    Stack<Placement> placementOrder = new Stack<>();
+
+    void pushPlacementOrder() {
+        placementOrder.push(new Placement(currentCursorColumnIndex, currentCursorRotate, tsumoCounter));
+    }
+
+    Placement popPlacementOrder() {
+        return placementOrder.pop();
+    }
+    void restorePlacement(Placement plc) {
+        tsumoCounter = plc.tsumoCounter;
+        this.setTsumo();
+        currentCursorColumnIndex = plc.currentCursorColumnIndex;
+        currentCursorRotate = plc.currentCursorRotate;
+    }
 
     void setTsumo() {
         currentCursorColumnIndex = 3;
