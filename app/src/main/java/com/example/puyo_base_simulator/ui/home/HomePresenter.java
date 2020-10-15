@@ -16,12 +16,47 @@ import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Random;
 import java.util.Stack;
+import java.lang.Runnable;
+
+class StackWithButton<T> extends Stack<T>{
+    VoidFunction enableFun;
+    VoidFunction disableFun;
+
+    StackWithButton(VoidFunction enableFun, VoidFunction disableFun) {
+        super();
+        this.enableFun = enableFun;
+        this.disableFun = disableFun;
+    }
+
+    @Override
+    public T push(T elm) {
+        enableFun.func();
+        return super.push(elm);
+    }
+
+    @Override
+    public T pop() {
+        T elm =  super.pop();
+        if (super.isEmpty()) disableFun.func();
+        return elm;
+    }
+
+    @Override
+    public void clear() {
+        super.clear();
+        disableFun.func();
+    }
+}
+
+interface VoidFunction {
+    void func();
+}
 
 public class HomePresenter implements HomeContract.Presenter {
     Activity mActivity;
     Field currentField;
-    Stack<Field> fieldStack = new Stack<>();
-    Stack<Placement> fieldRedoStack = new Stack<>();
+    StackWithButton<Field> fieldStack;
+    StackWithButton<Placement> fieldRedoStack;
     TsumoController tsumoController = TsumoController.getInstance();
     private static final Random RANDOM = new Random();
     HomeFragment mView;
@@ -50,10 +85,30 @@ public class HomePresenter implements HomeContract.Presenter {
     public void start() {
         tsumoController.setTsumo();
         currentField =  new Field(1);
+        fieldStack = new StackWithButton<>(new VoidFunction() {
+            @Override
+            public void func() {
+                mView.enableUndoButton();
+            }
+        }, new VoidFunction() {
+            @Override
+            public void func() {
+                mView.disableUndoButton();
+            }
+        });
+        fieldRedoStack = new StackWithButton<>(new VoidFunction() {
+            @Override
+            public void func() {
+                mView.enableRedoButton();
+            }
+        }, new VoidFunction() {
+            @Override
+            public void func() {
+                mView.disableRedoButton();
+            }
+        });
         fieldRedoStack.clear();
         fieldStack.clear();
-        mView.disableUndoButton();
-        mView.disableRedoButton();
         mView.setSeedText(tsumoController.seed);
         mView.update(currentField, tsumoController.makeTsumoInfo());
     }
@@ -129,9 +184,7 @@ public class HomePresenter implements HomeContract.Presenter {
         fieldStack.push(currentField);
         currentField = newFiled;
         tsumoController.pushPlacementOrder();
-        mView.enableUndoButton();
         fieldRedoStack.clear();
-        mView.disableRedoButton();
         mView.drawField(currentField);
         currentField.evalNextField();
         tsumoController.incrementTsumo();
@@ -151,10 +204,6 @@ public class HomePresenter implements HomeContract.Presenter {
         tsumoController.decrementTsumo();
         TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
         mView.update(currentField, tsumoInfo);
-        if (fieldStack.isEmpty()) {  // 履歴がなくなったらUNDOボタンを無効化
-            mView.disableUndoButton();
-        }
-        mView.enableRedoButton();
     }
 
     public void redo() {
@@ -162,13 +211,9 @@ public class HomePresenter implements HomeContract.Presenter {
         fieldStack.push(currentField);
         currentField = setPairOnField();
         tsumoController.pushPlacementOrder();
-        mView.enableUndoButton();
         mView.drawField(currentField);
         currentField.evalNextField();
         tsumoController.incrementTsumo();
-        if (fieldRedoStack.isEmpty()) {  // 履歴がなくなったらREDOボタンを無効化
-            mView.disableRedoButton();
-        }
         if (currentField.nextField == null) {
             mView.drawTsumo(tsumoController.makeTsumoInfo(), currentField);
         } else {
@@ -201,9 +246,7 @@ public class HomePresenter implements HomeContract.Presenter {
             while (!tsumoController.placementOrder.isEmpty()) {
                 fieldRedoStack.push(tsumoController.popPlacementOrder());
             }
-            mView.enableRedoButton();
             fieldStack.clear();
-            mView.disableUndoButton();
             tsumoController.reset(base.getHash());
             mView.update(currentField, tsumoController.makeTsumoInfo());
         }
