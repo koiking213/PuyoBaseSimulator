@@ -19,10 +19,10 @@ import java.util.Stack;
 import java.lang.Runnable;
 
 class StackWithButton<T> extends Stack<T>{
-    VoidFunction enableFun;
-    VoidFunction disableFun;
+    ButtonUpdateFunction enableFun;
+    ButtonUpdateFunction disableFun;
 
-    StackWithButton(VoidFunction enableFun, VoidFunction disableFun) {
+    StackWithButton(ButtonUpdateFunction enableFun, ButtonUpdateFunction disableFun) {
         super();
         this.enableFun = enableFun;
         this.disableFun = disableFun;
@@ -48,7 +48,7 @@ class StackWithButton<T> extends Stack<T>{
     }
 }
 
-interface VoidFunction {
+interface ButtonUpdateFunction {
     void func();
 }
 
@@ -85,23 +85,23 @@ public class HomePresenter implements HomeContract.Presenter {
     public void start() {
         tsumoController.setTsumo();
         currentField =  new Field(1);
-        fieldStack = new StackWithButton<>(new VoidFunction() {
+        fieldStack = new StackWithButton<>(new ButtonUpdateFunction() {
             @Override
             public void func() {
                 mView.enableUndoButton();
             }
-        }, new VoidFunction() {
+        }, new ButtonUpdateFunction() {
             @Override
             public void func() {
                 mView.disableUndoButton();
             }
         });
-        fieldRedoStack = new StackWithButton<>(new VoidFunction() {
+        fieldRedoStack = new StackWithButton<>(new ButtonUpdateFunction() {
             @Override
             public void func() {
                 mView.enableRedoButton();
             }
-        }, new VoidFunction() {
+        }, new ButtonUpdateFunction() {
             @Override
             public void func() {
                 mView.disableRedoButton();

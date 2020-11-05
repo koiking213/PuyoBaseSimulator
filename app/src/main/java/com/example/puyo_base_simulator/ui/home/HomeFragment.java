@@ -2,12 +2,16 @@ package com.example.puyo_base_simulator.ui.home;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import com.example.puyo_base_simulator.R;
@@ -45,7 +49,12 @@ public class HomeFragment extends Fragment implements HomeContract.View {
     private Button mAButton;
     private Button mBButton;
     private Activity mActivity;
+    private PopupWindow mPopupWindow;
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+    }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -124,6 +133,26 @@ public class HomeFragment extends Fragment implements HomeContract.View {
     public void onStart() {
         super.onStart();
 
+        // load時のpopup window
+        mPopupWindow = new PopupWindow(mActivity);
+
+        // レイアウト設定
+        View popupView = getLayoutInflater().inflate(R.layout.popup_load, null);
+        //popupView.findViewById(R.id.close_button).setOnClickListener(new View.OnClickListener() {
+        //    @Override
+        //    public void onClick(View v) {
+        //        if (mPopupWindow.isShowing()) {
+        //            mPopupWindow.dismiss();
+        //        }
+        //    }
+        //});
+        mPopupWindow.setContentView(popupView);
+
+        // タップ時に他のViewでキャッチされないための設定
+        mPopupWindow.setOutsideTouchable(true);
+        mPopupWindow.setFocusable(true);
+
+        // ボタン群
         mUndoButton = mActivity.findViewById(R.id.buttonUndo);
         mUndoButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -152,7 +181,22 @@ public class HomeFragment extends Fragment implements HomeContract.View {
         mLoadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mPresenter.load();
+                //PopupWindow popupWin;
+                //View popupView = LayoutInflater.from(getActivity()).inflate(R.layout.popup_load, null);
+                //final PopupWindow popupWindow = new PopupWindow(popupView, WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
+
+                ///*ポップアップに表示するレイアウトの設定*/
+                ////LinearLayout popLayout
+                ////        = (LinearLayout)getLayoutInflater().inflate(
+                ////        R.layout.popup_load, null);
+                ////TextView popupText
+                ////        = (TextView)popLayout.findViewById(R.id.popup_text);
+                ////popupText.setText("Popup Text");
+                ////mPresenter.load();
+                ////popupWin = new PopupWindow(mActivity);
+                //popupWindow.setBackgroundDrawable(null);
+                //popupWindow.showAsDropDown(mLoadButton, 50, 20);
+                mPopupWindow.showAtLocation(mActivity.findViewById(R.id.buttonLoad), Gravity.CENTER, 0, 0);
             }
         });
 
