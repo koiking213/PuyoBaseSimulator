@@ -34,9 +34,8 @@ public class LoadFieldAdapter extends RecyclerView.Adapter<LoadFieldAdapter.Fiel
     @Override
     public void onBindViewHolder(FieldViewHolder holder, final int position) {
         final FieldPreview fieldPreview = mFields.get(position);
-        holder.icon.setImageResource(fieldPreview.iconRes);
-        holder.fieldID.setText(fieldPreview.content);
-
+        holder.fieldID.setText("seed: " + Integer.toString(fieldPreview.seed));
+        holder.fieldCanvas.setField(fieldPreview.content);
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -54,12 +53,12 @@ public class LoadFieldAdapter extends RecyclerView.Adapter<LoadFieldAdapter.Fiel
 
     static class FieldViewHolder extends RecyclerView.ViewHolder{
         TextView fieldID;
-        ImageView icon;
+        FieldPreviewCanvas fieldCanvas;
 
         public FieldViewHolder(View itemView) {
             super(itemView);
             fieldID = itemView.findViewById(R.id.fieldID);
-            icon = itemView.findViewById(R.id.icon);
+            fieldCanvas = itemView.findViewById(R.id.fieldCanvas);
         }
     }
 

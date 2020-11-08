@@ -2,75 +2,80 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@android:color/white"
-    android:orientation="horizontal">
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+
 
     <TextView
         android:id="@+id/seedTextView"
         android:layout_width="wrap_content"
-        android:layout_height="40dp"
+        android:layout_height="match_parent"
         android:text="シード値"
-        android:textSize="18sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:textSize="18sp"></TextView>
 
     <EditText
         android:id="@+id/seedEditTextNumberDecimal"
         android:layout_width="wrap_content"
-        android:layout_height="40dp"
+        android:layout_height="match_parent"
         android:ems="6"
         android:inputType="numberDecimal"
         android:hint="0-65536"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toEndOf="@id/seedTextView"
-        app:layout_constraintEnd_toStartOf="@id/searchBySeedButton"
-        android:autofillHints="0-65535" />
+        android:autofillHints="0-65535"></EditText>
 
     <Button
         android:id="@+id/searchBySeedButton"
         android:layout_width="wrap_content"
-        android:layout_height="40dp"
+        android:layout_height="match_parent"
         android:text="検索"
-        android:textSize="12sp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:textSize="12sp"></Button>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
     <TextView
         android:id="@+id/patternTextView"
         android:layout_width="wrap_content"
-        android:layout_height="40dp"
+        android:layout_height="match_parent"
         android:text="ツモ"
-        android:textSize="18sp"
-        app:layout_constraintTop_toBottomOf="@id/seedTextView"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:textSize="18sp"></TextView>
 
     <EditText
         android:id="@+id/patternEditText"
         android:layout_width="wrap_content"
-        android:layout_height="40dp"
+        android:layout_height="match_parent"
         android:ems="6"
         android:inputType="textPersonName"
         android:text=""
         android:hint="abac..."
-        app:layout_constraintTop_toBottomOf="@id/seedTextView"
-        app:layout_constraintStart_toEndOf="@id/seedTextView"
-        app:layout_constraintEnd_toStartOf="@id/searchByPatternButton"
         android:autofillHints="abac..." />
 
     <Button
         android:id="@+id/searchByPatternButton"
         android:layout_width="wrap_content"
-        android:layout_height="40dp"
+        android:layout_height="match_parent"
         android:text="検索"
-        android:textSize="12sp"
-        app:layout_constraintTop_toBottomOf="@id/seedTextView"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:textSize="12sp"></Button>
+        </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scrollbars="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/patternTextView" />
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
