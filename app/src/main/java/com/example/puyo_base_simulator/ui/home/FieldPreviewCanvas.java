@@ -33,15 +33,15 @@ public class FieldPreviewCanvas extends View {
     private int getColor(char c) {
         switch (c) {
             case 'r':
-                return Color.RED;
+                return Color.rgb(255,0,0);
             case 'b':
-                return Color.BLUE;
+                return Color.rgb(0,0,225);
             case 'y':
                 return Color.rgb(224,224,0);
             case 'g':
-                return Color.GREEN;
+                return Color.rgb(0,128,128);
             case 'p':
-                return Color.parseColor("purple");
+                return Color.rgb(160, 64, 192);
             default:
                 return Color.WHITE;
 
