@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+
+
+            <TextView
+                android:id="@+id/seedTextView"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="@string/seed_value"
+                android:textSize="18sp"/>
+
+            <EditText
+                android:id="@+id/seedEditTextNumberDecimal"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:ems="6"
+                android:layout_weight="1"
+                android:inputType="numberDecimal"
+                android:hint="@string/seed_value_hint"
+                android:autofillHints="0-65535"/>
+
+            <Button
+                android:id="@+id/searchBySeedButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="@string/search"
+                android:textSize="12sp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/patternTextView"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="@string/tsumo"
+                android:textSize="18sp"/>
+
+            <EditText
+                android:id="@+id/patternEditText"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:ems="6"
+                android:inputType="textPersonName"
+                android:text=""
+                android:hint="@string/tsumo_hint"
+                android:autofillHints="abac..." />
+
+            <Button
+                android:id="@+id/searchByPatternButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="@string/search"
+                android:textSize="12sp"/>
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/patternTextView" />
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -44,7 +44,7 @@ public interface HomeContract {
 
         void save();
 
-        void load();
+        void load(FieldPreview fieldPreview);
 
         void start();
 

@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -46,6 +47,10 @@ public class HomeFragment extends Fragment implements HomeContract.View {
     private Button mBButton;
     private Activity mActivity;
 
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+    }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -124,6 +129,7 @@ public class HomeFragment extends Fragment implements HomeContract.View {
     public void onStart() {
         super.onStart();
 
+        // ボタン群
         mUndoButton = mActivity.findViewById(R.id.buttonUndo);
         mUndoButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -152,7 +158,18 @@ public class HomeFragment extends Fragment implements HomeContract.View {
         mLoadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mPresenter.load();
+                final LoadFieldPopup loadFieldPopup = new LoadFieldPopup(mActivity);
+                loadFieldPopup.setHeight(WindowManager.LayoutParams.WRAP_CONTENT);
+                loadFieldPopup.setOutsideTouchable(true);
+                loadFieldPopup.setFocusable(true);
+                loadFieldPopup.showAsDropDown(mLoadButton);
+                loadFieldPopup.setFieldSelectedListener(new LoadFieldAdapter.FieldSelectedListener() {
+                    @Override
+                    public void onFieldSelected(int position, FieldPreview fieldPreview) {
+                        mPresenter.load(fieldPreview);
+                        loadFieldPopup.dismiss();
+                    }
+                });
             }
         });
 

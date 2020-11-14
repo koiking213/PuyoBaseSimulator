@@ -15,4 +15,10 @@
     <string name="set_seed">SET SEED</string>
     <string name="current_seed">seed:</string>
     <string name="seed_hint">0–65535</string>
+    <string name="seed_value">シード値</string>
+    <string name="seed_value_hint">0–65536</string>
+    <string name="search">検索</string>
+    <string name="tsumo">ツモ</string>
+    <string name="tsumo_hint">abac…</string>
+    <string name="field_id">field ID</string>
 </resources>
