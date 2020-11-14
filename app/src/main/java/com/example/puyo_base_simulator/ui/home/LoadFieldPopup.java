@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
@@ -50,8 +51,9 @@ public class LoadFieldPopup extends PopupWindow {
 
         recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false));
-        recyclerView.addItemDecoration(new DividerItemDecoration(context, LinearLayoutManager.VERTICAL));
+        recyclerView.setLayoutManager(new GridLayoutManager(context, 4, GridLayoutManager.VERTICAL, false));
+        recyclerView.addItemDecoration(new DividerItemDecoration(context, GridLayoutManager.VERTICAL));
+        recyclerView.addItemDecoration(new DividerItemDecoration(context, GridLayoutManager.HORIZONTAL));
 
         loadFieldAdapter = new LoadFieldAdapter(FieldPreview.generateFieldPreviewList());
         recyclerView.setAdapter(loadFieldAdapter);

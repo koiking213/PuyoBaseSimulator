@@ -20,4 +20,5 @@
     <string name="search">検索</string>
     <string name="tsumo">ツモ</string>
     <string name="tsumo_hint">abac…</string>
+    <string name="field_id">field ID</string>
 </resources>

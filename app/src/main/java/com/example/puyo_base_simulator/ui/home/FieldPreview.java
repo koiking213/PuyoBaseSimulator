@@ -22,7 +22,7 @@ public class FieldPreview {
         fieldPreviews.add(new FieldPreview(1, "rbb   yyy"));
         fieldPreviews.add(new FieldPreview(2, "rbb   yyy"));
         fieldPreviews.add(new FieldPreview(3, "rbb   yyy"));
-        fieldPreviews.add(new FieldPreview(4, "rbb   yyy"));
+        fieldPreviews.add(new FieldPreview(4, "rbbybbyyy"));
 
         return fieldPreviews;
     }

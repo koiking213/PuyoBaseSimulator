@@ -109,7 +109,7 @@
     </androidx.gridlayout.widget.GridLayout>
 
 
-<androidx.gridlayout.widget.GridLayout
+    <androidx.gridlayout.widget.GridLayout
         android:id="@+id/cursorLayout"
         android:layout_width="180dp"
         android:layout_height="120dp"
