@@ -18,26 +18,29 @@
 
     <TextView
         android:id="@+id/seedTextView"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:text="シード値"
-        android:textSize="18sp"></TextView>
+        android:layout_weight="1"
+        android:text="@string/seed_value"
+        android:textSize="18sp"/>
 
     <EditText
         android:id="@+id/seedEditTextNumberDecimal"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
         android:ems="6"
+        android:layout_weight="1"
         android:inputType="numberDecimal"
-        android:hint="0-65536"
-        android:autofillHints="0-65535"></EditText>
+        android:hint="@string/seed_value_hint"
+        android:autofillHints="0-65535"/>
 
     <Button
         android:id="@+id/searchBySeedButton"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:text="検索"
-        android:textSize="12sp"></Button>
+        android:layout_weight="1"
+        android:text="@string/search"
+        android:textSize="12sp"/>
         </LinearLayout>
 
         <LinearLayout
@@ -47,27 +50,30 @@
 
     <TextView
         android:id="@+id/patternTextView"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:text="ツモ"
-        android:textSize="18sp"></TextView>
+        android:layout_weight="1"
+        android:text="@string/tsumo"
+        android:textSize="18sp"/>
 
     <EditText
         android:id="@+id/patternEditText"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
+        android:layout_weight="1"
         android:ems="6"
         android:inputType="textPersonName"
         android:text=""
-        android:hint="abac..."
+        android:hint="@string/tsumo_hint"
         android:autofillHints="abac..." />
 
     <Button
         android:id="@+id/searchByPatternButton"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:text="検索"
-        android:textSize="12sp"></Button>
+        android:layout_weight="1"
+        android:text="@string/search"
+        android:textSize="12sp"/>
         </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
