@@ -48,7 +48,7 @@ public class HomeFragment extends Fragment implements HomeContract.View {
     private Activity mActivity;
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
     }
 
@@ -166,8 +166,8 @@ public class HomeFragment extends Fragment implements HomeContract.View {
                 loadFieldPopup.setFieldSelectedListener(new LoadFieldAdapter.FieldSelectedListener() {
                     @Override
                     public void onFieldSelected(int position, FieldPreview fieldPreview) {
+                        mPresenter.load(fieldPreview);
                         loadFieldPopup.dismiss();
-                        //Toast.makeText(MainActivity.this, "Your favourite programming language : "+ category.category, Toast.LENGTH_SHORT).show();
                     }
                 });
             }

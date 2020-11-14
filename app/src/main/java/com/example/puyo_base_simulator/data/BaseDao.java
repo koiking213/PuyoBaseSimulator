@@ -12,8 +12,8 @@ public interface BaseDao {
     @Query("SELECT * FROM Base")
     List<Base> getAll();
 
-    @Query("SELECT * FROM Base WHERE id = :id")
-    List<Base> findById(int[] id);
+    @Query("SELECT * FROM Base WHERE id = :id LIMIT 1")
+    Base findById(int id);
 
     @Query("SELECT * FROM Base WHERE hash LIKE :hash")
     List<Base> findByHash(int hash);

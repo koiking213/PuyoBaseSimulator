@@ -29,6 +29,7 @@ public class LoadFieldPopup extends PopupWindow {
     private Context context;
     private RecyclerView recyclerView;
     private LoadFieldAdapter loadFieldAdapter;
+    private LoadFieldAdapter.FieldSelectedListener listener;
     // should be initialized in Presenter?
     AppDatabase mDB;
 
@@ -43,6 +44,7 @@ public class LoadFieldPopup extends PopupWindow {
     }
 
     public void setFieldSelectedListener(LoadFieldAdapter.FieldSelectedListener fieldSelectedListener) {
+        listener = fieldSelectedListener;
         loadFieldAdapter.setFieldSelectedListener(fieldSelectedListener);
     }
 
@@ -67,9 +69,11 @@ public class LoadFieldPopup extends PopupWindow {
                 List<Base> bases = mDB.baseDao().findByHash(seed);
                 List<FieldPreview> fieldPreviews = new ArrayList<>();
                 for (Base base : bases) {
-                    fieldPreviews.add(new FieldPreview(seed, base.getField()));
+                    fieldPreviews.add(new FieldPreview(base.getId(), seed, base.getField()));
                 }
-                recyclerView.setAdapter(new LoadFieldAdapter(fieldPreviews));
+                loadFieldAdapter = new LoadFieldAdapter(fieldPreviews);
+                loadFieldAdapter.setFieldSelectedListener(listener);
+                recyclerView.setAdapter(loadFieldAdapter);
             }
         });
         setContentView(view);
