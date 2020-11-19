@@ -22,13 +22,6 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.gridlayout.widget.GridLayout;
 
-enum Rotation {
-    DEGREE0,
-    DEGREE90,
-    DEGREE180,
-    DEGREE270
-}
-
 public class HomeFragment extends Fragment implements HomeContract.View {
     ImageView[][] fieldView;
     ImageView[][] currentPuyoView;
