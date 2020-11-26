@@ -270,8 +270,12 @@ public class HomePresenter implements HomeContract.Presenter {
     }
 
     public void setSeed() {
-        int newSeed = mView.getSpecifiedSeed();
-        tsumoController = new TsumoController(haipuyo, newSeed);
-        this.start();
+        try {
+            int newSeed = mView.getSpecifiedSeed();
+            tsumoController = new TsumoController(haipuyo, newSeed);
+            this.start();
+        } catch (NumberFormatException e) {
+
+        }
     }
 }

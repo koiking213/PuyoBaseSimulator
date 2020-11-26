@@ -218,7 +218,17 @@ public class HomeFragment extends Fragment implements HomeContract.View {
 
     public int getSpecifiedSeed() {
         EditText editText = mActivity.findViewById(R.id.editTextSeed);
-        return Integer.parseInt(editText.getText().toString());
+        try {
+            int seed = Integer.parseInt(editText.getText().toString());
+            if (0 <= seed && seed <= 65536) {
+                return seed;
+            } else {
+                throw new NumberFormatException();
+            }
+        } catch (NumberFormatException e) {
+            editText.setError("should enter 0-65535.");
+            throw e;
+        }
     }
 
     public void setSeedText(int seed) {

@@ -65,15 +65,22 @@ public class LoadFieldPopup extends PopupWindow {
             @Override
             public void onClick(View v) {
                 EditText editText = view.findViewById(R.id.seedEditTextNumberDecimal);
-                int seed = Integer.parseInt(editText.getText().toString());
-                List<Base> bases = mDB.baseDao().findByHash(seed);
-                List<FieldPreview> fieldPreviews = new ArrayList<>();
-                for (Base base : bases) {
-                    fieldPreviews.add(new FieldPreview(base.getId(), seed, base.getField()));
+                try {
+                    int seed = Integer.parseInt(editText.getText().toString());
+                    if (!(0 <= seed && seed <= 65536)) {
+                        throw new NumberFormatException();
+                    }
+                    List<Base> bases = mDB.baseDao().findByHash(seed);
+                    List<FieldPreview> fieldPreviews = new ArrayList<>();
+                    for (Base base : bases) {
+                        fieldPreviews.add(new FieldPreview(base.getId(), seed, base.getField()));
+                    }
+                    loadFieldAdapter = new LoadFieldAdapter(fieldPreviews);
+                    loadFieldAdapter.setFieldSelectedListener(listener);
+                    recyclerView.setAdapter(loadFieldAdapter);
+                } catch (NumberFormatException e) {
+                    editText.setError("should enter 0-65535.");
                 }
-                loadFieldAdapter = new LoadFieldAdapter(fieldPreviews);
-                loadFieldAdapter.setFieldSelectedListener(listener);
-                recyclerView.setAdapter(loadFieldAdapter);
             }
         });
         setContentView(view);
