@@ -13,6 +13,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Stack;
@@ -27,10 +28,11 @@ public class HomePresenter implements HomeContract.Presenter {
     Field currentField;
     StackWithButton<Field> fieldStack;
     StackWithButton<Placement> fieldRedoStack;
-    TsumoController tsumoController = TsumoController.getInstance();
+    TsumoController tsumoController;
     private static final Random RANDOM = new Random();
     HomeFragment mView;
     AppDatabase mDB;
+    List<String> haipuyo = new ArrayList<>();
 
     HomePresenter(HomeFragment view, AssetManager asset, Activity activity) {
         mDB = Room.databaseBuilder(activity.getApplicationContext(),
@@ -44,16 +46,14 @@ public class HomePresenter implements HomeContract.Presenter {
             is = asset.open("haipuyo.txt");
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             for (int i = 0; i < 65536; i++) {
-                tsumoController.haipuyo[i] = br.readLine();
+                haipuyo.add(br.readLine());
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        tsumoController.reset(RANDOM.nextInt(65536));
     }
 
     public void start() {
-        tsumoController.setTsumo();
         currentField =  new Field(1);
         fieldStack = new StackWithButton<>(new ButtonUpdateFunction() {
             @Override
@@ -79,6 +79,7 @@ public class HomePresenter implements HomeContract.Presenter {
         });
         fieldRedoStack.clear();
         fieldStack.clear();
+        tsumoController = new TsumoController(haipuyo, RANDOM.nextInt(65536));
         mView.setSeedText(tsumoController.seed);
         mView.update(currentField, tsumoController.makeTsumoInfo());
     }
@@ -211,7 +212,7 @@ public class HomePresenter implements HomeContract.Presenter {
             fieldRedoStack.push(tsumoController.popPlacementOrder());
         }
         fieldStack.clear();
-        tsumoController.reset(base.getHash());
+        tsumoController = new TsumoController(haipuyo, base.getHash());
         mView.update(currentField, tsumoController.makeTsumoInfo());
 
     }
@@ -270,7 +271,7 @@ public class HomePresenter implements HomeContract.Presenter {
 
     public void setSeed() {
         int newSeed = mView.getSpecifiedSeed();
-        tsumoController.reset(newSeed);
+        tsumoController = new TsumoController(haipuyo, newSeed);
         this.start();
     }
 }

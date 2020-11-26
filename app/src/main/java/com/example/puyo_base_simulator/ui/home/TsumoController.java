@@ -2,10 +2,11 @@ package com.example.puyo_base_simulator.ui.home;
 
 import com.example.puyo_base_simulator.BuildConfig;
 
+import java.util.List;
 import java.util.Stack;
 
 public class TsumoController {
-    String[] haipuyo = new String[65536];
+    List<String> haipuyo;
     int tsumoCounter = 0;
     int seed;
     int currentCursorColumnIndex = 3;
@@ -13,6 +14,12 @@ public class TsumoController {
     PuyoColor[] currentColor = new PuyoColor[2];
     PuyoColor[][] nextColor = new PuyoColor[2][2];
     Stack<Placement> placementOrder = new Stack<>();
+
+    public TsumoController(List<String> haipuyo, int seed) {
+        this.haipuyo = haipuyo;
+        this.seed = seed;
+        this.setTsumo();
+    }
 
     void pushPlacementOrder() {
         placementOrder.push(new Placement(currentCursorColumnIndex, currentCursorRotate, tsumoCounter));
@@ -47,18 +54,12 @@ public class TsumoController {
     void setTsumo() {
         currentCursorColumnIndex = 3;
         currentCursorRotate = Rotation.DEGREE0;
-        currentColor[1] = getPuyoColor(haipuyo[seed].charAt(tsumoCounter));
-        currentColor[0] = getPuyoColor(haipuyo[seed].charAt(tsumoCounter+1));
-        nextColor[0][0] = getPuyoColor(haipuyo[seed].charAt(tsumoCounter+2));
-        nextColor[0][1] = getPuyoColor(haipuyo[seed].charAt(tsumoCounter+3));
-        nextColor[1][0] = getPuyoColor(haipuyo[seed].charAt(tsumoCounter+4));
-        nextColor[1][1] = getPuyoColor(haipuyo[seed].charAt(tsumoCounter+5));
-    }
-
-    public void reset(int seed) {
-        this.seed = seed;
-        this.tsumoCounter = 0;
-        this.setTsumo();
+        currentColor[1] = getPuyoColor(haipuyo.get(seed).charAt(tsumoCounter));
+        currentColor[0] = getPuyoColor(haipuyo.get(seed).charAt(tsumoCounter+1));
+        nextColor[0][0] = getPuyoColor(haipuyo.get(seed).charAt(tsumoCounter+2));
+        nextColor[0][1] = getPuyoColor(haipuyo.get(seed).charAt(tsumoCounter+3));
+        nextColor[1][0] = getPuyoColor(haipuyo.get(seed).charAt(tsumoCounter+4));
+        nextColor[1][1] = getPuyoColor(haipuyo.get(seed).charAt(tsumoCounter+5));
     }
 
     void incrementTsumo() {
@@ -188,12 +189,4 @@ public class TsumoController {
                 currentCursorRotate = Rotation.DEGREE0;
         }
     }
-
-    // Singleton instance.
-    private static final TsumoController INSTANCE = new TsumoController();
-    private TsumoController() {}
-    public static TsumoController getInstance() {
-        return INSTANCE;
-    }
-
 }

@@ -46,8 +46,6 @@ public interface HomeContract {
 
         void load(FieldPreview fieldPreview);
 
-        void start();
-
         void setSeed();
 
     }
