@@ -57,7 +57,7 @@ public class LoadFieldPopup extends PopupWindow {
         recyclerView.addItemDecoration(new DividerItemDecoration(context, GridLayoutManager.VERTICAL));
         recyclerView.addItemDecoration(new DividerItemDecoration(context, GridLayoutManager.HORIZONTAL));
 
-        loadFieldAdapter = new LoadFieldAdapter(FieldPreview.generateFieldPreviewList());
+        loadFieldAdapter = new LoadFieldAdapter(new ArrayList<FieldPreview>());
         recyclerView.setAdapter(loadFieldAdapter);
 
         Button searchBySeedButton = view.findViewById(R.id.searchBySeedButton);

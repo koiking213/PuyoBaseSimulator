@@ -16,16 +16,4 @@ public class FieldPreview {
         this.seed = seed;
         this.content = content;
     }
-
-    public static List<FieldPreview> generateFieldPreviewList(){
-        List<FieldPreview> fieldPreviews = new ArrayList<>();
-        //debug
-        fieldPreviews.add(new FieldPreview(0, 124, "rrr   bbb   yyy"));
-        fieldPreviews.add(new FieldPreview(1, 124, "rbb   yyy"));
-        fieldPreviews.add(new FieldPreview(2, 124, "rbb   yyy"));
-        fieldPreviews.add(new FieldPreview(3, 124, "rbb   yyy"));
-        fieldPreviews.add(new FieldPreview(4, 124, "rbbybbyyy"));
-
-        return fieldPreviews;
-    }
 }
