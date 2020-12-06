@@ -8,8 +8,8 @@
 
     <androidx.gridlayout.widget.GridLayout
         android:id="@+id/currentPuyoLayout"
-        android:layout_width="140dp"
-        android:layout_height="60dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginTop="5dp"
         app:columnCount="7"
@@ -20,8 +20,8 @@
 
     <androidx.gridlayout.widget.GridLayout
         android:id="@+id/nextPuyoLayout"
-        android:layout_width="40dp"
-        android:layout_height="80dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginTop="5dp"
         app:columnCount="2"
@@ -79,8 +79,8 @@
 
     <androidx.gridlayout.widget.GridLayout
         android:id="@+id/fieldLayout"
-        android:layout_width="160dp"
-        android:layout_height="280dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginTop="5dp"
         app:columnCount="8"
@@ -89,24 +89,28 @@
         app:rowCount="14">
     </androidx.gridlayout.widget.GridLayout>
 
-    <androidx.gridlayout.widget.GridLayout
+    <LinearLayout
         android:id="@+id/pointLayout"
-        android:layout_width="140dp"
-        android:layout_height="60dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginTop="40dp"
-        app:columnCount="7"
-        app:rowCount="3"
-        app:layout_constraintTop_toBottomOf="@id/utilityLayout"
-        app:layout_constraintStart_toEndOf="@id/fieldLayout">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/textViewSeed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+        </TextView>
 
         <TextView
             android:id="@+id/pointTextView"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_column="0"
-            app:layout_row="2" />
-    </androidx.gridlayout.widget.GridLayout>
+            android:layout_height="wrap_content">
+        </TextView>
+    </LinearLayout>
 
 
     <androidx.gridlayout.widget.GridLayout
@@ -210,14 +214,6 @@
     </Button>
 
 
-    <TextView
-        android:id="@+id/textViewSeed"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="10dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-    </TextView>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
