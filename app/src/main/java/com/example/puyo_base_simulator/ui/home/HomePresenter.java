@@ -32,7 +32,7 @@ public class HomePresenter implements HomeContract.Presenter {
     private static final Random RANDOM = new Random();
     HomeFragment mView;
     AppDatabase mDB;
-    List<String> haipuyo = new ArrayList<>();
+    Haipuyo mHaipuyo = Haipuyo.getInstance();
 
     HomePresenter(HomeFragment view, AssetManager asset, Activity activity) {
         mDB = Room.databaseBuilder(activity.getApplicationContext(),
@@ -45,9 +45,7 @@ public class HomePresenter implements HomeContract.Presenter {
         try {
             is = asset.open("haipuyo.txt");
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
-            for (int i = 0; i < 65536; i++) {
-                haipuyo.add(br.readLine());
-            }
+            mHaipuyo.load(br);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -78,7 +76,7 @@ public class HomePresenter implements HomeContract.Presenter {
             }
         });
         int seed = RANDOM.nextInt(65536);
-        tsumoController = new TsumoController(haipuyo.get(seed), seed);
+        tsumoController = new TsumoController(mHaipuyo.get(seed), seed);
         mView.setSeedText(tsumoController.seed);
         mView.update(currentField, tsumoController.makeTsumoInfo());
     }
@@ -211,7 +209,7 @@ public class HomePresenter implements HomeContract.Presenter {
             fieldRedoStack.push(tsumoController.popPlacementOrder());
         }
         fieldStack.clear();
-        tsumoController = new TsumoController(haipuyo.get(base.getHash()), base.getHash());
+        tsumoController = new TsumoController(mHaipuyo.get(base.getHash()), base.getHash());
         mView.update(currentField, tsumoController.makeTsumoInfo());
 
     }
@@ -271,7 +269,7 @@ public class HomePresenter implements HomeContract.Presenter {
     public void setSeed() {
         try {
             int newSeed = mView.getSpecifiedSeed();
-            tsumoController = new TsumoController(haipuyo.get(newSeed), newSeed);
+            tsumoController = new TsumoController(mHaipuyo.get(newSeed), newSeed);
             fieldRedoStack.clear();
             fieldStack.clear();
             mView.setSeedText(newSeed);
