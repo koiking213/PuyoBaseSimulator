@@ -77,7 +77,8 @@ public class HomePresenter implements HomeContract.Presenter {
                 mView.disableRedoButton();
             }
         });
-        tsumoController = new TsumoController(haipuyo, RANDOM.nextInt(65536));
+        int seed = RANDOM.nextInt(65536);
+        tsumoController = new TsumoController(haipuyo.get(seed), seed);
         mView.setSeedText(tsumoController.seed);
         mView.update(currentField, tsumoController.makeTsumoInfo());
     }
@@ -210,7 +211,7 @@ public class HomePresenter implements HomeContract.Presenter {
             fieldRedoStack.push(tsumoController.popPlacementOrder());
         }
         fieldStack.clear();
-        tsumoController = new TsumoController(haipuyo, base.getHash());
+        tsumoController = new TsumoController(haipuyo.get(base.getHash()), base.getHash());
         mView.update(currentField, tsumoController.makeTsumoInfo());
 
     }
@@ -270,7 +271,7 @@ public class HomePresenter implements HomeContract.Presenter {
     public void setSeed() {
         try {
             int newSeed = mView.getSpecifiedSeed();
-            tsumoController = new TsumoController(haipuyo, newSeed);
+            tsumoController = new TsumoController(haipuyo.get(newSeed), newSeed);
             fieldRedoStack.clear();
             fieldStack.clear();
             mView.setSeedText(newSeed);

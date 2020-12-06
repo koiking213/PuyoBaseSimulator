@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Stack;
 
 public class TsumoController {
-    List<String> haipuyo;
+    String tsumo;
     int tsumoCounter = 0;
     int seed;
     int currentCursorColumnIndex = 3;
@@ -15,8 +15,8 @@ public class TsumoController {
     PuyoColor[][] nextColor = new PuyoColor[2][2];
     Stack<Placement> placementOrder = new Stack<>();
 
-    public TsumoController(List<String> haipuyo, int seed) {
-        this.haipuyo = haipuyo;
+    public TsumoController(String tsumo, int seed) {
+        this.tsumo = tsumo;
         this.seed = seed;
         this.setTsumo();
     }
@@ -54,12 +54,12 @@ public class TsumoController {
     void setTsumo() {
         currentCursorColumnIndex = 3;
         currentCursorRotate = Rotation.DEGREE0;
-        currentColor[1] = getPuyoColor(haipuyo.get(seed).charAt(tsumoCounter));
-        currentColor[0] = getPuyoColor(haipuyo.get(seed).charAt(tsumoCounter+1));
-        nextColor[0][0] = getPuyoColor(haipuyo.get(seed).charAt(tsumoCounter+2));
-        nextColor[0][1] = getPuyoColor(haipuyo.get(seed).charAt(tsumoCounter+3));
-        nextColor[1][0] = getPuyoColor(haipuyo.get(seed).charAt(tsumoCounter+4));
-        nextColor[1][1] = getPuyoColor(haipuyo.get(seed).charAt(tsumoCounter+5));
+        currentColor[1] = getPuyoColor(tsumo.charAt(tsumoCounter));
+        currentColor[0] = getPuyoColor(tsumo.charAt(tsumoCounter+1));
+        nextColor[0][0] = getPuyoColor(tsumo.charAt(tsumoCounter+2));
+        nextColor[0][1] = getPuyoColor(tsumo.charAt(tsumoCounter+3));
+        nextColor[1][0] = getPuyoColor(tsumo.charAt(tsumoCounter+4));
+        nextColor[1][1] = getPuyoColor(tsumo.charAt(tsumoCounter+5));
     }
 
     void incrementTsumo() {
