@@ -220,7 +220,7 @@ public class HomeFragment extends Fragment implements HomeContract.View {
         EditText editText = mActivity.findViewById(R.id.editTextSeed);
         try {
             int seed = Integer.parseInt(editText.getText().toString());
-            if (0 <= seed && seed <= 65536) {
+            if (0 <= seed && seed <= 65535) {
                 return seed;
             } else {
                 throw new NumberFormatException();

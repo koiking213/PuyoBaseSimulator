@@ -67,7 +67,7 @@ public class LoadFieldPopup extends PopupWindow {
                 EditText editText = view.findViewById(R.id.seedEditTextNumberDecimal);
                 try {
                     int seed = Integer.parseInt(editText.getText().toString());
-                    if (!(0 <= seed && seed <= 65536)) {
+                    if (!(0 <= seed && seed <= 65535)) {
                         throw new NumberFormatException();
                     }
                     List<Base> bases = mDB.baseDao().findByHash(seed);
