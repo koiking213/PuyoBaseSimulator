@@ -77,8 +77,6 @@ public class HomePresenter implements HomeContract.Presenter {
                 mView.disableRedoButton();
             }
         });
-        fieldRedoStack.clear();
-        fieldStack.clear();
         tsumoController = new TsumoController(haipuyo, RANDOM.nextInt(65536));
         mView.setSeedText(tsumoController.seed);
         mView.update(currentField, tsumoController.makeTsumoInfo());
@@ -273,8 +271,11 @@ public class HomePresenter implements HomeContract.Presenter {
         try {
             int newSeed = mView.getSpecifiedSeed();
             tsumoController = new TsumoController(haipuyo, newSeed);
-            this.start();
-        } catch (NumberFormatException e) {
+            fieldRedoStack.clear();
+            fieldStack.clear();
+            mView.setSeedText(newSeed);
+            mView.update(currentField, tsumoController.makeTsumoInfo());
+        } catch (NumberFormatException ignored) {
 
         }
     }
