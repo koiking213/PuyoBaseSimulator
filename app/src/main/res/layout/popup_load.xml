@@ -75,6 +75,13 @@
                 android:text="@string/search"
                 android:textSize="12sp"/>
         </LinearLayout>
+        <Button
+            android:id="@+id/showAllButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/showAll"
+            android:textSize="12sp"/>
+
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"

@@ -83,6 +83,21 @@ public class LoadFieldPopup extends PopupWindow {
                 }
             }
         });
+
+        Button showAllButton = view.findViewById(R.id.showAllButton);
+        showAllButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                List<Base> bases = mDB.baseDao().getAll();
+                List<FieldPreview> fieldPreviews = new ArrayList<>();
+                for (Base base : bases) {
+                    fieldPreviews.add(new FieldPreview(base.getId(), base.getHash(), base.getField()));
+                }
+                loadFieldAdapter = new LoadFieldAdapter(fieldPreviews);
+                loadFieldAdapter.setFieldSelectedListener(listener);
+                recyclerView.setAdapter(loadFieldAdapter);
+            }
+        });
         setContentView(view);
     }
 }
