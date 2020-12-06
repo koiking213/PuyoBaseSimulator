@@ -275,6 +275,7 @@ public class HomePresenter implements HomeContract.Presenter {
             fieldRedoStack.clear();
             fieldStack.clear();
             mView.setSeedText(newSeed);
+            currentField =  new Field(1);
             mView.update(currentField, tsumoController.makeTsumoInfo());
         } catch (NumberFormatException ignored) {
 
