@@ -24,6 +24,8 @@ import androidx.room.Room;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class LoadFieldPopup extends PopupWindow {
     private Context context;
@@ -57,46 +59,59 @@ public class LoadFieldPopup extends PopupWindow {
         recyclerView.addItemDecoration(new DividerItemDecoration(context, GridLayoutManager.VERTICAL));
         recyclerView.addItemDecoration(new DividerItemDecoration(context, GridLayoutManager.HORIZONTAL));
 
-        loadFieldAdapter = new LoadFieldAdapter(new ArrayList<FieldPreview>());
+        loadFieldAdapter = new LoadFieldAdapter(new ArrayList<>());
         recyclerView.setAdapter(loadFieldAdapter);
 
         Button searchBySeedButton = view.findViewById(R.id.searchBySeedButton);
-        searchBySeedButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                EditText editText = view.findViewById(R.id.seedEditTextNumberDecimal);
-                try {
-                    int seed = Integer.parseInt(editText.getText().toString());
-                    if (!(0 <= seed && seed <= 65535)) {
-                        throw new NumberFormatException();
-                    }
-                    List<Base> bases = mDB.baseDao().findByHash(seed);
-                    List<FieldPreview> fieldPreviews = new ArrayList<>();
-                    for (Base base : bases) {
-                        fieldPreviews.add(new FieldPreview(base.getId(), seed, base.getField()));
-                    }
-                    loadFieldAdapter = new LoadFieldAdapter(fieldPreviews);
-                    loadFieldAdapter.setFieldSelectedListener(listener);
-                    recyclerView.setAdapter(loadFieldAdapter);
-                } catch (NumberFormatException e) {
-                    editText.setError("should enter 0-65535.");
+        searchBySeedButton.setOnClickListener(v -> {
+            EditText editText = view.findViewById(R.id.seedEditTextNumberDecimal);
+            try {
+                int seed = Integer.parseInt(editText.getText().toString());
+                if (!(0 <= seed && seed <= 65535)) {
+                    throw new NumberFormatException();
                 }
-            }
-        });
-
-        Button showAllButton = view.findViewById(R.id.showAllButton);
-        showAllButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                List<Base> bases = mDB.baseDao().getAll();
+                List<Base> bases = mDB.baseDao().findByHash(seed);
                 List<FieldPreview> fieldPreviews = new ArrayList<>();
                 for (Base base : bases) {
-                    fieldPreviews.add(new FieldPreview(base.getId(), base.getHash(), base.getField()));
+                    fieldPreviews.add(new FieldPreview(base.getId(), seed, base.getField()));
                 }
                 loadFieldAdapter = new LoadFieldAdapter(fieldPreviews);
                 loadFieldAdapter.setFieldSelectedListener(listener);
                 recyclerView.setAdapter(loadFieldAdapter);
+            } catch (NumberFormatException e) {
+                editText.setError("should enter 0-65535.");
             }
+        });
+
+        Button searchByPatternButton = view.findViewById(R.id.searchByPatternButton);
+        searchByPatternButton.setOnClickListener(v -> {
+            EditText editText = view.findViewById(R.id.patternEditText);
+            String str = editText.getText().toString();
+            List<Integer> seeds = Haipuyo.getInstance().searchSeedWithPattern(str);
+            List<Base> bases = new ArrayList<>();
+            for (int seed : seeds) {
+                bases = Stream.concat(bases.stream(), mDB.baseDao().findByHash(seed).stream())
+                        .collect(Collectors.toList());
+            }
+            List<FieldPreview> fieldPreviews = new ArrayList<>();
+            for (Base base : bases) {
+                fieldPreviews.add(new FieldPreview(base.getId(), base.getHash(), base.getField()));
+            }
+            loadFieldAdapter = new LoadFieldAdapter(fieldPreviews);
+            loadFieldAdapter.setFieldSelectedListener(listener);
+            recyclerView.setAdapter(loadFieldAdapter);
+        });
+
+        Button showAllButton = view.findViewById(R.id.showAllButton);
+        showAllButton.setOnClickListener(v -> {
+            List<Base> bases = mDB.baseDao().getAll();
+            List<FieldPreview> fieldPreviews = new ArrayList<>();
+            for (Base base : bases) {
+                fieldPreviews.add(new FieldPreview(base.getId(), base.getHash(), base.getField()));
+            }
+            loadFieldAdapter = new LoadFieldAdapter(fieldPreviews);
+            loadFieldAdapter.setFieldSelectedListener(listener);
+            recyclerView.setAdapter(loadFieldAdapter);
         });
         setContentView(view);
     }
