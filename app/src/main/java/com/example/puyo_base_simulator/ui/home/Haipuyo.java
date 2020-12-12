@@ -13,7 +13,7 @@ import java.util.List;
 
 public class Haipuyo {
     List<String> content = new ArrayList<>();
-    List<String> sortedContent;
+    List<String> sortedContent = new ArrayList<>();
     // Singleton instance.
     private static final Haipuyo INSTANCE = new Haipuyo();
     private Haipuyo() {}
@@ -21,12 +21,12 @@ public class Haipuyo {
         return INSTANCE;
     }
 
-    public void load(BufferedReader br) {
+    public void load(BufferedReader haipuyoBr, BufferedReader sortedBr) {
         try {
             for (int i = 0; i < 65536; i++) {
-                content.add(br.readLine());
+                content.add(haipuyoBr.readLine());
+                sortedContent.add(sortedBr.readLine());
             }
-            sortedContent = generateSortedContent(content);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -48,29 +48,6 @@ public class Haipuyo {
             if (sortedContent.get(i).startsWith(sortedStr)) {
                 ret.add(i);
             }
-        }
-        return ret;
-    }
-    private List<String> generateSortedContent(List<String> content) {
-        List<String> ret = new ArrayList<>();
-        for (String orig : content) {
-            String str = orig;
-            List<CharOrder> order = new ArrayList<>();
-            // rgbyp -> abcde
-            order.add(new CharOrder(str.indexOf('r'), 'r'));
-            order.add(new CharOrder(str.indexOf('g'), 'g'));
-            order.add(new CharOrder(str.indexOf('b'), 'b'));
-            order.add(new CharOrder(str.indexOf('y'), 'y'));
-            order.add(new CharOrder(str.indexOf('p'), 'p'));
-            order.sort(new CharaOrderComparator());
-            // blueとabcdのbがかぶっているので最後にbを置換する
-            // 4色なので、無い色に対してindexOfが-1を返している
-            str = str.replace(order.get(1).chara, 'a');
-            str = str.replace(order.get(3).chara, 'c');
-            str = str.replace(order.get(4).chara, 'd');
-            str = str.replace(order.get(2).chara, 'b');
-            // sort each pair
-            ret.add(pairwiseSort(str));
         }
         return ret;
     }

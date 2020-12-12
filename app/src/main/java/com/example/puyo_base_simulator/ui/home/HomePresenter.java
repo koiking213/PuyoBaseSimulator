@@ -41,11 +41,12 @@ public class HomePresenter implements HomeContract.Presenter {
               .build();
         mView = view;
         mActivity = activity;
-        InputStream is;
         try {
-            is = asset.open("haipuyo.txt");
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
-            mHaipuyo.load(br);
+            InputStream haipuyoIs = asset.open("haipuyo.txt");
+            BufferedReader haipuyoBr = new BufferedReader(new InputStreamReader(haipuyoIs));
+            InputStream sortedIs = asset.open("sorted_haipuyo.txt");
+            BufferedReader sortedBr = new BufferedReader(new InputStreamReader(sortedIs));
+            mHaipuyo.load(haipuyoBr, sortedBr);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -53,28 +54,8 @@ public class HomePresenter implements HomeContract.Presenter {
 
     public void start() {
         currentField =  new Field(1);
-        fieldStack = new StackWithButton<>(new ButtonUpdateFunction() {
-            @Override
-            public void func() {
-                mView.enableUndoButton();
-            }
-        }, new ButtonUpdateFunction() {
-            @Override
-            public void func() {
-                mView.disableUndoButton();
-            }
-        });
-        fieldRedoStack = new StackWithButton<>(new ButtonUpdateFunction() {
-            @Override
-            public void func() {
-                mView.enableRedoButton();
-            }
-        }, new ButtonUpdateFunction() {
-            @Override
-            public void func() {
-                mView.disableRedoButton();
-            }
-        });
+        fieldStack = new StackWithButton<>(() -> mView.enableUndoButton(), () -> mView.disableUndoButton());
+        fieldRedoStack = new StackWithButton<>(() -> mView.enableRedoButton(), () -> mView.disableRedoButton());
         int seed = RANDOM.nextInt(65536);
         tsumoController = new TsumoController(mHaipuyo.get(seed), seed);
         mView.setSeedText(tsumoController.seed);
@@ -224,44 +205,30 @@ public class HomePresenter implements HomeContract.Presenter {
 
     void drawFieldRecursively(final Field field) {
         if (field.nextField == null) {  // 連鎖終わり
-            mActivity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    mView.enableAllButtons();
-                    if (fieldRedoStack.isEmpty()) {
-                        mView.disableRedoButton();
-                    }
+            mActivity.runOnUiThread(() -> {
+                mView.enableAllButtons();
+                if (fieldRedoStack.isEmpty()) {
+                    mView.disableRedoButton();
                 }
             });
             // reset chain
             field.chainNum = 1;
             // get next puyo
-            mActivity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
-                    mView.update(field, tsumoInfo);
-                }
+            mActivity.runOnUiThread(() -> {
+                TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
+                mView.update(field, tsumoInfo);
             });
         } else {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    String text = "" + field.bonus + " * " + field.disappearPuyo.size() + " = " + field.accumulatedPoint + "点";
-                    mView.drawPoint(text);
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mView.drawField(field.nextField);
-                        }
-                    });
-                    drawFieldRecursively(field.nextField);
+            new Thread(() -> {
+                String text = "" + field.bonus + " * " + field.disappearPuyo.size() + " = " + field.accumulatedPoint + "点";
+                mView.drawPoint(text);
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                 }
+                mActivity.runOnUiThread(() -> mView.drawField(field.nextField));
+                drawFieldRecursively(field.nextField);
             }).start();
         }
     }
