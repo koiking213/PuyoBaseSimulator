@@ -10,6 +10,7 @@ public class StackWithButton<T> extends Stack<T> {
         super();
         this.enableFun = enableFun;
         this.disableFun = disableFun;
+        disableFun.func();
     }
 
     @Override
