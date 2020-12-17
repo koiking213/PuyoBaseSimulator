@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,9 +24,13 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.room.Room;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 
 public class LoadFieldPopup extends PopupWindow {
     private Context context;
@@ -88,11 +93,10 @@ public class LoadFieldPopup extends PopupWindow {
             EditText editText = view.findViewById(R.id.patternEditText);
             String str = editText.getText().toString();
             List<Integer> seeds = Haipuyo.getInstance().searchSeedWithPattern(str);
-            List<Base> bases = new ArrayList<>();
-            for (int seed : seeds) {
-                bases = Stream.concat(bases.stream(), mDB.baseDao().findByHash(seed).stream())
-                        .collect(Collectors.toList());
-            }
+            final AtomicInteger counter = new AtomicInteger();
+            Collection<List<Integer>> seedsChunks = seeds.stream().collect(Collectors.groupingBy(it -> counter.getAndIncrement() / 100)).values();
+            Collection<Base> bases = seedsChunks.parallelStream().map(seed -> mDB.baseDao().findByAllHash(seed)).flatMap(Collection::stream).collect(Collectors.toList());
+
             List<FieldPreview> fieldPreviews = new ArrayList<>();
             for (Base base : bases) {
                 fieldPreviews.add(new FieldPreview(base.getId(), base.getHash(), base.getField()));

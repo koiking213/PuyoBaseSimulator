@@ -18,6 +18,10 @@ public interface BaseDao {
     @Query("SELECT * FROM Base WHERE hash LIKE :hash")
     List<Base> findByHash(int hash);
 
+    @Query("SELECT * FROM Base WHERE hash IN (:hashes)")
+    List<Base> findByAllHash(List<Integer> hashes);
+
+
     @Insert
     void insert(Base base);
 
