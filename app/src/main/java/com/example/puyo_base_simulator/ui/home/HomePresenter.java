@@ -45,9 +45,6 @@ public class HomePresenter implements HomeContract.Presenter {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public void start() {
         currentField =  new Field(1);
         fieldStack = new StackWithButton<>(() -> mView.enableUndoButton(), () -> mView.disableUndoButton());
         fieldRedoStack = new StackWithButton<>(() -> mView.enableRedoButton(), () -> mView.disableRedoButton());

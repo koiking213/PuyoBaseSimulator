@@ -29,16 +29,8 @@ public class HomeFragment extends Fragment implements HomeContract.View {
     GridLayout currentPuyoLayout;
     GridLayout nextPuyoLayout;
     private HomePresenter mPresenter;
-    private Button mUndoButton;
-    private Button mRedoButton;
-    private Button mSaveButton;
-    private Button mLoadButton;
-    private Button mLeftButton;
-    private Button mRightButton;
-    private Button mDownButton;
-    private Button mAButton;
-    private Button mBButton;
     private Activity mActivity;
+    private View mRoot;
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
@@ -48,6 +40,10 @@ public class HomeFragment extends Fragment implements HomeContract.View {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_home, container, false);
+        mRoot = root;
+        Activity activity = getActivity();
+        assert activity != null;
+        mActivity = activity;
 
         // current puyo area
         currentPuyoView = new ImageView[3][7];
@@ -111,62 +107,45 @@ public class HomeFragment extends Fragment implements HomeContract.View {
         }
 
         ((TextView)root.findViewById(R.id.pointTextView)).setText("0点");
-        Activity activity = getActivity();
-        assert activity != null;
-        mActivity = activity;
         mPresenter = new HomePresenter(this, requireActivity().getAssets(), mActivity);
-        return root;
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
 
         // ボタン群
-        mUndoButton = mActivity.findViewById(R.id.buttonUndo);
-        mUndoButton.setOnClickListener(v -> mPresenter.undo());
-
-        mRedoButton = mActivity.findViewById(R.id.buttonRedo);
-        mRedoButton.setOnClickListener(v -> mPresenter.redo());
-
-        mSaveButton = mActivity.findViewById(R.id.buttonSave);
-        mSaveButton.setOnClickListener(v -> mPresenter.save());
-
-        mLoadButton = mActivity.findViewById(R.id.buttonLoad);
-        mLoadButton.setOnClickListener(v -> {
+        root.findViewById(R.id.buttonUndo).setOnClickListener(v -> mPresenter.undo());
+        root.findViewById(R.id.buttonRedo).setOnClickListener(v -> mPresenter.redo());
+        root.findViewById(R.id.buttonSave).setOnClickListener(v -> mPresenter.save());
+        root.findViewById(R.id.buttonLoad).setOnClickListener(v -> {
             final LoadFieldPopup loadFieldPopup = new LoadFieldPopup(mActivity);
             loadFieldPopup.setHeight(WindowManager.LayoutParams.WRAP_CONTENT);
             loadFieldPopup.setOutsideTouchable(true);
             loadFieldPopup.setFocusable(true);
-            loadFieldPopup.showAsDropDown(mLoadButton);
+            loadFieldPopup.showAsDropDown(mRoot.findViewById(R.id.buttonLoad));
             loadFieldPopup.setFieldSelectedListener((position, fieldPreview) -> {
                 mPresenter.load(fieldPreview);
                 loadFieldPopup.dismiss();
             });
         });
+        root.findViewById(R.id.buttonLeft).setOnClickListener(v -> mPresenter.moveLeft());
+        root.findViewById(R.id.buttonRight).setOnClickListener(v -> mPresenter.moveRight());
+        root.findViewById(R.id.buttonDown).setOnClickListener(v -> mPresenter.dropDown());
+        root.findViewById(R.id.buttonA).setOnClickListener(v -> mPresenter.rotateLeft());
+        root.findViewById(R.id.buttonB).setOnClickListener(v -> mPresenter.rotateRight());
+        root.findViewById(R.id.buttonSetSeed).setOnClickListener(v -> mPresenter.setSeed());
 
-        mLeftButton = mActivity.findViewById(R.id.buttonLeft);
-        mLeftButton.setOnClickListener(v -> mPresenter.moveLeft());
+        return root;
+    }
 
-        mRightButton = mActivity.findViewById(R.id.buttonRight);
-        mRightButton.setOnClickListener(v -> mPresenter.moveRight());
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
 
-        mDownButton = mActivity.findViewById(R.id.buttonDown);
-        mDownButton.setOnClickListener(v -> mPresenter.dropDown());
-
-        mAButton = mActivity.findViewById(R.id.buttonA);
-        mAButton.setOnClickListener(v -> mPresenter.rotateLeft());
-
-        mBButton = mActivity.findViewById(R.id.buttonB);
-        mBButton.setOnClickListener(v -> mPresenter.rotateRight());
-
-        Button setSeedButton = mActivity.findViewById(R.id.buttonSetSeed);
-        setSeedButton.setOnClickListener(v -> mPresenter.setSeed());
-        mPresenter.start();
+    @Override
+    public void onStart() {
+        super.onStart();
     }
 
     public int getSpecifiedSeed() {
-        EditText editText = mActivity.findViewById(R.id.editTextSeed);
+        EditText editText = mRoot.findViewById(R.id.editTextSeed);
         try {
             int seed = Integer.parseInt(editText.getText().toString());
             if (0 <= seed && seed <= 65535) {
@@ -181,7 +160,7 @@ public class HomeFragment extends Fragment implements HomeContract.View {
     }
 
     public void setSeedText(int seed) {
-        TextView view = mActivity.findViewById(R.id.textViewSeed);
+        TextView view = mRoot.findViewById(R.id.textViewSeed);
         view.setText(String.format(Locale.JAPAN, "seed: %d", seed));
     }
 
@@ -208,7 +187,7 @@ public class HomeFragment extends Fragment implements HomeContract.View {
     }
 
     public void drawPoint(final String text) {
-        mActivity.runOnUiThread(() -> ((TextView)mActivity.findViewById(R.id.pointTextView)).setText(text));
+        mActivity.runOnUiThread(() -> ((TextView)mRoot.findViewById(R.id.pointTextView)).setText(text));
     }
 
     int getPuyoImage(PuyoColor color) {
@@ -305,39 +284,39 @@ public class HomeFragment extends Fragment implements HomeContract.View {
     }
 
     public void disableUndoButton() {
-        mUndoButton.setEnabled(false);
+        mRoot.findViewById(R.id.buttonUndo).setEnabled(false);
     }
 
     public void enableUndoButton() {
-        mUndoButton.setEnabled(true);
+        mRoot.findViewById(R.id.buttonUndo).setEnabled(true);
     }
 
     public void disableRedoButton() {
-        mRedoButton.setEnabled(false);
+        mRoot.findViewById(R.id.buttonRedo).setEnabled(false);
     }
 
     public void enableRedoButton() {
-        mRedoButton.setEnabled(true);
+        mRoot.findViewById(R.id.buttonRedo).setEnabled(true);
     }
 
     public void disableAllButtons() {
-        mLeftButton.setEnabled(false);
-        mRightButton.setEnabled(false);
-        mDownButton.setEnabled(false);
-        mAButton.setEnabled(false);
-        mBButton.setEnabled(false);
-        mUndoButton.setEnabled(false);
-        mRedoButton.setEnabled(false);
+        mRoot.findViewById(R.id.buttonLeft).setEnabled(false);
+        mRoot.findViewById(R.id.buttonRight).setEnabled(false);
+        mRoot.findViewById(R.id.buttonDown).setEnabled(false);
+        mRoot.findViewById(R.id.buttonA).setEnabled(false);
+        mRoot.findViewById(R.id.buttonB).setEnabled(false);
+        mRoot.findViewById(R.id.buttonUndo).setEnabled(false);
+        mRoot.findViewById(R.id.buttonRedo).setEnabled(false);
     }
 
     public void enableAllButtons() {
-        mLeftButton.setEnabled(true);
-        mRightButton.setEnabled(true);
-        mDownButton.setEnabled(true);
-        mAButton.setEnabled(true);
-        mBButton.setEnabled(true);
-        mUndoButton.setEnabled(true);
-        mRedoButton.setEnabled(true);
+        mRoot.findViewById(R.id.buttonLeft).setEnabled(true);
+        mRoot.findViewById(R.id.buttonRight).setEnabled(true);
+        mRoot.findViewById(R.id.buttonDown).setEnabled(true);
+        mRoot.findViewById(R.id.buttonA).setEnabled(true);
+        mRoot.findViewById(R.id.buttonB).setEnabled(true);
+        mRoot.findViewById(R.id.buttonUndo).setEnabled(true);
+        mRoot.findViewById(R.id.buttonRedo).setEnabled(true);
     }
 
     public void eraseCurrentPuyo() {
