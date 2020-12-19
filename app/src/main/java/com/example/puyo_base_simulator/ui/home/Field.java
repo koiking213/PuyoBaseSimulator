@@ -2,6 +2,7 @@ package com.example.puyo_base_simulator.ui.home;
 
 import androidx.annotation.NonNull;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -41,6 +42,8 @@ public class Field implements Cloneable {
                 cloned.field[i] = this.field[i].clone();
             }
             cloned.heights = this.heights.clone();
+            cloned.disappearPuyo = new ArrayList<>();
+            cloned.nextField = null;
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
