@@ -124,95 +124,44 @@ public class HomeFragment extends Fragment implements HomeContract.View {
 
         // ボタン群
         mUndoButton = mActivity.findViewById(R.id.buttonUndo);
-        mUndoButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mPresenter.undo();
-            }
-        });
+        mUndoButton.setOnClickListener(v -> mPresenter.undo());
 
         mRedoButton = mActivity.findViewById(R.id.buttonRedo);
-        mRedoButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mPresenter.redo();
-            }
-        });
+        mRedoButton.setOnClickListener(v -> mPresenter.redo());
 
         mSaveButton = mActivity.findViewById(R.id.buttonSave);
-        mSaveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mPresenter.save();
-            }
-        });
+        mSaveButton.setOnClickListener(v -> mPresenter.save());
 
         mLoadButton = mActivity.findViewById(R.id.buttonLoad);
-        mLoadButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                final LoadFieldPopup loadFieldPopup = new LoadFieldPopup(mActivity);
-                loadFieldPopup.setHeight(WindowManager.LayoutParams.WRAP_CONTENT);
-                loadFieldPopup.setOutsideTouchable(true);
-                loadFieldPopup.setFocusable(true);
-                loadFieldPopup.showAsDropDown(mLoadButton);
-                loadFieldPopup.setFieldSelectedListener(new LoadFieldAdapter.FieldSelectedListener() {
-                    @Override
-                    public void onFieldSelected(int position, FieldPreview fieldPreview) {
-                        mPresenter.load(fieldPreview);
-                        loadFieldPopup.dismiss();
-                    }
-                });
-            }
+        mLoadButton.setOnClickListener(v -> {
+            final LoadFieldPopup loadFieldPopup = new LoadFieldPopup(mActivity);
+            loadFieldPopup.setHeight(WindowManager.LayoutParams.WRAP_CONTENT);
+            loadFieldPopup.setOutsideTouchable(true);
+            loadFieldPopup.setFocusable(true);
+            loadFieldPopup.showAsDropDown(mLoadButton);
+            loadFieldPopup.setFieldSelectedListener((position, fieldPreview) -> {
+                mPresenter.load(fieldPreview);
+                loadFieldPopup.dismiss();
+            });
         });
 
         mLeftButton = mActivity.findViewById(R.id.buttonLeft);
-        mLeftButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mPresenter.moveLeft();
-            }
-        });
+        mLeftButton.setOnClickListener(v -> mPresenter.moveLeft());
 
         mRightButton = mActivity.findViewById(R.id.buttonRight);
-        mRightButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mPresenter.moveRight();
-            }
-        });
+        mRightButton.setOnClickListener(v -> mPresenter.moveRight());
 
         mDownButton = mActivity.findViewById(R.id.buttonDown);
-        mDownButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mPresenter.dropDown();
-            }
-        });
+        mDownButton.setOnClickListener(v -> mPresenter.dropDown());
 
         mAButton = mActivity.findViewById(R.id.buttonA);
-        mAButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mPresenter.rotateLeft();
-            }
-        });
+        mAButton.setOnClickListener(v -> mPresenter.rotateLeft());
 
         mBButton = mActivity.findViewById(R.id.buttonB);
-        mBButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mPresenter.rotateRight();
-            }
-        });
+        mBButton.setOnClickListener(v -> mPresenter.rotateRight());
 
         Button setSeedButton = mActivity.findViewById(R.id.buttonSetSeed);
-        setSeedButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mPresenter.setSeed();
-            }
-        });
+        setSeedButton.setOnClickListener(v -> mPresenter.setSeed());
         mPresenter.start();
     }
 
@@ -245,13 +194,21 @@ public class HomeFragment extends Fragment implements HomeContract.View {
         }
     }
 
-    public void drawPoint(final String text) {
-        mActivity.runOnUiThread(new Runnable(){
-            @Override
-            public void run() {
-                ((TextView)mActivity.findViewById(R.id.pointTextView)).setText(text);
+    public void drawDisappearField(Field field) {
+        for (int i=1; i<14; i++) {
+            for (int j=1; j<7; j++) {
+                Puyo puyo = field.field[i][j];
+                if (field.isDisappear(puyo)) {
+                    fieldView[i][j].setImageResource(R.drawable.disappear);
+                } else {
+                    fieldView[i][j].setImageResource(getPuyoImage(puyo.color));
+                }
             }
-        });
+        }
+    }
+
+    public void drawPoint(final String text) {
+        mActivity.runOnUiThread(() -> ((TextView)mActivity.findViewById(R.id.pointTextView)).setText(text));
     }
 
     int getPuyoImage(PuyoColor color) {

@@ -5,6 +5,9 @@ public interface HomeContract {
         // 6x13のフィールド部分を描画する
         void drawField(Field field);
 
+        // 連鎖によって消えるぷよを区別してフィールドを描画する
+        void drawDisappearField(Field field);
+
         // 現在のツモ、ねくすと、ねくねく、フィールド上のどこにぷよが落ちるか、を描画する
         void drawTsumo(TsumoInfo tsumoInfo, Field field);
 

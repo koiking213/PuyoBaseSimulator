@@ -12,7 +12,7 @@ public class Field implements Cloneable {
     Field nextField = null;
     Puyo[][] field;
     int[] heights = {0,0,0,0,0,0,0};
-    ArrayList<Puyo> disappearPuyo;
+    List<Puyo> disappearPuyo = new ArrayList<>();
     int accumulatedPoint;
     int bonus;
     int colorBonus;
@@ -73,8 +73,11 @@ public class Field implements Cloneable {
         return true;
     }
 
+    boolean isDisappear(Puyo puyo) {
+        return disappearPuyo.contains(puyo);
+    }
+
     void evalNextField() {
-        ArrayList<Puyo> disappear = new ArrayList<>();
         Field newField = new Field(this.chainNum + 1);
         Set<PuyoColor> colors = new HashSet<>();
         int connectionBonus = 0;
@@ -84,12 +87,12 @@ public class Field implements Cloneable {
                 Puyo puyo = field[i][j];
                 List<Puyo> connection = getConnection(puyo);
                 if (connection.size() >= 4) {
-                    disappear.add(puyo);
+                    disappearPuyo.add(puyo);
                     // 色ボーナスの評価
                     colors.add(puyo.color);
                     // 連結ボーナスの評価
                     boolean connectionIsNew = true;
-                    for (Puyo p: disappear) {
+                    for (Puyo p: disappearPuyo) {
                         if (p.row < i || p.row == i && p.column < j) {
                             connectionIsNew = false;
                             break;
@@ -104,17 +107,19 @@ public class Field implements Cloneable {
             }
         }
         if (newField.allClear()) this.accumulatedPoint += 3000;
-        if (disappear.size() == 0) return;
+        if (disappearPuyo.size() == 0) {
+            this.chainNum = 1;
+            return;
+        }
 
         // 消えるぷよがある場合のみ次の盤面を評価
         int bonus = colorBonusConstant[colors.size()] + connectionBonus + chainBonusConstant[chainNum];
         if (bonus == 0) bonus = 1;
-        int point = accumulatedPoint + bonus * disappear.size() * 10;
+        int point = accumulatedPoint + bonus * disappearPuyo.size() * 10;
 
         this.colorBonus = colorBonusConstant[colors.size()];
         this.connectionBonus = connectionBonus;
         this.bonus = bonus;
-        this.disappearPuyo = disappear;
         this.accumulatedPoint = point;
         this.nextField = newField;
         this.nextField.accumulatedPoint = point;

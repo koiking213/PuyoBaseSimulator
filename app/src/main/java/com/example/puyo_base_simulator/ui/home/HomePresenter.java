@@ -2,7 +2,6 @@ package com.example.puyo_base_simulator.ui.home;
 
 import android.app.Activity;
 import android.content.res.AssetManager;
-import android.util.Log;
 
 import androidx.room.Room;
 
@@ -13,11 +12,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
-import java.util.Stack;
-import java.lang.Runnable;
 
 interface ButtonUpdateFunction {
     void func();
@@ -142,7 +137,7 @@ public class HomePresenter implements HomeContract.Presenter {
         } else {
             mView.eraseCurrentPuyo();
             mView.disableAllButtons();
-            drawFieldRecursively(currentField);
+            drawFieldChain(currentField);
             currentField = getLastField(currentField);
         }
     }
@@ -168,7 +163,7 @@ public class HomePresenter implements HomeContract.Presenter {
         } else {
             mView.eraseCurrentPuyo();
             mView.disableAllButtons();
-            drawFieldRecursively(currentField);
+            drawFieldChain(currentField);
             currentField = getLastField(currentField);
         }
     }
@@ -203,34 +198,40 @@ public class HomePresenter implements HomeContract.Presenter {
         }
     }
 
-    void drawFieldRecursively(final Field field) {
-        if (field.nextField == null) {  // 連鎖終わり
-            mActivity.runOnUiThread(() -> {
-                mView.enableAllButtons();
-                if (fieldRedoStack.isEmpty()) {
-                    mView.disableRedoButton();
-                }
-            });
-            // reset chain
-            field.chainNum = 1;
-            // get next puyo
-            mActivity.runOnUiThread(() -> {
-                TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
-                mView.update(field, tsumoInfo);
-            });
-        } else {
-            new Thread(() -> {
+
+    void drawFieldChain(final Field field) {
+        drawFieldChainRecursive(field, true);
+    }
+
+    void drawFieldChainRecursive(final Field field, boolean disappear) {
+        new Thread(() -> {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            if (disappear) {
                 String text = "" + field.bonus + " * " + field.disappearPuyo.size() + " = " + field.accumulatedPoint + "点";
                 mView.drawPoint(text);
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+                mActivity.runOnUiThread(() -> mView.drawDisappearField(field));
+                drawFieldChainRecursive(field.nextField, false);
+            } else {
+                mActivity.runOnUiThread(() -> mView.drawField(field));
+                if (field.disappearPuyo.isEmpty()) {
+                    // 終了処理
+                    mActivity.runOnUiThread(() -> {
+                        mView.enableAllButtons();
+                        if (fieldRedoStack.isEmpty()) {
+                            mView.disableRedoButton();
+                        }
+                        TsumoInfo tsumoInfo = tsumoController.makeTsumoInfo();
+                        mView.update(field, tsumoInfo);
+                    });
+                } else {
+                    drawFieldChainRecursive(field, true);
                 }
-                mActivity.runOnUiThread(() -> mView.drawField(field.nextField));
-                drawFieldRecursively(field.nextField);
-            }).start();
-        }
+            }
+        }).start();
     }
 
     public void setSeed() {
