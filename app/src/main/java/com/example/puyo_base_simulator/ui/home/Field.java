@@ -31,6 +31,7 @@ public class Field implements Cloneable {
         }
     }
 
+    // TODO: cloneは消す。危なすぎる
     @NonNull
     @Override
     public Field clone() {
@@ -50,6 +51,7 @@ public class Field implements Cloneable {
         return cloned;
     }
 
+    // TODO: 外部に公開するコンストラクタはchainNumを引数に取らないようにする
     Field (int chainNum) {
         field = new Puyo[14][7];
         for (int i=1; i<14; i++) {
@@ -185,6 +187,9 @@ public class Field implements Cloneable {
 
     // fromString
     Field (String fieldStr) {
+        while (fieldStr.length() < 6*13) {
+            fieldStr += " ";
+        }
         int idx = 0;
         field = new Puyo[14][7];
         for (int i=1; i<14; i++) {
