@@ -17,12 +17,10 @@ public class Field implements Serializable {
     List<Puyo> disappearPuyo = new ArrayList<>();
     int accumulatedPoint;
     int bonus;
-    int colorBonus;
-    int chainNum;
-    int connectionBonus;
-    final int[] chainBonusConstant = {0, 0, 8, 16, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 480, 512};
-    final int[] colorBonusConstant = {0, 0, 3, 6, 12};
-    int connectionBonusConstant(int connectionNum) {
+    private int chainNum;
+    private final int[] chainBonusConstant = {0, 0, 8, 16, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 480, 512};
+    private final int[] colorBonusConstant = {0, 0, 3, 6, 12};
+    private int connectionBonusConstant(int connectionNum) {
         if (connectionNum <= 4) {
             return 0;
         } else if (connectionNum <= 10){
@@ -102,8 +100,6 @@ public class Field implements Serializable {
         if (bonus == 0) bonus = 1;
         int point = accumulatedPoint + bonus * disappearPuyo.size() * 10;
 
-        this.colorBonus = colorBonusConstant[colors.size()];
-        this.connectionBonus = connectionBonus;
         this.bonus = bonus;
         this.accumulatedPoint = point;
         this.nextField = newField;
@@ -111,7 +107,7 @@ public class Field implements Serializable {
         newField.evalNextField();
     }
 
-    List<Puyo> getNeighborPuyo(Puyo puyo) {
+    private List<Puyo> getNeighborPuyo(Puyo puyo) {
         int row = puyo.row;
         int column = puyo.column;
         List<Puyo> ret = new ArrayList<>();
@@ -135,7 +131,7 @@ public class Field implements Serializable {
     }
 
     // 連結数
-    List<Puyo> getConnection(Puyo puyo) {
+    private List<Puyo> getConnection(Puyo puyo) {
         ArrayList<Puyo> connected = new ArrayList<>();
         if (puyo.color == PuyoColor.EMPTY) return connected;
         Stack<Puyo> sameColorStack = new Stack<>();
