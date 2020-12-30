@@ -32,15 +32,13 @@ public class Field implements Serializable {
         }
     }
 
-    // TODO: 外部に公開するコンストラクタはchainNumを引数に取らないようにする
-    Field (int chainNum) {
+    Field () {
         field = new Puyo[14][7];
         for (int i=1; i<14; i++) {
             for (int j=1; j<7; j++) {
                 field[i][j] = new Puyo(i, j, PuyoColor.EMPTY);
             }
         }
-        this.chainNum = chainNum;
     }
 
     Boolean addPuyo(int column, PuyoColor color) {
@@ -64,7 +62,8 @@ public class Field implements Serializable {
     }
 
     void evalNextField() {
-        Field newField = new Field(this.chainNum + 1);
+        Field newField = new Field();
+        newField.chainNum = this.chainNum + 1;
         Set<PuyoColor> colors = new HashSet<>();
         int connectionBonus = 0;
         // 消えるぷよを探す
@@ -168,9 +167,11 @@ public class Field implements Serializable {
 
     // fromString
     Field (String fieldStr) {
-        while (fieldStr.length() < 6*13) {
-            fieldStr += " ";
+        StringBuilder fieldStrBuilder = new StringBuilder(fieldStr);
+        while (fieldStrBuilder.length() < 6*13) {
+            fieldStrBuilder.append(" ");
         }
+        fieldStr = fieldStrBuilder.toString();
         int idx = 0;
         field = new Puyo[14][7];
         for (int i=1; i<14; i++) {
