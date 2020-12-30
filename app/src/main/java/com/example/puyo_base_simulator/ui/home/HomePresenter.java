@@ -8,10 +8,13 @@ import androidx.room.Room;
 import com.example.puyo_base_simulator.data.AppDatabase;
 import com.example.puyo_base_simulator.data.Base;
 
+import org.apache.commons.lang.SerializationUtils;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.util.Random;
 
 interface ButtonUpdateFunction {
@@ -79,7 +82,7 @@ public class HomePresenter implements HomeContract.Presenter {
     }
 
     private Field setPairOnField() {
-        Field newField = currentField.clone();
+        Field newField = (Field) SerializationUtils.clone(currentField);
         Rotation currentCursorRotate = tsumoController.currentCursorRotate;
         int currentCursorColumnIndex = tsumoController.currentCursorColumnIndex;
         boolean success = true;

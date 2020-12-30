@@ -2,6 +2,7 @@ package com.example.puyo_base_simulator.ui.home;
 
 import androidx.annotation.NonNull;
 
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -9,7 +10,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
-public class Field implements Cloneable {
+public class Field implements Serializable {
     Field nextField = null;
     Puyo[][] field;
     int[] heights = {0,0,0,0,0,0,0};
@@ -29,26 +30,6 @@ public class Field implements Cloneable {
         } else {
             return 10;
         }
-    }
-
-    // TODO: cloneは消す。危なすぎる
-    @NonNull
-    @Override
-    public Field clone() {
-        Field cloned = new Field(this.chainNum);
-        try {
-            cloned = (Field) super.clone();
-            cloned.field = this.field.clone();
-            for (int i=1; i<14; i++) {
-                cloned.field[i] = this.field[i].clone();
-            }
-            cloned.heights = this.heights.clone();
-            cloned.disappearPuyo = new ArrayList<>();
-            cloned.nextField = null;
-        } catch (CloneNotSupportedException e) {
-            e.printStackTrace();
-        }
-        return cloned;
     }
 
     // TODO: 外部に公開するコンストラクタはchainNumを引数に取らないようにする

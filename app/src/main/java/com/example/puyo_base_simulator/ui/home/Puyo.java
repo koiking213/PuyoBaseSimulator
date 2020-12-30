@@ -1,6 +1,8 @@
 package com.example.puyo_base_simulator.ui.home;
 
-public class Puyo {
+import java.io.Serializable;
+
+public class Puyo implements Serializable {
     int row;
     int column;
     PuyoColor color;
