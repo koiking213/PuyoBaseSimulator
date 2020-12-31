@@ -10,7 +10,7 @@ public class TsumoController {
     int tsumoCounter = 0;
     int seed;
     int currentCursorColumnIndex = 3;
-    Rotation currentCursorRotate = Rotation.DEGREE0;
+    Rotation currentCursorRotate = Rotation.DEGREE0;  // 時計回り
     PuyoColor[] currentColor = new PuyoColor[2];
     PuyoColor[][] nextColor = new PuyoColor[2][2];
     Stack<Placement> placementOrder = new Stack<>();
@@ -51,7 +51,7 @@ public class TsumoController {
         }
     }
 
-    void setTsumo() {
+    private void setTsumo() {
         currentCursorColumnIndex = 3;
         currentCursorRotate = Rotation.DEGREE0;
         currentColor[1] = getPuyoColor(tsumo.charAt(tsumoCounter));
