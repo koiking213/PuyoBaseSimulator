@@ -82,6 +82,7 @@ public class FieldTest {
         Field f = (Field) SerializationUtils.clone(mField);
         f.evalNextField();
         assertThat(f.disappearPuyo.isEmpty()).isTrue();
+        f.addPuyo(1, PuyoColor.RED);
         f.addPuyo(6, PuyoColor.RED);
         f.evalNextField();  // 4個消し5連鎖
         assertThat(f.accumulatedPoint).isEqualTo(40);
@@ -93,7 +94,7 @@ public class FieldTest {
         assertThat(f.accumulatedPoint).isEqualTo(2280);
         f = f.nextField;
         assertThat(f.accumulatedPoint).isEqualTo(4840);
-        assertThat(f.allClear()).isTrue();
+        assertThat(f.allClear()).isFalse();
     }
 
     @Test

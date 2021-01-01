@@ -18,6 +18,7 @@ public class Field implements Serializable {
     int accumulatedPoint;
     int bonus;
     private int chainNum;
+    private final int allClearBonus = 2100;
     private final int[] chainBonusConstant = {0, 0, 8, 16, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 480, 512};
     private final int[] colorBonusConstant = {0, 0, 3, 6, 12};
     private int connectionBonusConstant(int connectionNum) {
@@ -89,7 +90,7 @@ public class Field implements Serializable {
                 }
             }
         }
-        if (newField.allClear()) this.accumulatedPoint += 3000;
+        if (newField.allClear()) this.accumulatedPoint += allClearBonus;
         if (disappearPuyo.size() == 0) {
             this.chainNum = 1;
             return;
