@@ -28,6 +28,7 @@ public class TsumoController {
     Placement popPlacementOrder() {
         return placementOrder.pop();
     }
+
     void restorePlacement(Placement plc) {
         tsumoCounter = plc.tsumoCounter;
         this.setTsumo();
@@ -36,7 +37,7 @@ public class TsumoController {
     }
 
     public String placementOrderToString() {
-        StringBuilder str= new StringBuilder();
+        StringBuilder str = new StringBuilder();
         // スタックの奥から順に取り出される
         for (Placement p: placementOrder) {
             str.append(p.toString());
@@ -104,7 +105,7 @@ public class TsumoController {
         return info;
     }
 
-    PuyoColor getPuyoColor(char c) {  //ここにいるべきか？
+    private PuyoColor getPuyoColor(char c) {
         switch (c) {
             case 'r':
                 return PuyoColor.RED;
