@@ -2,6 +2,7 @@ package com.example.puyo_base_simulator.ui.home;
 
 import androidx.annotation.NonNull;
 
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -9,19 +10,18 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
-public class Field implements Cloneable {
+public class Field implements Serializable {
     Field nextField = null;
     Puyo[][] field;
     int[] heights = {0,0,0,0,0,0,0};
     List<Puyo> disappearPuyo = new ArrayList<>();
     int accumulatedPoint;
     int bonus;
-    int colorBonus;
-    int chainNum;
-    int connectionBonus;
-    final int[] chainBonusConstant = {0, 0, 8, 16, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 480, 512};
-    final int[] colorBonusConstant = {0, 0, 3, 6, 12};
-    int connectionBonusConstant(int connectionNum) {
+    private int chainNum;
+    private final int allClearBonus = 2100;
+    private final int[] chainBonusConstant = {0, 0, 8, 16, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 480, 512};
+    private final int[] colorBonusConstant = {0, 0, 3, 6, 12};
+    private int connectionBonusConstant(int connectionNum) {
         if (connectionNum <= 4) {
             return 0;
         } else if (connectionNum <= 10){
@@ -31,33 +31,13 @@ public class Field implements Cloneable {
         }
     }
 
-    @NonNull
-    @Override
-    public Field clone() {
-        Field cloned = new Field(this.chainNum);
-        try {
-            cloned = (Field) super.clone();
-            cloned.field = this.field.clone();
-            for (int i=1; i<14; i++) {
-                cloned.field[i] = this.field[i].clone();
-            }
-            cloned.heights = this.heights.clone();
-            cloned.disappearPuyo = new ArrayList<>();
-            cloned.nextField = null;
-        } catch (CloneNotSupportedException e) {
-            e.printStackTrace();
-        }
-        return cloned;
-    }
-
-    Field (int chainNum) {
+    Field () {
         field = new Puyo[14][7];
         for (int i=1; i<14; i++) {
             for (int j=1; j<7; j++) {
                 field[i][j] = new Puyo(i, j, PuyoColor.EMPTY);
             }
         }
-        this.chainNum = chainNum;
     }
 
     Boolean addPuyo(int column, PuyoColor color) {
@@ -81,7 +61,8 @@ public class Field implements Cloneable {
     }
 
     void evalNextField() {
-        Field newField = new Field(this.chainNum + 1);
+        Field newField = new Field();
+        newField.chainNum = this.chainNum + 1;
         Set<PuyoColor> colors = new HashSet<>();
         int connectionBonus = 0;
         // 消えるぷよを探す
@@ -109,7 +90,7 @@ public class Field implements Cloneable {
                 }
             }
         }
-        if (newField.allClear()) this.accumulatedPoint += 3000;
+        if (newField.allClear()) this.accumulatedPoint += allClearBonus;
         if (disappearPuyo.size() == 0) {
             this.chainNum = 1;
             return;
@@ -120,8 +101,6 @@ public class Field implements Cloneable {
         if (bonus == 0) bonus = 1;
         int point = accumulatedPoint + bonus * disappearPuyo.size() * 10;
 
-        this.colorBonus = colorBonusConstant[colors.size()];
-        this.connectionBonus = connectionBonus;
         this.bonus = bonus;
         this.accumulatedPoint = point;
         this.nextField = newField;
@@ -129,7 +108,7 @@ public class Field implements Cloneable {
         newField.evalNextField();
     }
 
-    List<Puyo> getNeighborPuyo(Puyo puyo) {
+    private List<Puyo> getNeighborPuyo(Puyo puyo) {
         int row = puyo.row;
         int column = puyo.column;
         List<Puyo> ret = new ArrayList<>();
@@ -153,7 +132,7 @@ public class Field implements Cloneable {
     }
 
     // 連結数
-    List<Puyo> getConnection(Puyo puyo) {
+    private List<Puyo> getConnection(Puyo puyo) {
         ArrayList<Puyo> connected = new ArrayList<>();
         if (puyo.color == PuyoColor.EMPTY) return connected;
         Stack<Puyo> sameColorStack = new Stack<>();
@@ -185,6 +164,11 @@ public class Field implements Cloneable {
 
     // fromString
     Field (String fieldStr) {
+        StringBuilder fieldStrBuilder = new StringBuilder(fieldStr);
+        while (fieldStrBuilder.length() < 6*13) {
+            fieldStrBuilder.append(" ");
+        }
+        fieldStr = fieldStrBuilder.toString();
         int idx = 0;
         field = new Puyo[14][7];
         for (int i=1; i<14; i++) {

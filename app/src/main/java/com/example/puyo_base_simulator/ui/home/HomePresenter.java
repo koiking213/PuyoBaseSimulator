@@ -8,6 +8,8 @@ import androidx.room.Room;
 import com.example.puyo_base_simulator.data.AppDatabase;
 import com.example.puyo_base_simulator.data.Base;
 
+import org.apache.commons.lang.SerializationUtils;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,7 +47,7 @@ public class HomePresenter implements HomeContract.Presenter {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        currentField =  new Field(1);
+        currentField =  new Field();
         fieldStack = new StackWithButton<>(() -> mView.enableUndoButton(), () -> mView.disableUndoButton());
         fieldRedoStack = new StackWithButton<>(() -> mView.enableRedoButton(), () -> mView.disableRedoButton());
         int seed = RANDOM.nextInt(65536);
@@ -79,7 +81,7 @@ public class HomePresenter implements HomeContract.Presenter {
     }
 
     private Field setPairOnField() {
-        Field newField = currentField.clone();
+        Field newField = (Field) SerializationUtils.clone(currentField);
         Rotation currentCursorRotate = tsumoController.currentCursorRotate;
         int currentCursorColumnIndex = tsumoController.currentCursorColumnIndex;
         boolean success = true;
@@ -175,7 +177,7 @@ public class HomePresenter implements HomeContract.Presenter {
 
     public void load(FieldPreview fieldPreview) {
         Base base = mDB.baseDao().findById(fieldPreview.id);
-        currentField = new Field(1);
+        currentField = new Field();
         tsumoController.stringToPlacementOrder(base.getPlacementOrder());
         fieldRedoStack.clear();
         while (!tsumoController.placementOrder.isEmpty()) {
@@ -194,7 +196,6 @@ public class HomePresenter implements HomeContract.Presenter {
             return getLastField(field.nextField);
         }
     }
-
 
     void drawFieldChain(final Field field) {
         drawFieldChainRecursive(field, true);
@@ -238,7 +239,7 @@ public class HomePresenter implements HomeContract.Presenter {
             fieldRedoStack.clear();
             fieldStack.clear();
             mView.setSeedText(newSeed);
-            currentField =  new Field(1);
+            currentField =  new Field();
             mView.update(currentField, tsumoController.makeTsumoInfo());
         } catch (NumberFormatException ignored) {
 

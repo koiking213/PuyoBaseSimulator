@@ -10,7 +10,7 @@ public class TsumoController {
     int tsumoCounter = 0;
     int seed;
     int currentCursorColumnIndex = 3;
-    Rotation currentCursorRotate = Rotation.DEGREE0;
+    Rotation currentCursorRotate = Rotation.DEGREE0;  // 時計回り
     PuyoColor[] currentColor = new PuyoColor[2];
     PuyoColor[][] nextColor = new PuyoColor[2][2];
     Stack<Placement> placementOrder = new Stack<>();
@@ -28,6 +28,7 @@ public class TsumoController {
     Placement popPlacementOrder() {
         return placementOrder.pop();
     }
+
     void restorePlacement(Placement plc) {
         tsumoCounter = plc.tsumoCounter;
         this.setTsumo();
@@ -36,7 +37,7 @@ public class TsumoController {
     }
 
     public String placementOrderToString() {
-        StringBuilder str= new StringBuilder();
+        StringBuilder str = new StringBuilder();
         // スタックの奥から順に取り出される
         for (Placement p: placementOrder) {
             str.append(p.toString());
@@ -51,7 +52,7 @@ public class TsumoController {
         }
     }
 
-    void setTsumo() {
+    private void setTsumo() {
         currentCursorColumnIndex = 3;
         currentCursorRotate = Rotation.DEGREE0;
         currentColor[1] = getPuyoColor(tsumo.charAt(tsumoCounter));
@@ -104,7 +105,7 @@ public class TsumoController {
         return info;
     }
 
-    PuyoColor getPuyoColor(char c) {  //ここにいるべきか？
+    private PuyoColor getPuyoColor(char c) {
         switch (c) {
             case 'r':
                 return PuyoColor.RED;
