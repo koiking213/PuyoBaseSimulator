@@ -23,9 +23,9 @@ public class TsumoControllerTest {
         TsumoController tc = new TsumoController("rgrbyyrrgbrb", 0);
         tc.pushPlacementOrder();
         Placement p = tc.popPlacementOrder();
-        assertThat(p.currentCursorColumnIndex).isEqualTo(3);
-        assertThat(p.currentCursorRotate).isEqualTo(Rotation.DEGREE0);
-        assertThat(p.tsumoCounter).isEqualTo(0);
+        assertThat(p.getCurrentCursorColumnIndex()).isEqualTo(3);
+        assertThat(p.getCurrentCursorRotate()).isEqualTo(Rotation.DEGREE0);
+        assertThat(p.getTsumoCounter()).isEqualTo(0);
     }
 
     @Test
@@ -58,7 +58,8 @@ public class TsumoControllerTest {
         TsumoController tc = new TsumoController("rgrbyyrrgbrb", 0);
         tc.pushPlacementOrder();
         TsumoController tc2 = new TsumoController("rgrbyyrrgbrb", 0);
-        tc2.stringToPlacementOrder(tc.placementOrderToString());
+        String str = tc.placementOrderToString();
+        tc2.stringToPlacementOrder(str);
         assertThat(tc.popPlacementOrder().toString()).isEqualTo(tc2.popPlacementOrder().toString());
     }
 
