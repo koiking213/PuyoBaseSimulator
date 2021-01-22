@@ -159,16 +159,7 @@ class Field : Serializable {
     companion object {
         fun from(fieldStr: String) : Field {
             var ret = Field()
-            var fieldStr = fieldStr
-            val fieldStrBuilder = StringBuilder(fieldStr)
-            while (fieldStrBuilder.length < 6 * 13) {
-                fieldStrBuilder.append(" ")
-            }
-            fieldStr = fieldStrBuilder.toString()
-            var colorString = Array(13) { "" }
-            for (i in 0..12) {
-                colorString[i] = fieldStr.substring(i*6, (i+1)*6)
-            }
+            var colorString = Array(13) { i -> fieldStr.padEnd(6*13).substring(i*6, (i+1)*6) }
             ret.field = Array(13) { i -> Array(6) { j -> Puyo(i+1, j+1, getPuyoColor(colorString[i][j])!!)} }
             for (col in 0..5) {
                 var i = 0
@@ -176,7 +167,6 @@ class Field : Serializable {
                     ret.heights[col]++
                 }
             }
-            ret.chainNum = 1
             return ret
         }
     }
