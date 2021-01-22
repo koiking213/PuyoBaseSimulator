@@ -8,21 +8,17 @@ import java.util.*
 class Field : Serializable {
     @JvmField
     var nextField: Field? = null
-    private var field: Array<Array<Puyo>>
+    private var field = Array(13) { i -> Array(6) { j -> Puyo(i+1, j+1, PuyoColor.EMPTY)} }
     fun getFieldContent(row: Int, column: Int) : Puyo { return field[row-1][column-1]}
-    private var heights = intArrayOf(0, 0, 0, 0, 0, 0)
+    private var heights = Array(6 ) { 0 }
     fun getHeight(column: Int) : Int { return heights[column-1]}
     @JvmField
-    var disappearPuyo: MutableList<Puyo> = ArrayList()
+    var disappearPuyo = mutableListOf<Puyo>()
     @JvmField
     var accumulatedPoint = 0
     @JvmField
     var bonus = 0
     private var chainNum = 0
-
-    init {
-        field = Array(13) { i -> Array(6) { j -> Puyo(i+1, j+1, PuyoColor.EMPTY)} }
-    }
 
     fun addPuyo(column: Int, color: PuyoColor): Boolean {
         val row = heights[column-1] + 1
@@ -32,42 +28,23 @@ class Field : Serializable {
         return true
     }
 
-    fun allClear(): Boolean {
-        return heights.all {it == 0}
-    }
+    fun allClear() = heights.all {it == 0}
 
-    fun isDisappear(puyo: Puyo): Boolean {
-        return disappearPuyo.contains(puyo)
-    }
+    fun isDisappear(puyo: Puyo) = disappearPuyo.contains(puyo)
 
     fun evalNextField() {
         val newField = Field()
         newField.chainNum = chainNum + 1
-        val colors: MutableSet<PuyoColor> = HashSet()
         var connectionBonus = 0
         // 消えるぷよを探す
-        for (i in 1..12) {
-            for (j in 1..6) {
-                val puyo = getFieldContent(i,j)
-                val connection = getConnection(puyo)
-                if (connection.size >= 4) {
-                    disappearPuyo.add(puyo)
-                    // 色ボーナスの評価
-                    colors.add(puyo.color)
-                    // 連結ボーナスの評価
-                    var connectionIsNew = true
-                    for (p in disappearPuyo) {
-                        if (p.row < i || p.row == i && p.column < j) {
-                            connectionIsNew = false
-                            break
-                        }
-                    }
-                    if (connectionIsNew) {
-                        connectionBonus += connectionBonusConstant(connection.size)
-                    }
-                } else if (puyo.color !== PuyoColor.EMPTY) {
-                    newField.addPuyo(j, puyo.color)
-                }
+        for (puyo in field.flatten()) {
+            if (disappearPuyo.contains(puyo) || puyo.color == PuyoColor.EMPTY) continue
+            val connection = getConnection(puyo)
+            if (connection.size >= 4) {
+                disappearPuyo.addAll(connection)
+                connectionBonus += connectionBonusConstant(connection.size)
+            } else {
+                newField.addPuyo(puyo.column, puyo.color)
             }
         }
         if (newField.allClear()) accumulatedPoint += allClearBonus
@@ -77,7 +54,8 @@ class Field : Serializable {
         }
 
         // 消えるぷよがある場合のみ次の盤面を評価
-        var bonus = colorBonusConstant[colors.size] + connectionBonus + chainBonusConstant[chainNum]
+        val colorNum = disappearPuyo.map {it.color}.toSet().size
+        var bonus = colorBonusConstant[colorNum] + connectionBonus + chainBonusConstant[chainNum]
         if (bonus == 0) bonus = 1
         val point = accumulatedPoint + bonus * disappearPuyo.size * 10
         this.bonus = bonus
@@ -118,9 +96,7 @@ class Field : Serializable {
         sameColorStack.push(puyo)
         connected.add(puyo)
         while (!sameColorStack.isEmpty()) {
-            val currentPuyo = sameColorStack.pop()
-            val neighbors = getNeighborPuyo(currentPuyo)
-            for (p in neighbors) {
+            for (p in getNeighborPuyo(sameColorStack.pop())) {
                 if (p.color === puyo.color && !connected.contains(p)) {
                     sameColorStack.push(p)
                     connected.add(p)
