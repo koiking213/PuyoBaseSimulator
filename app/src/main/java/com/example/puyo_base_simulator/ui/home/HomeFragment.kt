@@ -154,7 +154,7 @@ class HomeFragment : Fragment(), HomeContract.View {
     override fun drawField(field: Field) {
         for (i in 1..13) {
             for (j in 1..6) {
-                val (_, _, color) = field.field[i][j]!!
+                val (_, _, color) = field.getFieldContent(i,j)!!
                 fieldView[i][j]!!.setImageResource(getPuyoImage(color))
             }
         }
@@ -163,7 +163,7 @@ class HomeFragment : Fragment(), HomeContract.View {
     override fun drawDisappearField(field: Field) {
         for (i in 1..13) {
             for (j in 1..6) {
-                val puyo = field.field[i][j]!!
+                val puyo = field.getFieldContent(i,j)!!
                 if (field.isDisappear(puyo)) {
                     fieldView[i][j]!!.setImageResource(R.drawable.disappear)
                 } else {
@@ -207,7 +207,7 @@ class HomeFragment : Fragment(), HomeContract.View {
 
     // リストで渡された順に下から積み上げる
     fun drawDot(column: Int, colors: List<PuyoColor?>, field: Field) {
-        var row = field.heights[column] + 1
+        var row = field.getHeight(column) + 1
         for (color in colors) {
             if (row <= 13) {
                 fieldView[row++][column]!!.setImageResource(getDotImage(color))

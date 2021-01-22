@@ -8,10 +8,10 @@ import java.util.*
 class Field : Serializable {
     @JvmField
     var nextField: Field? = null
-    @JvmField
-    var field: Array<Array<Puyo?>>
-    @JvmField
-    var heights = intArrayOf(0, 0, 0, 0, 0, 0, 0)
+    private var field: Array<Array<Puyo?>>
+    fun getFieldContent(row: Int, column: Int) : Puyo? { return field[row-1][column-1]}
+    private var heights = intArrayOf(0, 0, 0, 0, 0, 0)
+    fun getHeight(column: Int) : Int { return heights[column-1]}
     @JvmField
     var disappearPuyo: MutableList<Puyo?> = ArrayList()
     @JvmField
@@ -32,20 +32,15 @@ class Field : Serializable {
         }
     }
 
-    internal constructor() {
-        field = Array(14) { arrayOfNulls(7) }
-        for (i in 1..13) {
-            for (j in 1..6) {
-                field[i][j] = Puyo(i, j, PuyoColor.EMPTY)
-            }
-        }
+    init {
+        field = Array(13) { i -> Array(6) { j -> Puyo(i+1, j+1, PuyoColor.EMPTY)} }
     }
 
     fun addPuyo(column: Int, color: PuyoColor?): Boolean {
-        val row = heights[column] + 1
+        val row = heights[column-1] + 1
         if (row == 14) return false
-        field[row][column] = Puyo(row, column, color!!)
-        heights[column]++
+        field[row-1][column-1] = Puyo(row, column, color!!)
+        heights[column-1]++
         return true
     }
 
@@ -68,7 +63,7 @@ class Field : Serializable {
         // 消えるぷよを探す
         for (i in 1..12) {
             for (j in 1..6) {
-                val puyo = field[i][j]
+                val puyo = getFieldContent(i,j)
                 val connection = getConnection(puyo)
                 if (connection.size >= 4) {
                     disappearPuyo.add(puyo)
@@ -112,20 +107,20 @@ class Field : Serializable {
         val column = puyo.column
         val ret: MutableList<Puyo?> = ArrayList()
         // left
-        if (column != 1 && field[row][column - 1]!!.color !== PuyoColor.EMPTY) {
-            ret.add(field[row][column - 1])
+        if (column != 1 && getFieldContent(row,column - 1)!!.color !== PuyoColor.EMPTY) {
+            ret.add(getFieldContent(row,column - 1))
         }
         // right
-        if (column != 6 && field[row][column + 1]!!.color !== PuyoColor.EMPTY) {
-            ret.add(field[row][column + 1])
+        if (column != 6 && getFieldContent(row,column + 1)!!.color !== PuyoColor.EMPTY) {
+            ret.add(getFieldContent(row,column + 1))
         }
         // up
-        if (row != 12 && field[row + 1][column]!!.color !== PuyoColor.EMPTY) {
-            ret.add(field[row + 1][column])
+        if (row != 12 && getFieldContent(row + 1,column)!!.color !== PuyoColor.EMPTY) {
+            ret.add(getFieldContent(row + 1,column))
         }
         // down
-        if (row != 1 && field[row - 1][column]!!.color !== PuyoColor.EMPTY) {
-            ret.add(field[row - 1][column])
+        if (row != 1 && getFieldContent(row - 1,column)!!.color !== PuyoColor.EMPTY) {
+            ret.add(getFieldContent(row - 1,column))
         }
         return ret
     }
@@ -154,32 +149,36 @@ class Field : Serializable {
         val str = StringBuilder()
         for (i in 1..13) {
             for (j in 1..6) {
-                str.append(field[i][j]!!.color.char)
+                str.append(getFieldContent(i,j)!!.color.char)
             }
         }
         return str.toString()
     }
 
     // fromString
-    internal constructor(fieldStr: String) {
-        var fieldStr = fieldStr
-        val fieldStrBuilder = StringBuilder(fieldStr)
-        while (fieldStrBuilder.length < 6 * 13) {
-            fieldStrBuilder.append(" ")
-        }
-        fieldStr = fieldStrBuilder.toString()
-        var idx = 0
-        field = Array(14) { arrayOfNulls(7) }
-        for (i in 1..13) {
-            for (j in 1..6) {
-                val color = getPuyoColor(fieldStr[idx])
-                field[i][j] = Puyo(i, j, color!!)
-                if (color !== PuyoColor.EMPTY) {
-                    heights[j]++
-                }
-                idx++
+    companion object {
+        fun from(fieldStr: String) : Field {
+            var ret = Field()
+            var fieldStr = fieldStr
+            val fieldStrBuilder = StringBuilder(fieldStr)
+            while (fieldStrBuilder.length < 6 * 13) {
+                fieldStrBuilder.append(" ")
             }
+            fieldStr = fieldStrBuilder.toString()
+            var idx = 0
+            ret.field = Array(13) { arrayOfNulls(6) }
+            for (i in 1..13) {
+                for (j in 1..6) {
+                    val color = getPuyoColor(fieldStr[idx])
+                    ret.field[i - 1][j - 1] = Puyo(i, j, color!!)
+                    if (color !== PuyoColor.EMPTY) {
+                        ret.heights[j - 1]++
+                    }
+                    idx++
+                }
+            }
+            ret.chainNum = 1
+            return ret
         }
-        chainNum = 1
     }
 }

@@ -22,7 +22,7 @@ public class FieldTest {
          rrrbbb
         */
         String str = "rrrbbbbbbgrrrggbbrg";
-        mField = new Field(str);
+        mField = Field.Companion.from(str);
     }
 
     private String fillFieldString(String str) {
@@ -37,14 +37,14 @@ public class FieldTest {
         assertThat(f.addPuyo(1, PuyoColor.RED)).isTrue();
         String expected = fillFieldString("rrrbbbbbbgrrrggbbrg     r");
         assertThat(f.toString()).isEqualTo(expected);
-        assertThat(f.heights[1]).isEqualTo(mField.heights[1]+1);
+        assertThat(f.getHeight(1)).isEqualTo(mField.getHeight(1)+1);
         for (int i=2; i<=6; i++) {
-            assertThat(f.heights[i]).isEqualTo(mField.heights[i]);
+            assertThat(f.getHeight(i)).isEqualTo(mField.getHeight(i));
         }
 
         // fail add puyo
         for (int i=0; i<20; i++) {
-            if (f.heights[1] == 13) {
+            if (f.getHeight(1) == 13) {
                 assertThat(f.addPuyo(1, PuyoColor.RED)).isFalse();
             } else {
                 assertThat(f.addPuyo(1, PuyoColor.RED)).isTrue();
