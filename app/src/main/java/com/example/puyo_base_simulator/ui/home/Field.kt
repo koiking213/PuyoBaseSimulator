@@ -57,7 +57,7 @@ class Field : Serializable {
                     // 連結ボーナスの評価
                     var connectionIsNew = true
                     for (p in disappearPuyo) {
-                        if (p!!.row < i || p.row == i && p.column < j) {
+                        if (p.row < i || p.row == i && p.column < j) {
                             connectionIsNew = false
                             break
                         }
@@ -137,19 +137,17 @@ class Field : Serializable {
     companion object {
         private val chainBonusConstant = intArrayOf(0, 0, 8, 16, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 480, 512)
         private val colorBonusConstant = intArrayOf(0, 0, 3, 6, 12)
-        private val allClearBonus = 2100
+        private const val allClearBonus = 2100
         private fun connectionBonusConstant(connectionNum: Int): Int {
-            return if (connectionNum <= 4) {
-                0
-            } else if (connectionNum <= 10) {
-                connectionNum - 3
-            } else {
-                10
+            return when {
+                connectionNum <= 4 -> 0
+                connectionNum <= 10 -> connectionNum - 3
+                else -> 10
             }
         }
         fun from(fieldStr: String) : Field {
-            var ret = Field()
-            var colorString = Array(13) { i -> fieldStr.padEnd(6*13).substring(i*6, (i+1)*6) }
+            val ret = Field()
+            val colorString = Array(13) { i -> fieldStr.padEnd(6*13).substring(i*6, (i+1)*6) }
             ret.field = Array(13) { i -> Array(6) { j -> Puyo(i+1, j+1, getPuyoColor(colorString[i][j]))} }
             for (col in 0..5) {
                 var i = 0
