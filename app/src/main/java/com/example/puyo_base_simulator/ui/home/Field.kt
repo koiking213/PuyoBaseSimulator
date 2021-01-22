@@ -90,24 +90,24 @@ class Field : Serializable {
     private fun getNeighborPuyo(puyo: Puyo): List<Puyo> {
         val row = puyo.row
         val column = puyo.column
-        val ret: MutableList<Puyo> = ArrayList()
+        val neighbors = mutableListOf<Puyo>()
         // left
-        if (column != 1 && getFieldContent(row,column - 1).color !== PuyoColor.EMPTY) {
-            ret.add(getFieldContent(row,column - 1))
+        if (column != 1) {
+            neighbors.add(getFieldContent(row,column - 1))
         }
         // right
-        if (column != 6 && getFieldContent(row,column + 1).color !== PuyoColor.EMPTY) {
-            ret.add(getFieldContent(row,column + 1))
+        if (column != 6) {
+            neighbors.add(getFieldContent(row,column + 1))
         }
         // up
-        if (row != 12 && getFieldContent(row + 1,column).color !== PuyoColor.EMPTY) {
-            ret.add(getFieldContent(row + 1,column))
+        if (row != 12) {
+            neighbors.add(getFieldContent(row + 1,column))
         }
         // down
-        if (row != 1 && getFieldContent(row - 1,column).color !== PuyoColor.EMPTY) {
-            ret.add(getFieldContent(row - 1,column))
+        if (row != 1) {
+            neighbors.add(getFieldContent(row - 1,column))
         }
-        return ret
+        return neighbors.filter {it.color != PuyoColor.EMPTY}
     }
 
     // 連結数
