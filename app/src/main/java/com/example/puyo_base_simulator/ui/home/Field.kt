@@ -131,16 +131,9 @@ class Field : Serializable {
     }
 
     override fun toString(): String {
-        val str = StringBuilder()
-        for (i in 1..13) {
-            for (j in 1..6) {
-                str.append(getFieldContent(i,j).color.char)
-            }
-        }
-        return str.toString()
+        return field.joinToString("") { row -> row.map { it.color.char }.joinToString("") }
     }
 
-    // fromString
     companion object {
         private val chainBonusConstant = intArrayOf(0, 0, 8, 16, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 480, 512)
         private val colorBonusConstant = intArrayOf(0, 0, 3, 6, 12)
