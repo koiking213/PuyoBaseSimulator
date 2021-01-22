@@ -8,12 +8,12 @@ import java.util.*
 class Field : Serializable {
     @JvmField
     var nextField: Field? = null
-    private var field: Array<Array<Puyo?>>
-    fun getFieldContent(row: Int, column: Int) : Puyo? { return field[row-1][column-1]}
+    private var field: Array<Array<Puyo>>
+    fun getFieldContent(row: Int, column: Int) : Puyo { return field[row-1][column-1]}
     private var heights = intArrayOf(0, 0, 0, 0, 0, 0)
     fun getHeight(column: Int) : Int { return heights[column-1]}
     @JvmField
-    var disappearPuyo: MutableList<Puyo?> = ArrayList()
+    var disappearPuyo: MutableList<Puyo> = ArrayList()
     @JvmField
     var accumulatedPoint = 0
     @JvmField
@@ -36,7 +36,7 @@ class Field : Serializable {
         field = Array(13) { i -> Array(6) { j -> Puyo(i+1, j+1, PuyoColor.EMPTY)} }
     }
 
-    fun addPuyo(column: Int, color: PuyoColor?): Boolean {
+    fun addPuyo(column: Int, color: PuyoColor): Boolean {
         val row = heights[column-1] + 1
         if (row == 14) return false
         field[row-1][column-1] = Puyo(row, column, color!!)
@@ -51,7 +51,7 @@ class Field : Serializable {
         return true
     }
 
-    fun isDisappear(puyo: Puyo?): Boolean {
+    fun isDisappear(puyo: Puyo): Boolean {
         return disappearPuyo.contains(puyo)
     }
 
@@ -68,7 +68,7 @@ class Field : Serializable {
                 if (connection.size >= 4) {
                     disappearPuyo.add(puyo)
                     // 色ボーナスの評価
-                    colors.add(puyo!!.color)
+                    colors.add(puyo.color)
                     // 連結ボーナスの評価
                     var connectionIsNew = true
                     for (p in disappearPuyo) {
@@ -80,8 +80,8 @@ class Field : Serializable {
                     if (connectionIsNew) {
                         connectionBonus += connectionBonusConstant(connection.size)
                     }
-                } else if (puyo!!.color !== PuyoColor.EMPTY) {
-                    newField.addPuyo(j, puyo!!.color)
+                } else if (puyo.color !== PuyoColor.EMPTY) {
+                    newField.addPuyo(j, puyo.color)
                 }
             }
         }
@@ -102,41 +102,41 @@ class Field : Serializable {
         newField.evalNextField()
     }
 
-    private fun getNeighborPuyo(puyo: Puyo?): List<Puyo?> {
-        val row = puyo!!.row
+    private fun getNeighborPuyo(puyo: Puyo): List<Puyo> {
+        val row = puyo.row
         val column = puyo.column
-        val ret: MutableList<Puyo?> = ArrayList()
+        val ret: MutableList<Puyo> = ArrayList()
         // left
-        if (column != 1 && getFieldContent(row,column - 1)!!.color !== PuyoColor.EMPTY) {
+        if (column != 1 && getFieldContent(row,column - 1).color !== PuyoColor.EMPTY) {
             ret.add(getFieldContent(row,column - 1))
         }
         // right
-        if (column != 6 && getFieldContent(row,column + 1)!!.color !== PuyoColor.EMPTY) {
+        if (column != 6 && getFieldContent(row,column + 1).color !== PuyoColor.EMPTY) {
             ret.add(getFieldContent(row,column + 1))
         }
         // up
-        if (row != 12 && getFieldContent(row + 1,column)!!.color !== PuyoColor.EMPTY) {
+        if (row != 12 && getFieldContent(row + 1,column).color !== PuyoColor.EMPTY) {
             ret.add(getFieldContent(row + 1,column))
         }
         // down
-        if (row != 1 && getFieldContent(row - 1,column)!!.color !== PuyoColor.EMPTY) {
+        if (row != 1 && getFieldContent(row - 1,column).color !== PuyoColor.EMPTY) {
             ret.add(getFieldContent(row - 1,column))
         }
         return ret
     }
 
     // 連結数
-    private fun getConnection(puyo: Puyo?): List<Puyo?> {
-        val connected = ArrayList<Puyo?>()
-        if (puyo!!.color === PuyoColor.EMPTY) return connected
-        val sameColorStack = Stack<Puyo?>()
+    private fun getConnection(puyo: Puyo): List<Puyo> {
+        val connected = ArrayList<Puyo>()
+        if (puyo.color === PuyoColor.EMPTY) return connected
+        val sameColorStack = Stack<Puyo>()
         sameColorStack.push(puyo)
         connected.add(puyo)
         while (!sameColorStack.isEmpty()) {
             val currentPuyo = sameColorStack.pop()
             val neighbors = getNeighborPuyo(currentPuyo)
             for (p in neighbors) {
-                if (p!!.color === puyo!!.color && !connected.contains(p)) {
+                if (p.color === puyo.color && !connected.contains(p)) {
                     sameColorStack.push(p)
                     connected.add(p)
                 }
@@ -149,7 +149,7 @@ class Field : Serializable {
         val str = StringBuilder()
         for (i in 1..13) {
             for (j in 1..6) {
-                str.append(getFieldContent(i,j)!!.color.char)
+                str.append(getFieldContent(i,j).color.char)
             }
         }
         return str.toString()
@@ -165,16 +165,15 @@ class Field : Serializable {
                 fieldStrBuilder.append(" ")
             }
             fieldStr = fieldStrBuilder.toString()
-            var idx = 0
-            ret.field = Array(13) { arrayOfNulls(6) }
-            for (i in 1..13) {
-                for (j in 1..6) {
-                    val color = getPuyoColor(fieldStr[idx])
-                    ret.field[i - 1][j - 1] = Puyo(i, j, color!!)
-                    if (color !== PuyoColor.EMPTY) {
-                        ret.heights[j - 1]++
-                    }
-                    idx++
+            var colorString = Array(13) { "" }
+            for (i in 0..12) {
+                colorString[i] = fieldStr.substring(i*6, (i+1)*6)
+            }
+            ret.field = Array(13) { i -> Array(6) { j -> Puyo(i+1, j+1, getPuyoColor(colorString[i][j])!!)} }
+            for (col in 0..5) {
+                var i = 0
+                while (ret.field[i++][col].color != PuyoColor.EMPTY) {
+                    ret.heights[col]++
                 }
             }
             ret.chainNum = 1

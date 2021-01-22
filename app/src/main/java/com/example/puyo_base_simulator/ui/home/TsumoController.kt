@@ -85,11 +85,11 @@ class TsumoController(var tsumo: String, var seed: Int) {
     }
 
     // 軸ぷよ
-    val mainColor: PuyoColor?
+    val mainColor: PuyoColor
         get() = currentColor[0]
 
     // 軸ぷよでは無い方
-    val subColor: PuyoColor?
+    val subColor: PuyoColor
         get() = currentColor[1]
 
     fun moveCurrentLeft() {
