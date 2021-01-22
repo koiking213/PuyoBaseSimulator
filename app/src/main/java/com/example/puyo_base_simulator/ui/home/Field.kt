@@ -160,7 +160,7 @@ class Field : Serializable {
         fun from(fieldStr: String) : Field {
             var ret = Field()
             var colorString = Array(13) { i -> fieldStr.padEnd(6*13).substring(i*6, (i+1)*6) }
-            ret.field = Array(13) { i -> Array(6) { j -> Puyo(i+1, j+1, getPuyoColor(colorString[i][j])!!)} }
+            ret.field = Array(13) { i -> Array(6) { j -> Puyo(i+1, j+1, getPuyoColor(colorString[i][j]))} }
             for (col in 0..5) {
                 var i = 0
                 while (ret.field[i++][col].color != PuyoColor.EMPTY) {
