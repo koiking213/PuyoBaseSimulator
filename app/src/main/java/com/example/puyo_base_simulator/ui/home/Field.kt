@@ -19,18 +19,6 @@ class Field : Serializable {
     @JvmField
     var bonus = 0
     private var chainNum = 0
-    private val allClearBonus = 2100
-    private val chainBonusConstant = intArrayOf(0, 0, 8, 16, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 480, 512)
-    private val colorBonusConstant = intArrayOf(0, 0, 3, 6, 12)
-    private fun connectionBonusConstant(connectionNum: Int): Int {
-        return if (connectionNum <= 4) {
-            0
-        } else if (connectionNum <= 10) {
-            connectionNum - 3
-        } else {
-            10
-        }
-    }
 
     init {
         field = Array(13) { i -> Array(6) { j -> Puyo(i+1, j+1, PuyoColor.EMPTY)} }
@@ -39,16 +27,13 @@ class Field : Serializable {
     fun addPuyo(column: Int, color: PuyoColor): Boolean {
         val row = heights[column-1] + 1
         if (row == 14) return false
-        field[row-1][column-1] = Puyo(row, column, color!!)
+        field[row-1][column-1] = Puyo(row, column, color)
         heights[column-1]++
         return true
     }
 
     fun allClear(): Boolean {
-        for (h in heights) {
-            if (h > 0) return false
-        }
-        return true
+        return heights.all {it == 0}
     }
 
     fun isDisappear(puyo: Puyo): Boolean {
@@ -157,6 +142,18 @@ class Field : Serializable {
 
     // fromString
     companion object {
+        private val chainBonusConstant = intArrayOf(0, 0, 8, 16, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 480, 512)
+        private val colorBonusConstant = intArrayOf(0, 0, 3, 6, 12)
+        private val allClearBonus = 2100
+        private fun connectionBonusConstant(connectionNum: Int): Int {
+            return if (connectionNum <= 4) {
+                0
+            } else if (connectionNum <= 10) {
+                connectionNum - 3
+            } else {
+                10
+            }
+        }
         fun from(fieldStr: String) : Field {
             var ret = Field()
             var colorString = Array(13) { i -> fieldStr.padEnd(6*13).substring(i*6, (i+1)*6) }
