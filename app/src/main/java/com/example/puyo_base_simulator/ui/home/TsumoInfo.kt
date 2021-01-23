@@ -1,9 +1,9 @@
 package com.example.puyo_base_simulator.ui.home
 
 
-class TsumoInfo(val currentColor: Pair<PuyoColor, PuyoColor>,
+data class TsumoInfo(val currentColor: Pair<PuyoColor, PuyoColor>,
                 val nextColor:Pair<Pair<PuyoColor,PuyoColor>, Pair<PuyoColor, PuyoColor>>,
-                column: Int,
+                private var column: Int,
                 val rot: Rotation) {
     val currentMainPos = Point(1, column) // row, column
     val currentSubPos = when (rot) {
