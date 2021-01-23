@@ -232,7 +232,7 @@ class HomeFragment : Fragment(), HomeContract.View {
         // draw next and next next
         nextPuyoView[0][0]!!.setImageResource(getPuyoImage(tsumoInfo.nextColor.first.first))
         nextPuyoView[0][1]!!.setImageResource(getPuyoImage(tsumoInfo.nextColor.first.second))
-        nextPuyoView[1][0]!!.setImageResource(getPuyoImage(tsumoInfo.nextColor.second.second))
+        nextPuyoView[1][0]!!.setImageResource(getPuyoImage(tsumoInfo.nextColor.second.first))
         nextPuyoView[1][1]!!.setImageResource(getPuyoImage(tsumoInfo.nextColor.second.second))
 
         // draw dot
