@@ -1,24 +1,21 @@
 package com.example.puyo_base_simulator.ui.home
 
-import com.example.puyo_base_simulator.BuildConfig
 import com.example.puyo_base_simulator.ui.home.Placement.Companion.from
-import com.example.puyo_base_simulator.ui.home.PuyoColor
+import com.example.puyo_base_simulator.ui.home.PuyoColor.Companion.getPuyoColor
 import java.util.*
 
-class TsumoController(var tsumo: String, var seed: Int) {
-    var tsumoCounter = 0
+class TsumoController(private val tsumo: String, val seed: Int) {
+    private var tsumoCounter = 0
     var currentCursorColumnIndex = 3
     var currentCursorRotate = Rotation.DEGREE0 // 時計回り
-    var currentColor = Pair(PuyoColor.RED, PuyoColor.RED)
+    private var currentColor = Pair(PuyoColor.RED, PuyoColor.RED)
     var nextColor = Pair(Pair(PuyoColor.RED, PuyoColor.RED), Pair(PuyoColor.RED, PuyoColor.RED))
     var placementOrder = Stack<Placement>()
     fun pushPlacementOrder() {
         placementOrder.push(Placement(currentCursorColumnIndex, currentCursorRotate, tsumoCounter))
     }
 
-    fun popPlacementOrder(): Placement {
-        return placementOrder.pop()
-    }
+    fun popPlacementOrder(): Placement = placementOrder.pop()
 
     fun restorePlacement(plc: Placement) {
         tsumoCounter = plc.tsumoCounter
@@ -27,14 +24,7 @@ class TsumoController(var tsumo: String, var seed: Int) {
         currentCursorRotate = plc.currentCursorRotate
     }
 
-    fun placementOrderToString(): String {
-        val list = mutableListOf<String>()
-        // スタックの奥から順に取り出される
-        for (p in placementOrder) {
-            list.add(p.toString())
-        }
-        return list.joinToString(";")
-    }
+    fun placementOrderToString() = placementOrder.joinToString(";") { it.toString() }
 
     fun stringToPlacementOrder(str: String) {
         placementOrder.clear()
@@ -63,25 +53,7 @@ class TsumoController(var tsumo: String, var seed: Int) {
         setTsumo()
     }
 
-    fun makeTsumoInfo(): TsumoInfo {
-        return TsumoInfo(currentColor, nextColor, currentCursorColumnIndex, currentCursorRotate)
-    }
-
-    private fun getPuyoColor(c: Char): PuyoColor {
-        return when (c) {
-            'r' -> PuyoColor.RED
-            'b' -> PuyoColor.BLUE
-            'g' -> PuyoColor.GREEN
-            'y' -> PuyoColor.YELLOW
-            'p' -> PuyoColor.PURPLE
-            else -> {
-                if (BuildConfig.DEBUG) {
-                    throw AssertionError("Assertion failed")
-                }
-                PuyoColor.EMPTY
-            }
-        }
-    }
+    fun makeTsumoInfo() = TsumoInfo(currentColor, nextColor, currentCursorColumnIndex, currentCursorRotate)
 
     // 軸ぷよ
     val mainColor: PuyoColor
@@ -110,18 +82,13 @@ class TsumoController(var tsumo: String, var seed: Int) {
                 if (currentCursorColumnIndex == 1) {
                     currentCursorColumnIndex = 2
                 }
-                return
             }
-            Rotation.DEGREE90 -> {
-                currentCursorRotate = Rotation.DEGREE0
-                return
-            }
+            Rotation.DEGREE90 -> currentCursorRotate = Rotation.DEGREE0
             Rotation.DEGREE180 -> {
                 currentCursorRotate = Rotation.DEGREE90
                 if (currentCursorColumnIndex == 6) {
                     currentCursorColumnIndex = 5
                 }
-                return
             }
             Rotation.DEGREE270 -> currentCursorRotate = Rotation.DEGREE180
         }
@@ -134,18 +101,13 @@ class TsumoController(var tsumo: String, var seed: Int) {
                 if (currentCursorColumnIndex == 6) {
                     currentCursorColumnIndex = 5
                 }
-                return
             }
-            Rotation.DEGREE90 -> {
-                currentCursorRotate = Rotation.DEGREE180
-                return
-            }
+            Rotation.DEGREE90 -> currentCursorRotate = Rotation.DEGREE180
             Rotation.DEGREE180 -> {
                 currentCursorRotate = Rotation.DEGREE270
                 if (currentCursorColumnIndex == 1) {
                     currentCursorColumnIndex = 2
                 }
-                return
             }
             Rotation.DEGREE270 -> currentCursorRotate = Rotation.DEGREE0
         }
