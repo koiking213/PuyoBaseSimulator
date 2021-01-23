@@ -37,7 +37,7 @@ class Field : Serializable {
         newField.chainNum = chainNum + 1
         var connectionBonus = 0
         // 消えるぷよを探す
-        for (puyo in field.flatten()) {
+        for (puyo in field.sliceArray(0..11).flatten()) {
             if (disappearPuyo.contains(puyo) || puyo.color == PuyoColor.EMPTY) continue
             val connection = getConnection(puyo)
             if (connection.size >= 4) {
