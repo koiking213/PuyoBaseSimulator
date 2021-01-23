@@ -8,7 +8,7 @@ import android.util.AttributeSet
 import android.view.View
 
 class FieldPreviewCanvas(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
-    var mPaint: Paint
+    var mPaint: Paint = Paint()
     var mField: String? = null
     override fun onDraw(canvas: Canvas) {
         //canvas.drawColor(Color.argb(127, 0, 127, 63));
@@ -38,7 +38,4 @@ class FieldPreviewCanvas(context: Context?, attrs: AttributeSet?) : View(context
         mField = str
     }
 
-    init {
-        mPaint = Paint()
-    }
 }

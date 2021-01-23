@@ -9,7 +9,7 @@ class TsumoController(private val tsumo: String, val seed: Int) {
     var currentCursorColumnIndex = 3
     var currentCursorRotate = Rotation.DEGREE0 // 時計回り
     private var currentColor = arrayOf(PuyoColor.RED, PuyoColor.RED)
-    var nextColor = arrayOf(arrayOf(PuyoColor.RED, PuyoColor.RED), arrayOf(PuyoColor.RED, PuyoColor.RED))
+    private var nextColor = arrayOf(arrayOf(PuyoColor.RED, PuyoColor.RED), arrayOf(PuyoColor.RED, PuyoColor.RED))
     var placementOrder = Stack<Placement>()
     fun pushPlacementOrder() {
         placementOrder.push(Placement(currentCursorColumnIndex, currentCursorRotate, tsumoCounter))

@@ -1,22 +1,17 @@
 package com.example.puyo_base_simulator.ui.home
 
-import com.example.puyo_base_simulator.ui.home.PuyoColor
 import com.example.puyo_base_simulator.ui.home.PuyoColor.Companion.getPuyoColor
 import java.io.Serializable
 import java.util.*
 
 class Field : Serializable {
-    @JvmField
     var nextField: Field? = null
     var field = Array(13) { i -> Array(6) { j -> Puyo(i+1, j+1, PuyoColor.EMPTY)} }
     private fun getFieldContent(row: Int, column: Int) : Puyo { return field[row-1][column-1]}
     private var heights = Array(6 ) { 0 }
     fun getHeight(column: Int) : Int { return heights[column-1]}
-    @JvmField
     var disappearPuyo = mutableListOf<Puyo>()
-    @JvmField
     var accumulatedPoint = 0
-    @JvmField
     var bonus = 0
     private var chainNum = 0
 

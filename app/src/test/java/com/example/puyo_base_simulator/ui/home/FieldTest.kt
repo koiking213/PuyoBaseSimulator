@@ -1,105 +1,103 @@
-package com.example.puyo_base_simulator.ui.home;
+package com.example.puyo_base_simulator.ui.home
 
-import org.apache.commons.lang.SerializationUtils;
-import org.junit.Before;
-import org.junit.Test;
-import static com.google.common.truth.Truth.assertThat;
+import com.example.puyo_base_simulator.ui.home.Field.Companion.from
+import com.example.puyo_base_simulator.ui.home.PuyoColor
+import com.google.common.truth.Truth
+import org.apache.commons.lang.SerializationUtils
+import org.junit.Before
+import org.junit.Test
+import java.util.*
 
-import java.io.Serializable;
-import java.util.Collections;
-
-import static org.junit.Assert.*;
-
-public class FieldTest {
-    private Field mField;
-
+class FieldTest {
+    private var mField: Field? = null
     @Before
-    public void setUp() {
+    fun setUp() {
         /*
          g
          rggbbr
          bbbgrr
          rrrbbb
         */
-        String str = "rrrbbbbbbgrrrggbbrg";
-        mField = Field.Companion.from(str);
+        val str = "rrrbbbbbbgrrrggbbrg"
+        mField = from(str)
     }
 
-    private String fillFieldString(String str) {
-        int remain = 6*13 - str.length();
-        return str + String.join("", Collections.nCopies(remain, " "));
+    private fun fillFieldString(str: String): String {
+        val remain = 6 * 13 - str.length
+        return str + java.lang.String.join("", Collections.nCopies(remain, " "))
     }
 
     @Test
-    public void addPuyo() {
+    fun addPuyo() {
         // add one puyo and check field content and heights
-        Field f = (Field) SerializationUtils.clone(mField);
-        assertThat(f.addPuyo(1, PuyoColor.RED)).isTrue();
-        String expected = fillFieldString("rrrbbbbbbgrrrggbbrg     r");
-        assertThat(f.toString()).isEqualTo(expected);
-        assertThat(f.getHeight(1)).isEqualTo(mField.getHeight(1)+1);
-        for (int i=2; i<=6; i++) {
-            assertThat(f.getHeight(i)).isEqualTo(mField.getHeight(i));
+        val f = SerializationUtils.clone(mField) as Field
+        Truth.assertThat(f.addPuyo(1, PuyoColor.RED)).isTrue()
+        val expected = fillFieldString("rrrbbbbbbgrrrggbbrg     r")
+        Truth.assertThat(f.toString()).isEqualTo(expected)
+        Truth.assertThat(f.getHeight(1)).isEqualTo(mField!!.getHeight(1) + 1)
+        for (i in 2..6) {
+            Truth.assertThat(f.getHeight(i)).isEqualTo(mField!!.getHeight(i))
         }
 
         // fail add puyo
-        for (int i=0; i<20; i++) {
+        for (i in 0..19) {
             if (f.getHeight(1) == 13) {
-                assertThat(f.addPuyo(1, PuyoColor.RED)).isFalse();
+                Truth.assertThat(f.addPuyo(1, PuyoColor.RED)).isFalse()
             } else {
-                assertThat(f.addPuyo(1, PuyoColor.RED)).isTrue();
+                Truth.assertThat(f.addPuyo(1, PuyoColor.RED)).isTrue()
             }
         }
     }
 
     @Test
-    public void allClear() {
-        assertThat(mField.allClear()).isFalse();
-        assertThat((new Field()).allClear()).isTrue();
+    fun allClear() {
+        Truth.assertThat(mField!!.allClear()).isFalse()
+        Truth.assertThat(Field().allClear()).isTrue()
+    }
+
+    // 4個消し5連鎖
+    @Test
+    fun isDisappear() {
+            var f: Field? = SerializationUtils.clone(mField) as Field
+            f!!.evalNextField()
+            Truth.assertThat(f.disappearPuyo.isEmpty()).isTrue()
+            f.addPuyo(6, PuyoColor.RED)
+            f.evalNextField() // 4個消し5連鎖
+            Truth.assertThat(f.disappearPuyo.isEmpty()).isFalse()
+            Truth.assertThat(f.disappearPuyo.size).isEqualTo(4)
+            f = f.nextField
+            Truth.assertThat(f!!.disappearPuyo.size).isEqualTo(4)
+            f = f.nextField
+            Truth.assertThat(f!!.disappearPuyo.size).isEqualTo(4)
+            f = f.nextField
+            Truth.assertThat(f!!.disappearPuyo.size).isEqualTo(4)
+            f = f.nextField
+            Truth.assertThat(f!!.disappearPuyo.size).isEqualTo(4)
+        }
+
+    @Test
+    fun evalNextField() {
+        var f: Field? = SerializationUtils.clone(mField) as Field
+        f!!.evalNextField()
+        Truth.assertThat(f.disappearPuyo.isEmpty()).isTrue()
+        f.addPuyo(1, PuyoColor.RED)
+        f.addPuyo(6, PuyoColor.RED)
+        f.evalNextField() // 4個消し5連鎖
+        Truth.assertThat(f.accumulatedPoint).isEqualTo(40)
+        f = f.nextField
+        Truth.assertThat(f!!.accumulatedPoint).isEqualTo(360)
+        f = f.nextField
+        Truth.assertThat(f!!.accumulatedPoint).isEqualTo(1000)
+        f = f.nextField
+        Truth.assertThat(f!!.accumulatedPoint).isEqualTo(2280)
+        f = f.nextField
+        Truth.assertThat(f!!.accumulatedPoint).isEqualTo(4840)
+        Truth.assertThat(f.allClear()).isFalse()
     }
 
     @Test
-    public void isDisappear() {
-        Field f = (Field) SerializationUtils.clone(mField);
-        f.evalNextField();
-        assertThat(f.disappearPuyo.isEmpty()).isTrue();
-        f.addPuyo(6, PuyoColor.RED);
-        f.evalNextField();  // 4個消し5連鎖
-        assertThat(f.disappearPuyo.isEmpty()).isFalse();
-        assertThat(f.disappearPuyo.size()).isEqualTo(4);
-        f = f.nextField;
-        assertThat(f.disappearPuyo.size()).isEqualTo(4);
-        f = f.nextField;
-        assertThat(f.disappearPuyo.size()).isEqualTo(4);
-        f = f.nextField;
-        assertThat(f.disappearPuyo.size()).isEqualTo(4);
-        f = f.nextField;
-        assertThat(f.disappearPuyo.size()).isEqualTo(4);
-    }
-
-    @Test
-    public void evalNextField() {
-        Field f = (Field) SerializationUtils.clone(mField);
-        f.evalNextField();
-        assertThat(f.disappearPuyo.isEmpty()).isTrue();
-        f.addPuyo(1, PuyoColor.RED);
-        f.addPuyo(6, PuyoColor.RED);
-        f.evalNextField();  // 4個消し5連鎖
-        assertThat(f.accumulatedPoint).isEqualTo(40);
-        f = f.nextField;
-        assertThat(f.accumulatedPoint).isEqualTo(360);
-        f = f.nextField;
-        assertThat(f.accumulatedPoint).isEqualTo(1000);
-        f = f.nextField;
-        assertThat(f.accumulatedPoint).isEqualTo(2280);
-        f = f.nextField;
-        assertThat(f.accumulatedPoint).isEqualTo(4840);
-        assertThat(f.allClear()).isFalse();
-    }
-
-    @Test
-    public void testToString() {
-        String expected = fillFieldString("rrrbbbbbbgrrrggbbrg");
-        assertThat(mField.toString()).isEqualTo(expected);
+    fun testToString() {
+        val expected = fillFieldString("rrrbbbbbbgrrrggbbrg")
+        Truth.assertThat(mField.toString()).isEqualTo(expected)
     }
 }

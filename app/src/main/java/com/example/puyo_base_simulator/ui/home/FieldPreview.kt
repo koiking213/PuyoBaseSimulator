@@ -1,3 +1,3 @@
 package com.example.puyo_base_simulator.ui.home
 
-class FieldPreview(var id: Int, var seed: Int, var content: String)
+data class FieldPreview(val id: Int, val seed: Int, val content: String)

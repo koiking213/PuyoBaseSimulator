@@ -7,6 +7,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.puyo_base_simulator.R
 import com.example.puyo_base_simulator.ui.home.LoadFieldAdapter.FieldViewHolder
+import java.util.*
+import kotlin.text.*
 
 class LoadFieldAdapter(private val mFields: List<FieldPreview>) : RecyclerView.Adapter<FieldViewHolder>() {
     private lateinit var mFieldSelectedListener: (Int, FieldPreview) -> Unit
@@ -20,12 +22,10 @@ class LoadFieldAdapter(private val mFields: List<FieldPreview>) : RecyclerView.A
 
     override fun onBindViewHolder(holder: FieldViewHolder, position: Int) {
         val fieldPreview = mFields[position]
-        holder.fieldID.text = "seed: " + Integer.toString(fieldPreview.seed)
+        holder.fieldID.text =   String.format(Locale.JAPAN, "seed: %d",fieldPreview.seed)
         holder.fieldCanvas.setField(fieldPreview.content)
         holder.itemView.setOnClickListener {
-            if (mFieldSelectedListener != null) {
-                mFieldSelectedListener!!.invoke(position, fieldPreview)
-            }
+            mFieldSelectedListener.invoke(position, fieldPreview)
         }
     }
 
@@ -34,16 +34,7 @@ class LoadFieldAdapter(private val mFields: List<FieldPreview>) : RecyclerView.A
     }
 
     class FieldViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        var fieldID: TextView
-        var fieldCanvas: FieldPreviewCanvas
-
-        init {
-            fieldID = itemView.findViewById(R.id.fieldID)
-            fieldCanvas = itemView.findViewById(R.id.fieldCanvas)
-        }
-    }
-
-    interface FieldSelectedListener {
-        fun onFieldSelected(position: Int, fieldPreview: FieldPreview?)
+        var fieldID: TextView = itemView.findViewById(R.id.fieldID)
+        var fieldCanvas: FieldPreviewCanvas = itemView.findViewById(R.id.fieldCanvas)
     }
 }

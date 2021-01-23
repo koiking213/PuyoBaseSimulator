@@ -55,7 +55,7 @@ class HomeFragment : Fragment(), HomeContract.View {
                               container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val root = inflater.inflate(R.layout.fragment_home, container, false)
         mRoot = root
-        val activity: Activity = requireActivity()
+        val activity = requireActivity()
         mActivity = activity
 
         // current puyo area
