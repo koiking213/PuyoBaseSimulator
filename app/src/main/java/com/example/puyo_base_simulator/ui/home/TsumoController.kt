@@ -9,8 +9,8 @@ class TsumoController(var tsumo: String, var seed: Int) {
     var tsumoCounter = 0
     var currentCursorColumnIndex = 3
     var currentCursorRotate = Rotation.DEGREE0 // 時計回り
-    var currentColor = Array<PuyoColor>(2) { PuyoColor.RED } // TODO: pairにする
-    var nextColor = Array(2) { Array<PuyoColor>(2) { PuyoColor.RED } } // TODO: pairのpairにする
+    var currentColor = Pair(PuyoColor.RED, PuyoColor.RED)
+    var nextColor = Pair(Pair(PuyoColor.RED, PuyoColor.RED), Pair(PuyoColor.RED, PuyoColor.RED))
     var placementOrder = Stack<Placement>()
     fun pushPlacementOrder() {
         placementOrder.push(Placement(currentCursorColumnIndex, currentCursorRotate, tsumoCounter))
@@ -46,12 +46,11 @@ class TsumoController(var tsumo: String, var seed: Int) {
     private fun setTsumo() {
         currentCursorColumnIndex = 3
         currentCursorRotate = Rotation.DEGREE0
-        currentColor[1] = getPuyoColor(tsumo[tsumoCounter])
-        currentColor[0] = getPuyoColor(tsumo[tsumoCounter + 1])
-        nextColor[0][0] = getPuyoColor(tsumo[tsumoCounter + 2])
-        nextColor[0][1] = getPuyoColor(tsumo[tsumoCounter + 3])
-        nextColor[1][0] = getPuyoColor(tsumo[tsumoCounter + 4])
-        nextColor[1][1] = getPuyoColor(tsumo[tsumoCounter + 5])
+        currentColor = Pair(getPuyoColor(tsumo[tsumoCounter + 1]), getPuyoColor(tsumo[tsumoCounter]))
+        nextColor = Pair(
+                Pair(getPuyoColor(tsumo[tsumoCounter + 2]), getPuyoColor(tsumo[tsumoCounter + 3])),
+                Pair(getPuyoColor(tsumo[tsumoCounter + 4]), getPuyoColor(tsumo[tsumoCounter + 5])),
+        )
     }
 
     fun incrementTsumo() {
@@ -86,11 +85,11 @@ class TsumoController(var tsumo: String, var seed: Int) {
 
     // 軸ぷよ
     val mainColor: PuyoColor
-        get() = currentColor[0]
+        get() = currentColor.first
 
     // 軸ぷよでは無い方
     val subColor: PuyoColor
-        get() = currentColor[1]
+        get() = currentColor.second
 
     fun moveCurrentLeft() {
         if (!(currentCursorColumnIndex == 1 || currentCursorColumnIndex == 2 && currentCursorRotate == Rotation.DEGREE270)) {

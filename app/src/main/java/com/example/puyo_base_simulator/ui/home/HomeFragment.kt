@@ -12,7 +12,6 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.gridlayout.widget.GridLayout
 import com.example.puyo_base_simulator.R
-import com.example.puyo_base_simulator.ui.home.PuyoColor
 import java.util.*
 
 class HomeFragment : Fragment(), HomeContract.View {
@@ -222,33 +221,31 @@ class HomeFragment : Fragment(), HomeContract.View {
                 currentPuyoView[i][j]!!.setImageResource(R.drawable.blank)
             }
         }
-        val jikuColor = getPuyoImage(tsumoInfo.currentColor[0])
-        val nonJikuColor = getPuyoImage(tsumoInfo.currentColor[1])
+        val jikuColor = getPuyoImage(tsumoInfo.currentColor.first)
+        val nonJikuColor = getPuyoImage(tsumoInfo.currentColor.second)
         // draw jiku-puyo
-        currentPuyoView[tsumoInfo.currentMainPos[0]][tsumoInfo.currentMainPos[1]]!!.setImageResource(jikuColor)
+        currentPuyoView[tsumoInfo.currentMainPos.row][tsumoInfo.currentMainPos.column]!!.setImageResource(jikuColor)
 
         // draw not-jiku-puyo
-        currentPuyoView[tsumoInfo.currentSubPos[0]][tsumoInfo.currentSubPos[1]]!!.setImageResource(nonJikuColor)
+        currentPuyoView[tsumoInfo.currentSubPos.row][tsumoInfo.currentSubPos.column]!!.setImageResource(nonJikuColor)
 
         // draw next and next next
-        for (i in 0..1) {
-            for (j in 0..1) {
-                nextPuyoView[i][j]!!.setImageResource(getPuyoImage(tsumoInfo.nextColor[i][j]))
-            }
-        }
+        nextPuyoView[0][0]!!.setImageResource(getPuyoImage(tsumoInfo.nextColor.first.first))
+        nextPuyoView[0][1]!!.setImageResource(getPuyoImage(tsumoInfo.nextColor.first.second))
+        nextPuyoView[1][0]!!.setImageResource(getPuyoImage(tsumoInfo.nextColor.second.second))
+        nextPuyoView[1][1]!!.setImageResource(getPuyoImage(tsumoInfo.nextColor.second.second))
 
         // draw dot
         val currentColor = arrayOfNulls<PuyoColor>(2)
-        currentColor[0] = tsumoInfo.currentColor[0]
-        currentColor[1] = tsumoInfo.currentColor[1]
-        val currentCursorRotate = tsumoInfo.currentCursorRotate
-        when (currentCursorRotate) {
-            Rotation.DEGREE0 -> drawDot(tsumoInfo.currentMainPos[1], Arrays.asList(currentColor[0], currentColor[1]), field)
+        currentColor[0] = tsumoInfo.currentColor.first
+        currentColor[1] = tsumoInfo.currentColor.second
+        when (tsumoInfo.rot) {
+            Rotation.DEGREE0 -> drawDot(tsumoInfo.currentMainPos.column, Arrays.asList(currentColor[0], currentColor[1]), field)
             Rotation.DEGREE90, Rotation.DEGREE270 -> {
-                drawDot(tsumoInfo.currentMainPos[1], listOf(currentColor[0]), field)
-                drawDot(tsumoInfo.currentSubPos[1], listOf(currentColor[1]), field)
+                drawDot(tsumoInfo.currentMainPos.column, listOf(currentColor[0]), field)
+                drawDot(tsumoInfo.currentSubPos.column, listOf(currentColor[1]), field)
             }
-            Rotation.DEGREE180 -> drawDot(tsumoInfo.currentMainPos[1], Arrays.asList(currentColor[1], currentColor[0]), field)
+            Rotation.DEGREE180 -> drawDot(tsumoInfo.currentMainPos.column, Arrays.asList(currentColor[1], currentColor[0]), field)
         }
     }
 
