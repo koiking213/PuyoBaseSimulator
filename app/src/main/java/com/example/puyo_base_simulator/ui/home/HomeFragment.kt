@@ -15,20 +15,31 @@ import com.example.puyo_base_simulator.R
 import java.util.*
 
 class HomeFragment : Fragment(), HomeContract.View {
-    lateinit var fieldView: Array<Array<ImageView?>>
-    lateinit var currentPuyoView: Array<Array<ImageView?>>
-    lateinit var nextPuyoView: Array<Array<ImageView?>>
-    var currentPuyoLayout: GridLayout? = null
-    var nextPuyoLayout: GridLayout? = null
-    private var mPresenter: HomePresenter? = null
+    private lateinit var fieldView: Array<Array<ImageView>>
+    private lateinit var currentPuyoView: Array<Array<ImageView>>
+    private lateinit var nextPuyoView: Array<Array<ImageView>>
+    private lateinit var currentPuyoLayout: GridLayout
+    private lateinit var nextPuyoLayout: GridLayout
+    private lateinit var mPresenter: HomePresenter
     private lateinit var mActivity: Activity
-    private var mRoot: View? = null
+    private lateinit var mRoot: View
+    private val buttons = arrayOf(
+            R.id.buttonLeft,
+            R.id.buttonRight,
+            R.id.buttonDown,
+            R.id.buttonA,
+            R.id.buttonB,
+            R.id.buttonUndo,
+            R.id.buttonRedo,
+            R.id.buttonLoad,
+            R.id.buttonSave,
+    )
     override val specifiedSeed: Int
         get() {
-            val editText = mRoot!!.findViewById<EditText>(R.id.editTextSeed)
+            val editText = mRoot.findViewById<EditText>(R.id.editTextSeed)
             return try {
                 val seed = editText.text.toString().toInt()
-                if (0 <= seed && seed <= 65535) {
+                if (seed in 0..65535) {
                     seed
                 } else {
                     throw NumberFormatException()
@@ -39,9 +50,6 @@ class HomeFragment : Fragment(), HomeContract.View {
             }
 
         }
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-    }
 
     override fun onCreateView(inflater: LayoutInflater,
                               container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -51,132 +59,102 @@ class HomeFragment : Fragment(), HomeContract.View {
         mActivity = activity
 
         // current puyo area
-        currentPuyoView = Array(3) { arrayOfNulls(7) }
+        currentPuyoView = Array(3) { i -> Array(7) { j ->
+            val view = ImageView(getActivity())
+            val params = GridLayout.LayoutParams()
+            params.rowSpec = GridLayout.spec(i)
+            params.columnSpec = GridLayout.spec(j)
+            view.layoutParams = params
+            view.setImageResource(R.drawable.blank)
+            view
+        } }
         currentPuyoLayout = root.findViewById(R.id.currentPuyoLayout)
-        for (i in 0..2) {
-            for (j in 0..6) {
-                val view = ImageView(getActivity())
-                val params = GridLayout.LayoutParams()
-                params.rowSpec = GridLayout.spec(i)
-                params.columnSpec = GridLayout.spec(j)
-                view.layoutParams = params
-                view.setImageResource(R.drawable.blank)
-                currentPuyoLayout?.addView(view)
-                currentPuyoView[i][j] = view
-            }
-        }
+        currentPuyoView.flatten().map {currentPuyoLayout.addView(it)}
 
         // next puyo area
-        nextPuyoView = Array(4) { arrayOfNulls(2) }
+        val views = Array(4) { i -> Array(2) { j ->
+            val view = ImageView(getActivity())
+            val params = GridLayout.LayoutParams()
+            params.rowSpec = GridLayout.spec(i)
+            params.columnSpec = GridLayout.spec(j)
+            view.layoutParams = params
+            view.setImageResource(R.drawable.blank)
+            view
+        } }
+        nextPuyoView = arrayOf(arrayOf(views[0][0], views[1][0]), arrayOf(views[2][1], views[3][1]))
         nextPuyoLayout = root.findViewById(R.id.nextPuyoLayout)
-        val views = Array(4) { arrayOfNulls<ImageView>(2) }
-        for (i in 0..3) {
-            for (j in 0..1) {
-                val view = ImageView(getActivity())
-                val params = GridLayout.LayoutParams()
-                params.rowSpec = GridLayout.spec(i)
-                params.columnSpec = GridLayout.spec(j)
-                view.layoutParams = params
-                view.setImageResource(R.drawable.blank)
-                nextPuyoLayout?.addView(view)
-                views[i][j] = view
-            }
-        }
-        nextPuyoView[0][0] = views[0][0]
-        nextPuyoView[0][1] = views[1][0]
-        nextPuyoView[1][0] = views[2][1]
-        nextPuyoView[1][1] = views[3][1]
+        views.flatten().map {nextPuyoLayout.addView(it)}
 
         // main field
         val fieldLayout: GridLayout = root.findViewById(R.id.fieldLayout)
-        fieldView = Array(14) { arrayOfNulls(8) }
-        for (i in 0..13) {
-            for (j in 0..7) {
-                val view = ImageView(getActivity())
-                val params = GridLayout.LayoutParams()
-                params.rowSpec = GridLayout.spec(i)
-                params.columnSpec = GridLayout.spec(j)
-                view.layoutParams = params
-                fieldLayout.addView(view)
-                fieldView[13 - i][j] = view
-            }
-        }
+        fieldView = Array(14) { i -> Array (8) { j ->
+            val view = ImageView(getActivity())
+            val params = GridLayout.LayoutParams()
+            params.rowSpec = GridLayout.spec(13-i)
+            params.columnSpec = GridLayout.spec(j)
+            view.layoutParams = params
+            fieldLayout.addView(view)
+            view
+        }}
 
         // wall
-        for (i in 0..13) {
-            fieldView[i][0]!!.setImageResource(R.drawable.wall)
-            fieldView[i][7]!!.setImageResource(R.drawable.wall)
+        for (i in 0..12) {
+            fieldView[i][0].setImageResource(R.drawable.wall)
+            fieldView[i][7].setImageResource(R.drawable.wall)
         }
         for (j in 1..6) {
-            fieldView[0][j]!!.setImageResource(R.drawable.wall)
+            fieldView[0][j].setImageResource(R.drawable.wall)
         }
         (root.findViewById<View>(R.id.pointTextView) as TextView).text = "0点"
-        mPresenter = HomePresenter(this, requireActivity().assets, mActivity!!)
+        mPresenter = HomePresenter(this, requireActivity().assets, mActivity)
 
         // ボタン群
-        root.findViewById<View>(R.id.buttonUndo).setOnClickListener { v: View? -> mPresenter!!.undo() }
-        root.findViewById<View>(R.id.buttonRedo).setOnClickListener { v: View? -> mPresenter!!.redo() }
-        root.findViewById<View>(R.id.buttonSave).setOnClickListener { v: View? -> mPresenter!!.save() }
-        root.findViewById<View>(R.id.buttonLoad).setOnClickListener { v: View? ->
+        root.findViewById<View>(R.id.buttonUndo).setOnClickListener { mPresenter.undo() }
+        root.findViewById<View>(R.id.buttonRedo).setOnClickListener { mPresenter.redo() }
+        root.findViewById<View>(R.id.buttonSave).setOnClickListener { mPresenter.save() }
+        root.findViewById<View>(R.id.buttonLoad).setOnClickListener {
             val loadFieldPopup = LoadFieldPopup(mActivity)
             loadFieldPopup.height = WindowManager.LayoutParams.WRAP_CONTENT
             loadFieldPopup.isOutsideTouchable = true
             loadFieldPopup.isFocusable = true
-            loadFieldPopup.showAsDropDown(mRoot!!.findViewById(R.id.buttonLoad))
-            loadFieldPopup.setFieldSelectedListener { position: Int, fieldPreview: FieldPreview ->
-                mPresenter!!.load(fieldPreview)
+            loadFieldPopup.showAsDropDown(mRoot.findViewById(R.id.buttonLoad))
+            loadFieldPopup.setFieldSelectedListener { _: Int, fieldPreview: FieldPreview ->
+                mPresenter.load(fieldPreview)
                 loadFieldPopup.dismiss()
             }
         }
-        root.findViewById<View>(R.id.buttonLeft).setOnClickListener { v: View? -> mPresenter!!.moveLeft() }
-        root.findViewById<View>(R.id.buttonRight).setOnClickListener { v: View? -> mPresenter!!.moveRight() }
-        root.findViewById<View>(R.id.buttonDown).setOnClickListener { v: View? -> mPresenter!!.dropDown() }
-        root.findViewById<View>(R.id.buttonA).setOnClickListener { v: View? -> mPresenter!!.rotateLeft() }
-        root.findViewById<View>(R.id.buttonB).setOnClickListener { v: View? -> mPresenter!!.rotateRight() }
-        root.findViewById<View>(R.id.buttonSetSeed).setOnClickListener { v: View? -> mPresenter!!.setSeed() }
+        root.findViewById<View>(R.id.buttonLeft).setOnClickListener { mPresenter.moveLeft() }
+        root.findViewById<View>(R.id.buttonRight).setOnClickListener { mPresenter.moveRight() }
+        root.findViewById<View>(R.id.buttonDown).setOnClickListener { mPresenter.dropDown() }
+        root.findViewById<View>(R.id.buttonA).setOnClickListener { mPresenter.rotateLeft() }
+        root.findViewById<View>(R.id.buttonB).setOnClickListener { mPresenter.rotateRight() }
+        root.findViewById<View>(R.id.buttonSetSeed).setOnClickListener { mPresenter.setSeed() }
         return root
     }
 
-    override fun onResume() {
-        super.onResume()
-    }
-
-    override fun onStart() {
-        super.onStart()
-    }
-
     override fun setSeedText(seed: Int) {
-        val view = mRoot!!.findViewById<TextView>(R.id.textViewSeed)
+        val view = mRoot.findViewById<TextView>(R.id.textViewSeed)
         view.text = String.format(Locale.JAPAN, "seed: %d", seed)
     }
 
     override fun drawField(field: Field) {
-        for (i in 1..13) {
-            for (j in 1..6) {
-                val (_, _, color) = field.getFieldContent(i,j)!!
-                fieldView[i][j]!!.setImageResource(getPuyoImage(color))
-            }
+        field.field.flatten().map { (row, col, color) ->
+            fieldView[row][col].setImageResource(getPuyoImage(color))
         }
     }
 
     override fun drawDisappearField(field: Field) {
-        for (i in 1..13) {
-            for (j in 1..6) {
-                val puyo = field.getFieldContent(i,j)!!
-                if (field.isDisappear(puyo)) {
-                    fieldView[i][j]!!.setImageResource(R.drawable.disappear)
-                } else {
-                    fieldView[i][j]!!.setImageResource(getPuyoImage(puyo.color))
-                }
-            }
+        field.field.flatten().map { puyo ->
+            val resource = if (field.isDisappear(puyo)) R.drawable.disappear else getPuyoImage(puyo.color)
+            fieldView[puyo.row][puyo.column].setImageResource(resource)
         }
     }
 
     override fun drawPoint(text: String) {
-        mActivity!!.runOnUiThread { (mRoot!!.findViewById<View>(R.id.pointTextView) as TextView).text = text }
+        mActivity.runOnUiThread { (mRoot.findViewById<View>(R.id.pointTextView) as TextView).text = text }
     }
 
-    fun getPuyoImage(color: PuyoColor?): Int {
+    private fun getPuyoImage(color: PuyoColor): Int {
         return when (color) {
             PuyoColor.RED -> R.drawable.pr
             PuyoColor.BLUE -> R.drawable.pb
@@ -184,18 +162,17 @@ class HomeFragment : Fragment(), HomeContract.View {
             PuyoColor.GREEN -> R.drawable.pg
             PuyoColor.PURPLE -> R.drawable.pp
             PuyoColor.EMPTY -> R.drawable.blank
-            else -> -1
         }
     }
 
-    fun getDotImage(color: PuyoColor?): Int {
+    private fun getDotImage(color: PuyoColor): Int {
         return when (color) {
             PuyoColor.RED -> R.drawable.dotr
             PuyoColor.BLUE -> R.drawable.dotb
             PuyoColor.YELLOW -> R.drawable.doty
             PuyoColor.GREEN -> R.drawable.dotg
             PuyoColor.PURPLE -> R.drawable.dotp
-            else -> -1
+            PuyoColor.EMPTY -> R.drawable.blank
         }
     }
 
@@ -205,91 +182,66 @@ class HomeFragment : Fragment(), HomeContract.View {
     }
 
     // リストで渡された順に下から積み上げる
-    fun drawDot(column: Int, colors: List<PuyoColor?>, field: Field) {
+    private fun drawDot(column: Int, colors: List<PuyoColor>, field: Field) {
         var row = field.getHeight(column) + 1
         for (color in colors) {
             if (row <= 13) {
-                fieldView[row++][column]!!.setImageResource(getDotImage(color))
+                fieldView[row++][column].setImageResource(getDotImage(color))
             }
         }
     }
 
     override fun drawTsumo(tsumoInfo: TsumoInfo, field: Field) {
         // draw current
-        for (i in 0..2) {
-            for (j in 0..6) {
-                currentPuyoView[i][j]!!.setImageResource(R.drawable.blank)
-            }
-        }
-        val jikuColor = getPuyoImage(tsumoInfo.currentColor.first)
-        val nonJikuColor = getPuyoImage(tsumoInfo.currentColor.second)
-        // draw jiku-puyo
-        currentPuyoView[tsumoInfo.currentMainPos.row][tsumoInfo.currentMainPos.column]!!.setImageResource(jikuColor)
-
-        // draw not-jiku-puyo
-        currentPuyoView[tsumoInfo.currentSubPos.row][tsumoInfo.currentSubPos.column]!!.setImageResource(nonJikuColor)
+        currentPuyoView.flatten().map { it.setImageResource(R.drawable.blank) }
+        val mainColor = tsumoInfo.currentColor[0]
+        val subColor = tsumoInfo.currentColor[1]
+        currentPuyoView[tsumoInfo.currentMainPos.row][tsumoInfo.currentMainPos.column].setImageResource(getPuyoImage(mainColor))
+        currentPuyoView[tsumoInfo.currentSubPos.row][tsumoInfo.currentSubPos.column].setImageResource(getPuyoImage(subColor))
 
         // draw next and next next
-        nextPuyoView[0][0]!!.setImageResource(getPuyoImage(tsumoInfo.nextColor.first.first))
-        nextPuyoView[0][1]!!.setImageResource(getPuyoImage(tsumoInfo.nextColor.first.second))
-        nextPuyoView[1][0]!!.setImageResource(getPuyoImage(tsumoInfo.nextColor.second.first))
-        nextPuyoView[1][1]!!.setImageResource(getPuyoImage(tsumoInfo.nextColor.second.second))
+        for (i in 0..1) {
+            for (j in 0..1) {
+                nextPuyoView[i][j].setImageResource(getPuyoImage(tsumoInfo.nextColor[i][j]))
+            }
+        }
 
         // draw dot
-        val currentColor = arrayOfNulls<PuyoColor>(2)
-        currentColor[0] = tsumoInfo.currentColor.first
-        currentColor[1] = tsumoInfo.currentColor.second
         when (tsumoInfo.rot) {
-            Rotation.DEGREE0 -> drawDot(tsumoInfo.currentMainPos.column, Arrays.asList(currentColor[0], currentColor[1]), field)
+            Rotation.DEGREE0 -> drawDot(tsumoInfo.currentMainPos.column, listOf(mainColor, subColor), field)
             Rotation.DEGREE90, Rotation.DEGREE270 -> {
-                drawDot(tsumoInfo.currentMainPos.column, listOf(currentColor[0]), field)
-                drawDot(tsumoInfo.currentSubPos.column, listOf(currentColor[1]), field)
+                drawDot(tsumoInfo.currentMainPos.column, listOf(mainColor), field)
+                drawDot(tsumoInfo.currentSubPos.column, listOf(subColor), field)
             }
-            Rotation.DEGREE180 -> drawDot(tsumoInfo.currentMainPos.column, Arrays.asList(currentColor[1], currentColor[0]), field)
+            Rotation.DEGREE180 -> drawDot(tsumoInfo.currentMainPos.column, listOf(subColor, mainColor), field)
         }
     }
 
     override fun disableUndoButton() {
-        mRoot!!.findViewById<View>(R.id.buttonUndo).isEnabled = false
+        mRoot.findViewById<View>(R.id.buttonUndo).isEnabled = false
     }
 
     override fun enableUndoButton() {
-        mRoot!!.findViewById<View>(R.id.buttonUndo).isEnabled = true
+        mRoot.findViewById<View>(R.id.buttonUndo).isEnabled = true
     }
 
     override fun disableRedoButton() {
-        mRoot!!.findViewById<View>(R.id.buttonRedo).isEnabled = false
+        mRoot.findViewById<View>(R.id.buttonRedo).isEnabled = false
     }
 
     override fun enableRedoButton() {
-        mRoot!!.findViewById<View>(R.id.buttonRedo).isEnabled = true
+        mRoot.findViewById<View>(R.id.buttonRedo).isEnabled = true
     }
 
     override fun disableAllButtons() {
-        mRoot!!.findViewById<View>(R.id.buttonLeft).isEnabled = false
-        mRoot!!.findViewById<View>(R.id.buttonRight).isEnabled = false
-        mRoot!!.findViewById<View>(R.id.buttonDown).isEnabled = false
-        mRoot!!.findViewById<View>(R.id.buttonA).isEnabled = false
-        mRoot!!.findViewById<View>(R.id.buttonB).isEnabled = false
-        mRoot!!.findViewById<View>(R.id.buttonUndo).isEnabled = false
-        mRoot!!.findViewById<View>(R.id.buttonRedo).isEnabled = false
+        buttons.map {mRoot.findViewById<View>(it).isEnabled = false}
     }
 
     override fun enableAllButtons() {
-        mRoot!!.findViewById<View>(R.id.buttonLeft).isEnabled = true
-        mRoot!!.findViewById<View>(R.id.buttonRight).isEnabled = true
-        mRoot!!.findViewById<View>(R.id.buttonDown).isEnabled = true
-        mRoot!!.findViewById<View>(R.id.buttonA).isEnabled = true
-        mRoot!!.findViewById<View>(R.id.buttonB).isEnabled = true
-        mRoot!!.findViewById<View>(R.id.buttonUndo).isEnabled = true
-        mRoot!!.findViewById<View>(R.id.buttonRedo).isEnabled = true
+        buttons.map {mRoot.findViewById<View>(it).isEnabled = true}
     }
 
     override fun eraseCurrentPuyo() {
-        for (i in 0..2) {
-            for (j in 0..6) {
-                currentPuyoView[i][j]!!.setImageResource(R.drawable.blank)
-            }
-        }
+        currentPuyoView.flatten().map { it.setImageResource(R.drawable.blank) }
     }
 }

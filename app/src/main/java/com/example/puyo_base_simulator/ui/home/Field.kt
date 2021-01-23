@@ -8,8 +8,8 @@ import java.util.*
 class Field : Serializable {
     @JvmField
     var nextField: Field? = null
-    private var field = Array(13) { i -> Array(6) { j -> Puyo(i+1, j+1, PuyoColor.EMPTY)} }
-    fun getFieldContent(row: Int, column: Int) : Puyo { return field[row-1][column-1]}
+    var field = Array(13) { i -> Array(6) { j -> Puyo(i+1, j+1, PuyoColor.EMPTY)} }
+    private fun getFieldContent(row: Int, column: Int) : Puyo { return field[row-1][column-1]}
     private var heights = Array(6 ) { 0 }
     fun getHeight(column: Int) : Int { return heights[column-1]}
     @JvmField
