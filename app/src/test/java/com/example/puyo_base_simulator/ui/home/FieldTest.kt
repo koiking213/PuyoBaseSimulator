@@ -1,3 +1,5 @@
+@file:Suppress("SpellCheckingInspection", "SpellCheckingInspection")
+
 package com.example.puyo_base_simulator.ui.home
 
 import com.example.puyo_base_simulator.ui.home.Field.Companion.from

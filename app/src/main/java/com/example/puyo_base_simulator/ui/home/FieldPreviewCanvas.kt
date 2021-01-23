@@ -8,16 +8,16 @@ import android.util.AttributeSet
 import android.view.View
 
 class FieldPreviewCanvas(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
-    var mPaint: Paint = Paint()
-    var mField: String? = null
+    private var mPaint = Paint()
+    private var mField = ""
     override fun onDraw(canvas: Canvas) {
         //canvas.drawColor(Color.argb(127, 0, 127, 63));
         //mPaint.setColor(Color.RED);
         // debug
-        for (idx in 0 until mField!!.length) {
+        for (idx in mField.indices) {
             val row = idx / 6
             val column = idx % 6
-            mPaint.color = getColor(mField!![idx])
+            mPaint.color = getColor(mField[idx])
             canvas.drawCircle((10 + 20 * column).toFloat(), (120 - (10 + 20 * row)).toFloat(), 10f, mPaint)
         }
     }
@@ -34,7 +34,7 @@ class FieldPreviewCanvas(context: Context?, attrs: AttributeSet?) : View(context
     }
 
     // should be receive Field class
-    fun setField(str: String?) {
+    fun setField(str: String) {
         mField = str
     }
 

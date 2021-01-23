@@ -1,3 +1,5 @@
+@file:Suppress("SpellCheckingInspection")
+
 package com.example.puyo_base_simulator.ui.home
 
 import com.google.common.truth.Truth

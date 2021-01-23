@@ -6,8 +6,8 @@ import java.io.IOException
 import java.util.*
 
 object Haipuyo {
-    var content: MutableList<String> = ArrayList()
-    var sortedContent: MutableList<String> = ArrayList()
+    private var content: MutableList<String> = ArrayList()
+    private var sortedContent: MutableList<String> = ArrayList()
     fun load(haipuyoBr: BufferedReader, sortedBr: BufferedReader) {
         try {
             for (i in 0..65535) {
@@ -20,13 +20,12 @@ object Haipuyo {
     }
 
     operator fun get(seed: Int): String {
-        if (BuildConfig.DEBUG && !(0 <= seed && seed <= 65535)) {
+        if (BuildConfig.DEBUG && seed !in 0..65535) {
             throw AssertionError("Assertion failed")
         }
         return content[seed]
     }
 
-    @JvmStatic
     fun searchSeedWithPattern(str: String): List<Int> {
         val len = str.length
         if (BuildConfig.DEBUG && len % 2 != 0) {
@@ -42,13 +41,6 @@ object Haipuyo {
         return ret
     }
 
-    private class CharOrder(var index: Int, var chara: Char)
-    private class CharaOrderComparator : Comparator<CharOrder> {
-        override fun compare(c1: CharOrder, c2: CharOrder): Int {
-            return if (c1.index < c2.index) -1 else 1
-        }
-    }
-
     private fun pairwiseSort(str: String): String {
         var newStr = ""
         for (i in 0 until str.length / 2) {
@@ -56,7 +48,7 @@ object Haipuyo {
             val chars = substring.toCharArray()
             Arrays.sort(chars)
             val sorted = String(chars)
-            newStr = newStr + sorted
+            newStr += sorted
         }
         return newStr
     }
