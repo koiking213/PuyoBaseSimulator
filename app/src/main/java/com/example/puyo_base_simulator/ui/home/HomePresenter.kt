@@ -86,6 +86,7 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
         tsumoController.decrementTsumo()
         val tsumoInfo = tsumoController.makeTsumoInfo()
         view.update(currentField, tsumoInfo)
+        view.drawPoint(0, 0, 0, currentField.accumulatedPoint)
     }
 
     override fun redo() {
