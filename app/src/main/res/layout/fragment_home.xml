@@ -100,13 +100,17 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/textViewSeed"
+            android:id="@+id/chainInfoTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
         </TextView>
-
         <TextView
-            android:id="@+id/pointTextView"
+            android:id="@+id/chainPointTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+        </TextView>
+        <TextView
+            android:id="@+id/gamePointTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
         </TextView>

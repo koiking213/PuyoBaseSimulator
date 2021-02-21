@@ -22,4 +22,7 @@
     <string name="tsumo_hint">abac…</string>
     <string name="field_id">field ID</string>
     <string name="showAll">すべて表示</string>
+    <string name="chain_info">%1$d * %2$d = %3$d</string>
+    <string name="chain_point">連鎖の合計: %1$d</string>
+    <string name="game_point">試合の合計: %1$d</string>
 </resources>

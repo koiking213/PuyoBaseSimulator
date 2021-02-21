@@ -105,7 +105,6 @@ class HomeFragment : Fragment(), HomeContract.View {
         for (j in 1..6) {
             fieldView[0][j].setImageResource(R.drawable.wall)
         }
-        (root.findViewById<View>(R.id.pointTextView) as TextView).text = "0点"
         mPresenter = HomePresenter(this, requireActivity().assets, mActivity)
 
         // ボタン群
@@ -150,11 +149,16 @@ class HomeFragment : Fragment(), HomeContract.View {
         }
     }
 
-    override fun drawPoint(text: String) {
-        mActivity.runOnUiThread { (mRoot.findViewById<View>(R.id.pointTextView) as TextView).text = text }
-    }
+    override fun drawPoint(bonus: Int, puyoNum: Int, chainSum: Int, gameSum: Int) {
+        mActivity.runOnUiThread { (mRoot.findViewById<View>(R.id.chainInfoTextView) as TextView).text =
+                getString(R.string.chain_info, bonus, puyoNum*10, bonus*puyoNum*10) }
+        mActivity.runOnUiThread { (mRoot.findViewById<View>(R.id.chainPointTextView) as TextView).text =
+                getString(R.string.chain_point, chainSum) }
+        mActivity.runOnUiThread { (mRoot.findViewById<View>(R.id.gamePointTextView) as TextView).text =
+                getString(R.string.game_point, gameSum) }
+}
 
-    private fun getPuyoImage(color: PuyoColor): Int {
+private fun getPuyoImage(color: PuyoColor): Int {
         return when (color) {
             PuyoColor.RED -> R.drawable.pr
             PuyoColor.BLUE -> R.drawable.pb
