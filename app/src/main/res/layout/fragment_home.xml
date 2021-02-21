@@ -8,8 +8,8 @@
 
     <androidx.gridlayout.widget.GridLayout
         android:id="@+id/currentPuyoLayout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="112dp"
+        android:layout_height="48dp"
         android:layout_marginStart="10dp"
         android:layout_marginTop="5dp"
         app:columnCount="7"
@@ -20,8 +20,8 @@
 
     <androidx.gridlayout.widget.GridLayout
         android:id="@+id/nextPuyoLayout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="32dp"
+        android:layout_height="64dp"
         android:layout_marginStart="10dp"
         android:layout_marginTop="5dp"
         app:columnCount="2"
@@ -39,7 +39,7 @@
         android:layout_marginTop="50dp"
         app:columnCount="2"
         app:layout_constraintStart_toEndOf="@id/fieldLayout"
-        app:layout_constraintTop_toBottomOf="@id/currentPuyoLayout"
+        app:layout_constraintBottom_toBottomOf="@id/fieldLayout"
         app:rowCount="2">
 
         <Button
@@ -79,8 +79,8 @@
 
     <androidx.gridlayout.widget.GridLayout
         android:id="@+id/fieldLayout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="128dp"
+        android:layout_height="224dp"
         android:layout_marginStart="10dp"
         android:layout_marginTop="5dp"
         app:columnCount="8"
@@ -93,10 +93,10 @@
         android:id="@+id/pointLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="40dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="0dp"
+        app:layout_constraintTop_toBottomOf="@id/nextPuyoLayout"
+        app:layout_constraintStart_toEndOf="@id/nextPuyoLayout"
         android:orientation="vertical">
 
         <TextView
