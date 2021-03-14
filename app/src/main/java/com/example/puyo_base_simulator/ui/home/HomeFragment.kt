@@ -117,7 +117,7 @@ class HomeFragment : Fragment(), HomeContract.View {
             loadFieldPopup.height = WindowManager.LayoutParams.WRAP_CONTENT
             loadFieldPopup.isOutsideTouchable = true
             loadFieldPopup.isFocusable = true
-            loadFieldPopup.showAsDropDown(mRoot.findViewById(R.id.buttonLoad))
+            loadFieldPopup.showAsDropDown(mRoot.findViewById(R.id.textViewSeed))
             loadFieldPopup.setFieldSelectedListener { _: Int, fieldPreview: FieldPreview ->
                 mPresenter.load(fieldPreview)
                 loadFieldPopup.dismiss()
