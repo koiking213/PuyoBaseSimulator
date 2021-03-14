@@ -1,11 +1,10 @@
 package com.example.puyo_base_simulator.ui.home
 
 import android.app.Activity
+import android.content.Context
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.view.WindowManager
+import android.view.*
+import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
@@ -57,6 +56,8 @@ class HomeFragment : Fragment(), HomeContract.View {
         mRoot = root
         val activity = requireActivity()
         mActivity = activity
+
+        //root.findViewById<View>(R.id.)
 
         // current puyo area
         currentPuyoView = Array(3) { i -> Array(7) { j ->
@@ -131,9 +132,29 @@ class HomeFragment : Fragment(), HomeContract.View {
         return root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        view.setOnTouchListener { v, event ->
+            v.performClick()
+            if (event.actionMasked == MotionEvent.ACTION_DOWN) {
+                view.requestFocus()
+            }
+            v?.onTouchEvent(event) ?: true
+        }
+        val editText = mRoot.findViewById<EditText>(R.id.editTextSeed)
+        editText.setOnFocusChangeListener { v, hasFocus ->
+            if (!hasFocus) {
+                val inputManager = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                inputManager.hideSoftInputFromWindow(v.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
+            }
+        }
+    }
+
     override fun setSeedText(seed: Int) {
         val view = mRoot.findViewById<TextView>(R.id.textViewSeed)
         view.text = String.format(Locale.JAPAN, "seed: %d", seed)
+        val inputManager = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputManager.hideSoftInputFromWindow(view.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
     }
 
     override fun drawField(field: Field) {

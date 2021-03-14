@@ -1,7 +1,9 @@
 package com.example.puyo_base_simulator.ui.home
 
 import android.app.Activity
+import android.content.Context
 import android.content.res.AssetManager
+import android.view.inputmethod.InputMethodManager
 import androidx.room.Room
 import com.example.puyo_base_simulator.data.AppDatabase
 import com.example.puyo_base_simulator.data.Base
@@ -153,9 +155,9 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
             }
             if (disappear) {
                 val point = field.bonus * field.disappearPuyo.size * 10
-                view.drawPoint(field.bonus, field.disappearPuyo.size, sum+point, field.accumulatedPoint)
+                view.drawPoint(field.bonus, field.disappearPuyo.size, sum + point, field.accumulatedPoint)
                 activity.runOnUiThread { view.drawDisappearField(field) }
-                drawFieldChainRecursive(field.nextField!!, false, sum+point)
+                drawFieldChainRecursive(field.nextField!!, false, sum + point)
             } else {
                 activity.runOnUiThread { view.drawField(field) }
                 if (field.disappearPuyo.isEmpty()) {
@@ -186,6 +188,7 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
             view.update(currentField, tsumoController.makeTsumoInfo())
         } catch (ignored: NumberFormatException) {
         }
+
     }
 
     companion object {
