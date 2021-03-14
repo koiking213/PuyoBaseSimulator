@@ -42,6 +42,11 @@ class Field : Serializable {
                 newField.addPuyo(puyo.column, puyo.color)
             }
         }
+        // 13段目にぷよがあれば、消えずに降ってくる
+        for (puyo in field[12]) {
+            newField.addPuyo(puyo.column, puyo.color)
+        }
+
         if (newField.allClear()) accumulatedPoint += allClearBonus
         if (disappearPuyo.size == 0) {
             chainNum = 1
@@ -122,7 +127,7 @@ class Field : Serializable {
             ret.field = Array(13) { i -> Array(6) { j -> Puyo(i+1, j+1, getPuyoColor(colorString[i][j]))} }
             for (col in 0..5) {
                 var i = 0
-                while (ret.field[i++][col].color != PuyoColor.EMPTY) {
+                while (i < 13 && ret.field[i++][col].color != PuyoColor.EMPTY) {
                     ret.heights[col]++
                 }
             }

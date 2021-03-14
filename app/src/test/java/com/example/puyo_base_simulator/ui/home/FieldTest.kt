@@ -79,6 +79,7 @@ class FieldTest {
 
     @Test
     fun evalNextField() {
+        // 基本的な連鎖と点数計算のテスト
         var f: Field? = SerializationUtils.clone(mField) as Field
         f!!.evalNextField()
         Truth.assertThat(f.disappearPuyo.isEmpty()).isTrue()
@@ -95,6 +96,21 @@ class FieldTest {
         f = f.nextField
         Truth.assertThat(f!!.accumulatedPoint).isEqualTo(4840)
         Truth.assertThat(f.allClear()).isFalse()
+
+        // 13段目周りのテスト
+        val str = "r     r     r     b     b     b     g     g     g     r     r     r     r"
+        f = from(str)
+        f.evalNextField()
+        Truth.assertThat(f.disappearPuyo.isEmpty()).isTrue()
+        f.addPuyo(2, PuyoColor.RED)
+        f.evalNextField()
+        Truth.assertThat(f.disappearPuyo.size).isEqualTo(4)
+        f = f.nextField
+        Truth.assertThat(f!!.disappearPuyo.size).isEqualTo(4)
+        f = f.nextField
+        Truth.assertThat(f!!.disappearPuyo.isEmpty()).isTrue()
+        val expected = fillFieldString("b     b     b     g     g     g")
+        Truth.assertThat(f.toString()).isEqualTo(expected)
     }
 
     @Test
