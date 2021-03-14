@@ -2,7 +2,11 @@ package com.example.puyo_base_simulator.ui.home
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MotionEvent
+import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.PopupWindow
@@ -43,26 +47,40 @@ class LoadFieldPopup(private val context: Context) : PopupWindow(context) {
         loadFieldAdapter = LoadFieldAdapter(ArrayList())
         recyclerView.adapter = loadFieldAdapter
         val searchBySeedButton = view.findViewById<Button>(R.id.searchBySeedButton)
-        searchBySeedButton.setOnClickListener {
+        searchBySeedButton.setOnClickListener { v ->
             val editText = view.findViewById<EditText>(R.id.seedEditTextNumberDecimal)
             try {
                 val seed = editText.text.toString().toInt()
                 searchBySeed(seed)
+                val inputManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                inputManager.hideSoftInputFromWindow(v.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
             } catch (e: NumberFormatException) {
                 editText.error = e.message
             }
         }
         val searchByPatternButton = view.findViewById<Button>(R.id.searchByPatternButton)
-        searchByPatternButton.setOnClickListener {
+        searchByPatternButton.setOnClickListener { v ->
             val editText = view.findViewById<EditText>(R.id.patternEditText)
             val str = editText.text.toString()
             searchByPattern(str)
+            val inputManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            inputManager.hideSoftInputFromWindow(v.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
         }
         val showAllButton = view.findViewById<Button>(R.id.showAllButton)
         showAllButton.setOnClickListener {
             showAll()
         }
         contentView = view
+
+        view.setOnTouchListener { v, event ->
+            v.performClick()
+            if (event.actionMasked == MotionEvent.ACTION_DOWN) {
+                view.requestFocus()
+                val inputManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                inputManager.hideSoftInputFromWindow(v.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
+            }
+            v?.onTouchEvent(event) ?: true
+        }
     }
 
     private fun searchBySeed(seed : Int) {
