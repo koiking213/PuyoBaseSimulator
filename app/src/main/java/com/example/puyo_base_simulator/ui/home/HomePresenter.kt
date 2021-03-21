@@ -129,8 +129,7 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
             }
             fieldStack.clear()
             tsumoController = TsumoController(Haipuyo[base.hash], base.hash)
-            view.setSeedText(tsumoController.seed)
-            view.update(currentField, tsumoController.makeTsumoInfo())
+            initFieldPreference()
         }
     }
 
@@ -197,7 +196,12 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
         fieldStack.clear()
         val seed = RANDOM.nextInt(65536)
         tsumoController = TsumoController(Haipuyo[seed], seed)
-        this.view.setSeedText(tsumoController.seed)
+        initFieldPreference()
+    }
+
+    private fun initFieldPreference() {
+        view.setSeedText(tsumoController.seed)
+        view.clearPoint()
         view.update(currentField, tsumoController.makeTsumoInfo())
     }
 
@@ -217,7 +221,6 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
         }
         val seed = RANDOM.nextInt(65536)
         tsumoController = TsumoController(Haipuyo[seed], seed)
-        this.view.setSeedText(tsumoController.seed)
-        this.view.update(currentField, tsumoController.makeTsumoInfo())
+        initFieldPreference()
     }
 }

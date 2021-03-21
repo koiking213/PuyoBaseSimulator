@@ -180,7 +180,13 @@ class HomeFragment : Fragment(), HomeContract.View {
                 getString(R.string.chain_point, chainSum) }
         mActivity.runOnUiThread { (mRoot.findViewById<View>(R.id.gamePointTextView) as TextView).text =
                 getString(R.string.game_point, gameSum) }
-}
+    }
+
+    override fun clearPoint() {
+        (mRoot.findViewById<View>(R.id.chainInfoTextView) as TextView).text = ""
+        (mRoot.findViewById<View>(R.id.chainPointTextView) as TextView).text = ""
+        (mRoot.findViewById<View>(R.id.gamePointTextView) as TextView).text = ""
+    }
 
 private fun getPuyoImage(color: PuyoColor): Int {
         return when (color) {
