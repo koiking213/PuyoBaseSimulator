@@ -129,6 +129,7 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
             }
             fieldStack.clear()
             tsumoController = TsumoController(Haipuyo[base.hash], base.hash)
+            view.setSeedText(tsumoController.seed)
             view.update(currentField, tsumoController.makeTsumoInfo())
         }
     }
