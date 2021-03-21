@@ -25,4 +25,6 @@
     <string name="chain_info">%1$d * %2$d = %3$d</string>
     <string name="chain_point">連鎖の合計: %1$d</string>
     <string name="game_point">試合の合計: %1$d</string>
+    <string name="restart">再生成</string>
+
 </resources>

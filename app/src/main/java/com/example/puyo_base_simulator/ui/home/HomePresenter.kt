@@ -188,7 +188,16 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
             view.update(currentField, tsumoController.makeTsumoInfo())
         } catch (ignored: NumberFormatException) {
         }
+    }
 
+    override fun restart() {
+        currentField = Field()
+        fieldRedoStack.clear()
+        fieldStack.clear()
+        val seed = RANDOM.nextInt(65536)
+        tsumoController = TsumoController(Haipuyo[seed], seed)
+        this.view.setSeedText(tsumoController.seed)
+        view.update(currentField, tsumoController.makeTsumoInfo())
     }
 
     companion object {

@@ -131,6 +131,7 @@ class HomeFragment : Fragment(), HomeContract.View {
         root.findViewById<View>(R.id.buttonA).setOnClickListener { mPresenter.rotateLeft() }
         root.findViewById<View>(R.id.buttonB).setOnClickListener { mPresenter.rotateRight() }
         root.findViewById<View>(R.id.buttonSetSeed).setOnClickListener { mPresenter.setSeed() }
+        root.findViewById<View>(R.id.buttonRestart).setOnClickListener { mPresenter.restart() }
         return root
     }
 

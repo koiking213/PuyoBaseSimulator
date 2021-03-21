@@ -36,5 +36,6 @@ interface HomeContract {
         fun save()
         fun load(fieldPreview: FieldPreview)
         fun setSeed()
+        fun restart()
     }
 }
