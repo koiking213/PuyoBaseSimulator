@@ -44,7 +44,9 @@ class Field : Serializable {
         }
         // 13段目にぷよがあれば、消えずに降ってくる
         for (puyo in field[12]) {
-            newField.addPuyo(puyo.column, puyo.color)
+            if (puyo.color != PuyoColor.EMPTY) {
+                newField.addPuyo(puyo.column, puyo.color)
+            }
         }
 
         if (newField.allClear()) accumulatedPoint += allClearBonus

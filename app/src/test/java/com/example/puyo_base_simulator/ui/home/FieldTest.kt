@@ -109,8 +109,12 @@ class FieldTest {
         Truth.assertThat(f!!.disappearPuyo.size).isEqualTo(4)
         f = f.nextField
         Truth.assertThat(f!!.disappearPuyo.isEmpty()).isTrue()
-        val expected = fillFieldString("b     b     b     g     g     g")
-        Truth.assertThat(f.toString()).isEqualTo(expected)
+        Truth.assertThat(f.toString()).isEqualTo(fillFieldString("b     b     b     g     g     g"))
+        f.addPuyo(2, PuyoColor.BLUE)
+        f.evalNextField()
+        Truth.assertThat(f.disappearPuyo.size).isEqualTo(4)
+        f = f.nextField
+        Truth.assertThat(f.toString()).isEqualTo(fillFieldString("g     g     g"))
     }
 
     @Test
