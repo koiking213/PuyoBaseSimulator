@@ -11,6 +11,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.gridlayout.widget.GridLayout
 import com.example.puyo_base_simulator.R
+import com.google.android.material.snackbar.Snackbar
 import java.util.*
 
 class HomeFragment : Fragment(), HomeContract.View {
@@ -56,8 +57,6 @@ class HomeFragment : Fragment(), HomeContract.View {
         mRoot = root
         val activity = requireActivity()
         mActivity = activity
-
-        //root.findViewById<View>(R.id.)
 
         // current puyo area
         currentPuyoView = Array(3) { i -> Array(7) { j ->
@@ -111,7 +110,10 @@ class HomeFragment : Fragment(), HomeContract.View {
         // ボタン群
         root.findViewById<View>(R.id.buttonUndo).setOnClickListener { mPresenter.undo() }
         root.findViewById<View>(R.id.buttonRedo).setOnClickListener { mPresenter.redo() }
-        root.findViewById<View>(R.id.buttonSave).setOnClickListener { mPresenter.save() }
+        root.findViewById<View>(R.id.buttonSave).setOnClickListener {
+            mPresenter.save()
+            Snackbar.make(root, "saved", Snackbar.LENGTH_SHORT).show()
+        }
         root.findViewById<View>(R.id.buttonLoad).setOnClickListener {
             val loadFieldPopup = LoadFieldPopup(mActivity)
             loadFieldPopup.height = WindowManager.LayoutParams.WRAP_CONTENT
