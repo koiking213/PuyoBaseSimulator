@@ -88,7 +88,7 @@ class LoadFieldPopup(private val context: Context) : PopupWindow(context) {
             throw NumberFormatException("should enter 0-65535")
         }
         val bases = mDB.baseDao().findByHash(seed)
-        val fieldPreviews = bases.map {FieldPreview(it.id, seed, it.field)}
+        val fieldPreviews = bases.map {FieldPreview(it.id, seed, it.allClear, TsumoController.getNumOfPlacement(it.placementOrder), it.point, it.field)}
         loadFieldAdapter = LoadFieldAdapter(fieldPreviews)
         loadFieldAdapter.setFieldSelectedListener(listener)
         recyclerView.adapter = loadFieldAdapter
@@ -98,7 +98,7 @@ class LoadFieldPopup(private val context: Context) : PopupWindow(context) {
         val seeds = searchSeedWithPattern(pattern)
         val seedsChunks = seeds.chunked(100)
         val bases = seedsChunks.parallelStream().map { seed: List<Int> -> mDB.baseDao().findByAllHash(seed) }.flatMap { obj: List<Base> -> obj.stream() }.collect(Collectors.toList())
-        val fieldPreviews = bases.map {FieldPreview(it.id, it.hash, it.field)}
+        val fieldPreviews = bases.map {FieldPreview(it.id, it.hash, it.allClear, TsumoController.getNumOfPlacement(it.placementOrder), it.point, it.field)}
         loadFieldAdapter = LoadFieldAdapter(fieldPreviews)
         loadFieldAdapter.setFieldSelectedListener(listener)
         recyclerView.adapter = loadFieldAdapter
@@ -107,7 +107,7 @@ class LoadFieldPopup(private val context: Context) : PopupWindow(context) {
 
     private fun showAll () {
         val bases = mDB.baseDao().all
-        val fieldPreviews = bases.map {FieldPreview(it.id, it.hash, it.field)}
+        val fieldPreviews = bases.map {FieldPreview(it.id, it.hash, it.allClear, TsumoController.getNumOfPlacement(it.placementOrder), it.point, it.field)}
         loadFieldAdapter = LoadFieldAdapter(fieldPreviews)
         loadFieldAdapter.setFieldSelectedListener(listener)
         recyclerView.adapter = loadFieldAdapter

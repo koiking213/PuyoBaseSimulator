@@ -22,7 +22,10 @@ class LoadFieldAdapter(private val mFields: List<FieldPreview>) : RecyclerView.A
 
     override fun onBindViewHolder(holder: FieldViewHolder, position: Int) {
         val fieldPreview = mFields[position]
-        holder.fieldID.text =   String.format(Locale.JAPAN, "seed: %d",fieldPreview.seed)
+        //holder.fieldID.text = String.format(Locale.JAPAN, "seed: %d",fieldPreview.seed)
+        holder.allClear.text = if (fieldPreview.allClear) { "全消し" } else { "" }
+        holder.numOfPlacement.text = String.format(Locale.JAPAN, "%d手目", fieldPreview.numOfPlacement)
+        holder.point.text = String.format(Locale.JAPAN, "%d点", fieldPreview.point)
         holder.fieldCanvas.setField(fieldPreview.content)
         holder.itemView.setOnClickListener {
             mFieldSelectedListener.invoke(position, fieldPreview)
@@ -35,6 +38,9 @@ class LoadFieldAdapter(private val mFields: List<FieldPreview>) : RecyclerView.A
 
     class FieldViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var fieldID: TextView = itemView.findViewById(R.id.fieldID)
+        var allClear: TextView = itemView.findViewById(R.id.allClear)
+        var numOfPlacement: TextView = itemView.findViewById(R.id.numOfPlacement)
+        var point : TextView = itemView.findViewById(R.id.point)
         var fieldCanvas: FieldPreviewCanvas = itemView.findViewById(R.id.fieldCanvas)
     }
 }

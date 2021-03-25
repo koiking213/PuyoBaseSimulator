@@ -49,12 +49,9 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
         view.update(currentField, tsumoInfo)
     }
 
-    private fun setPairOnField(): Field? {
-        val newField = SerializationUtils.clone(currentField) as Field
-        val col = tsumoController.currentCursorColumnIndex
-        val mainColor = tsumoController.mainColor
-        val subColor = tsumoController.subColor
-        val success = when (tsumoController.currentCursorRotate) {
+    private fun setPairOnField(field: Field, col: Int, rot: Rotation, mainColor: PuyoColor, subColor: PuyoColor): Field? {
+        val newField = SerializationUtils.clone(field) as Field
+        val success = when (rot) {
             Rotation.DEGREE0 -> newField.addPuyo(col, mainColor) and newField.addPuyo(col, subColor)
             Rotation.DEGREE90 -> newField.addPuyo(col, mainColor) and newField.addPuyo(col + 1, subColor)
             Rotation.DEGREE180 -> newField.addPuyo(col, subColor) and newField.addPuyo(col, mainColor) // 上下が逆転している
@@ -63,8 +60,12 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
         return if (success) newField else null
     }
 
+    private fun setPairOnCurrentField(): Field? {
+        return setPairOnField(currentField, tsumoController.currentCursorColumnIndex, tsumoController.currentCursorRotate, tsumoController.mainColor, tsumoController.subColor)
+    }
+
     override fun dropDown() {
-        val newField = setPairOnField() ?: return
+        val newField = setPairOnCurrentField() ?: return
         fieldStack.push(currentField)
         fieldRedoStack.clear()
         tsumoController.pushPlacementOrder()
@@ -94,7 +95,7 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
     override fun redo() {
         tsumoController.restorePlacement(fieldRedoStack.pop())
         fieldStack.push(currentField)
-        val field = setPairOnField()!!
+        val field = setPairOnCurrentField()!!
         tsumoController.pushPlacementOrder()
         view.drawField(field)
         field.evalNextField()
@@ -110,11 +111,28 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
         }
     }
 
+    private fun getPreviousColor(): Pair<PuyoColor, PuyoColor> {
+        tsumoController.decrementTsumo()
+        val c1 = tsumoController.mainColor
+        val c2 = tsumoController.subColor
+        tsumoController.incrementTsumo()
+        return c1 to c2
+    }
+
     override fun save() {
         val base = Base()
         base.hash = tsumoController.seed
-        base.field = currentField.toString()
         base.placementOrder = tsumoController.placementOrderToString()
+        base.allClear = currentField.allClear()
+        base.point = currentField.accumulatedPoint
+        base.field = if (currentField.allClear()) {
+            val (mainColor, subColor) = getPreviousColor()
+            val p = tsumoController.placementOrder.peek()
+            val f = setPairOnField(fieldStack.peek(), p.currentCursorColumnIndex, p.currentCursorRotate, mainColor, subColor)
+            f.toString()
+        } else {
+            currentField.toString()
+        }
         mDB.baseDao().insert(base)
     }
 

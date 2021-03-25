@@ -112,6 +112,12 @@ class TsumoController(private val tsumo: String, val seed: Int) {
         }
     }
 
+    companion object {
+        fun getNumOfPlacement(placementOrder: String) : Int {
+            return 1 + placementOrder.count { it == ';' }
+        }
+    }
+
     init {
         setTsumo()
     }

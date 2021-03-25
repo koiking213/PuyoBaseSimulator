@@ -17,4 +17,11 @@ class Base {
 
     @ColumnInfo(name = "field")
     var field: String = ""
+
+    @ColumnInfo(name = "point")
+    var point = 0
+
+    @ColumnInfo(name = "allClear")
+    var allClear = false
+
 }
