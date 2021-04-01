@@ -174,6 +174,7 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
             if (disappear) {
                 val point = field.bonus * field.disappearPuyo.size * 10
                 view.drawPoint(field.bonus, field.disappearPuyo.size, sum + point, field.accumulatedPoint)
+                view.drawChainNum(field.chainNum)
                 activity.runOnUiThread { view.drawDisappearField(field) }
                 drawFieldChainRecursive(field.nextField!!, false, sum + point)
             } else {
@@ -220,6 +221,7 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
     private fun initFieldPreference() {
         view.setSeedText(tsumoController.seed)
         view.clearPoint()
+        view.clearChainNum()
         view.update(currentField, tsumoController.makeTsumoInfo())
     }
 

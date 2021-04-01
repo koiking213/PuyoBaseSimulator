@@ -135,6 +135,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
         </TextView>
+        <TextView
+            android:id="@+id/chainNumTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+        </TextView>
     </LinearLayout>
 
 
@@ -161,21 +166,24 @@
             android:id="@+id/buttonLeft"
             android:layout_width="90dp"
             android:layout_height="90dp"
-            android:text="@string/left_cursor" />
+            android:text="@string/left_cursor"
+            tools:ignore="ButtonStyle" />
 
         <Button
             android:id="@+id/buttonRight"
             android:layout_marginStart="20dp"
             android:layout_width="90dp"
             android:layout_height="90dp"
-            android:text="@string/right_cursor" />
+            android:text="@string/right_cursor"
+            tools:ignore="ButtonStyle" />
 
         <Button
             android:id="@+id/buttonA"
             android:layout_marginStart="50dp"
             android:layout_width="90dp"
             android:layout_height="90dp"
-            android:text="@string/a" />
+            android:text="@string/a"
+            tools:ignore="ButtonStyle" />
 
     </LinearLayout>
 
@@ -197,7 +205,8 @@
             android:layout_width="90dp"
             android:layout_height="90dp"
             android:layout_marginStart="55dp"
-            android:text="@string/down_cursor" />
+            android:text="@string/down_cursor"
+            tools:ignore="ButtonStyle" />
 
 
         <Button
@@ -205,7 +214,8 @@
             android:layout_width="90dp"
             android:layout_height="90dp"
             android:layout_marginStart="50dp"
-            android:text="@string/b" />
+            android:text="@string/b"
+            tools:ignore="ButtonStyle" />
     </LinearLayout>
     </LinearLayout>
 

@@ -14,7 +14,9 @@ interface HomeContract {
         // 画面上にfieldとtsumoInfoを反映する
         fun update(field: Field, tsumoInfo: TsumoInfo)
         fun drawPoint(bonus: Int, puyoNum: Int, chainSum: Int, gameSum: Int)
+        fun drawChainNum(chainNum: Int)
         fun clearPoint()
+        fun clearChainNum()
         fun eraseCurrentPuyo()
         fun disableUndoButton()
         fun enableUndoButton()

@@ -13,7 +13,7 @@ class Field : Serializable {
     var disappearPuyo = mutableListOf<Puyo>()
     var accumulatedPoint = 0
     var bonus = 0
-    private var chainNum = 0
+    var chainNum = 0
 
     fun addPuyo(column: Int, color: PuyoColor): Boolean {
         val row = heights[column-1] + 1
