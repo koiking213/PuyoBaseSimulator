@@ -34,7 +34,6 @@
 
 
     <androidx.gridlayout.widget.GridLayout
-        android:id="@+id/utilityLayout"
         android:layout_width="160dp"
         android:layout_height="120dp"
         android:layout_marginStart="10dp"
@@ -98,7 +97,6 @@
     </androidx.gridlayout.widget.GridLayout>
 
     <LinearLayout
-        android:id="@+id/currentSeedLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="30dp"
@@ -117,7 +115,6 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/pointLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="30dp"
@@ -157,7 +154,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         android:orientation="vertical">
     <LinearLayout
-        android:id="@+id/gamePadUpLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -194,7 +190,6 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/rotationButtonLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"

@@ -1,9 +1,7 @@
 package com.example.puyo_base_simulator.ui.home
 
 import android.app.Activity
-import android.content.Context
 import android.content.res.AssetManager
-import android.view.inputmethod.InputMethodManager
 import androidx.room.Room
 import com.example.puyo_base_simulator.data.AppDatabase
 import com.example.puyo_base_simulator.data.Base

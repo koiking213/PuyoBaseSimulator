@@ -37,7 +37,6 @@ class LoadFieldAdapter(private val mFields: List<FieldPreview>) : RecyclerView.A
     }
 
     class FieldViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        var fieldID: TextView = itemView.findViewById(R.id.fieldID)
         var allClear: TextView = itemView.findViewById(R.id.allClear)
         var numOfPlacement: TextView = itemView.findViewById(R.id.numOfPlacement)
         var point : TextView = itemView.findViewById(R.id.point)
