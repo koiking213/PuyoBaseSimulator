@@ -207,13 +207,17 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
         }
     }
 
-    override fun restart() {
+    override fun generate() {
         currentField = Field()
         fieldRedoStack.clear()
         fieldStack.clear()
         val seed = RANDOM.nextInt(65536)
         tsumoController = TsumoController(Haipuyo[seed], seed)
         initFieldPreference()
+    }
+
+    override fun restart() {
+        while (!fieldStack.isEmpty()) undo()
     }
 
     private fun initFieldPreference() {

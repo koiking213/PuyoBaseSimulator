@@ -40,5 +40,6 @@ interface HomeContract {
         fun load(fieldPreview: FieldPreview)
         fun setSeed()
         fun restart()
+        fun generate()
     }
 }
