@@ -48,6 +48,13 @@ open class History<T> () : Iterable<T> {
         index = -1
     }
 
+    open fun set(idx: Int) : Boolean {
+        return if (idx in 0 until content.size) {
+            index = idx
+            true
+        } else false
+    }
+
     fun isFirst() : Boolean = index == 0
     fun isLast() : Boolean = index == content.size - 1
     fun isEmpty() : Boolean = content.isEmpty()

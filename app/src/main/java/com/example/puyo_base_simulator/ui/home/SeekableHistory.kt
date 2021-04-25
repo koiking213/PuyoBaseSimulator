@@ -20,32 +20,32 @@ class SeekableHistory<T> internal constructor(private val seekBar: SeekBar,
 
     override fun undo() : T? {
         val ret = super.undo()
-        redoButton.isEnabled = true
         undoButton.isEnabled = !isFirst()
+        redoButton.isEnabled = true
         seekBar.progress--
         return ret
     }
 
     override fun undoAll(): T {
         val ret = super.undoAll()
-        redoButton.isEnabled = !isLast()
         undoButton.isEnabled = false
+        redoButton.isEnabled = !isLast()
         seekBar.progress =  0
         return ret
     }
 
     override fun redo() : T? {
         val ret = super.redo()
-        redoButton.isEnabled = !isLast()
         undoButton.isEnabled = true
+        redoButton.isEnabled = !isLast()
         seekBar.progress++
         return ret
     }
 
     override fun redoAll(): T {
         val ret = super.redoAll()
-        redoButton.isEnabled = false
         undoButton.isEnabled = !isFirst()
+        redoButton.isEnabled = false
         seekBar.progress = seekBar.max
         return ret
     }
@@ -55,6 +55,15 @@ class SeekableHistory<T> internal constructor(private val seekBar: SeekBar,
         seekBar.max = 0
         undoButton.isEnabled = false
         redoButton.isEnabled = false
+    }
+
+    override fun set(idx: Int): Boolean {
+        return if (super.set(idx)) {
+            seekBar.progress = index
+            undoButton.isEnabled = !isFirst()
+            redoButton.isEnabled = !isLast()
+            true
+        } else false
     }
 
     init {

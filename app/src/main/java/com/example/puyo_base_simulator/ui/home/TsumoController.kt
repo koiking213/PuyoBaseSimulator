@@ -32,6 +32,11 @@ class TsumoController(private val tsumo: String, val seed: Int) {
     fun rollbackPlacementHistory() {
         restorePlacement(placementHistory.undoAll())
     }
+    fun setHistoryIndex(idx : Int) {
+        if (placementHistory.set(idx)) {
+            restorePlacement(placementHistory.current())
+        }
+    }
 
     private fun restorePlacement(plc: Placement) {
         tsumoCounter = plc.tsumoCounter

@@ -204,6 +204,23 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
         }
     }
 
+    fun setHistoryIndex(idx: Int) {
+        currentField = view.currentHistory()
+        tsumoController.setHistoryIndex(idx)
+        view.drawField(currentField)
+        view.drawTsumo(tsumoController.makeTsumoInfo(), currentField)
+    }
+
+    fun evalHistory() {
+        currentField.evalNextField()
+        if (currentField.nextField != null) {
+            view.eraseCurrentPuyo()
+            view.disableAllButtons()
+            drawFieldChain(currentField)
+            currentField = getLastField(currentField)
+        }
+    }
+
     private fun initFieldPreference() {
         view.setSeedText(tsumoController.seed)
         view.clearPoint()

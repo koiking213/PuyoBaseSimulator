@@ -137,12 +137,17 @@ class HomeFragment : Fragment(), HomeContract.View {
         seekBar.setOnSeekBarChangeListener(
                 object: SeekBar.OnSeekBarChangeListener {
                     override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
+                        if (p2) {
+                            mFieldHistory.set(p1)
+                            mPresenter.setHistoryIndex(p1)
+                        }
                     }
 
                     override fun onStartTrackingTouch(p0: SeekBar?) {
                     }
 
                     override fun onStopTrackingTouch(p0: SeekBar?) {
+                        mPresenter.evalHistory()
                     }
                 }
         )
@@ -310,7 +315,6 @@ private fun getPuyoImage(color: PuyoColor): Int {
         currentPuyoView.flatten().map { it.setImageResource(R.drawable.blank) }
     }
 
-    // TODO: mFieldHistoryをpublicにしたほうがいいのでは？
     override fun clearHistory() {
         mFieldHistory.clear()
         mFieldHistory.add(Field())
@@ -334,5 +338,9 @@ private fun getPuyoImage(color: PuyoColor): Int {
 
     override fun latestHistory() : Field {
         return mFieldHistory.latest()
+    }
+
+    fun currentHistory() : Field {
+        return mFieldHistory.current()
     }
 }
