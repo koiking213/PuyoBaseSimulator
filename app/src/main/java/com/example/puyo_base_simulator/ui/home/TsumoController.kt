@@ -28,6 +28,7 @@ class TsumoController(private val tsumo: String, val seed: Int) {
         placementHistory.undo()?.let { restorePlacement(it) }
     }
     fun latestPlacementHistory() : Placement = placementHistory.latest()
+    fun currentPlacementHistory() : Placement = placementHistory.current()
     fun rollbackPlacementHistory() {
         restorePlacement(placementHistory.undoAll())
     }
@@ -39,7 +40,10 @@ class TsumoController(private val tsumo: String, val seed: Int) {
         currentCursorRotate = plc.currentCursorRotate
     }
 
-    fun placementOrderToString() = placementHistory.joinToString(";") { it.toString() }
+    fun placementOrderToString() : String {
+        val list = placementHistory.toList().subList(0, placementHistory.index)
+        return list.joinToString(";") { it.toString() }
+    }
 
     fun stringToPlacementOrder(str: String) : MutableList<Placement> {
         placementHistory.clear()

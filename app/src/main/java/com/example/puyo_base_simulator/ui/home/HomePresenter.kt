@@ -86,7 +86,7 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
 
     override fun redo() {
         view.redoHistory()
-        val field = setPairOnField(currentField, tsumoController.makeTsumoInfo())!!
+        val field = setPairOnField(currentField, tsumoController.makeTsumoInfo(tsumoController.currentPlacementHistory()))!!
         tsumoController.redoPlacementHistory()
         view.drawField(field)
         field.evalNextField()
@@ -102,7 +102,6 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
     }
 
     override fun save() {
-        // TODO: 設置前の手が残っているかも？それを削除してから保存しないといけないかも？
         val base = Base()
         base.hash = tsumoController.seed
         base.placementHistory = tsumoController.placementOrderToString()
