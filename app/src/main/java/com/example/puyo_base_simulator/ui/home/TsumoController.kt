@@ -11,9 +11,10 @@ class TsumoController(private val tsumo: String, val seed: Int) {
     private var nextColor = arrayOf(arrayOf(PuyoColor.RED, PuyoColor.RED), arrayOf(PuyoColor.RED, PuyoColor.RED))
     var placementHistory = History<Placement>()
     fun addPlacementHistory() {
-        placementHistory.undo() //実は条件判定なしでOK?
+        placementHistory.undo() // 確定前の手を編集
         placementHistory.add(Placement(currentCursorColumnIndex, currentCursorRotate, tsumoCounter))
-        placementHistory.add(Placement(3, Rotation.DEGREE0, tsumoCounter+2))
+        incrementTsumo()
+        placementHistory.add(Placement(currentCursorColumnIndex, currentCursorRotate, tsumoCounter)) // 確定前の手を保持
     }
 
     fun redoPlacementHistory() {
@@ -40,11 +41,16 @@ class TsumoController(private val tsumo: String, val seed: Int) {
 
     fun placementOrderToString() = placementHistory.joinToString(";") { it.toString() }
 
-    fun stringToPlacementOrder(str: String) {
+    fun stringToPlacementOrder(str: String) : MutableList<Placement> {
         placementHistory.clear()
         for (placementStr in str.split(";").toTypedArray()) {
             placementHistory.add(from(placementStr))
         }
+        tsumoCounter = placementHistory.latest().tsumoCounter + 2
+        val ret = placementHistory.toMutableList()
+        placementHistory.add(Placement(currentCursorColumnIndex, currentCursorRotate, tsumoCounter))
+        setTsumo()
+        return ret
     }
 
     private fun setTsumo() {
@@ -56,18 +62,19 @@ class TsumoController(private val tsumo: String, val seed: Int) {
                 arrayOf(getPuyoColor(tsumo[tsumoCounter + 4]), getPuyoColor(tsumo[tsumoCounter + 5])))
     }
 
-    // TODO: この2つは外に見せなくて良さそう
-    fun incrementTsumo() {
+    private fun incrementTsumo() {
         tsumoCounter += 2
         setTsumo()
     }
 
-    fun decrementTsumo() {
-        tsumoCounter -= 2
-        setTsumo()
-    }
-
     fun makeTsumoInfo() = TsumoInfo(currentColor, nextColor, currentCursorColumnIndex, currentCursorRotate)
+    fun makeTsumoInfo(p : Placement) : TsumoInfo {
+        val currentColor = arrayOf (getPuyoColor(tsumo[p.tsumoCounter + 1]), getPuyoColor(tsumo[p.tsumoCounter]))
+        val nextColor = arrayOf(
+                arrayOf(getPuyoColor(tsumo[p.tsumoCounter + 2]), getPuyoColor(tsumo[p.tsumoCounter + 3])),
+                arrayOf(getPuyoColor(tsumo[p.tsumoCounter + 4]), getPuyoColor(tsumo[p.tsumoCounter + 5])))
+        return TsumoInfo(currentColor, nextColor, p.currentCursorColumnIndex, p.currentCursorRotate)
+    }
 
     // 軸ぷよ
     val mainColor: PuyoColor

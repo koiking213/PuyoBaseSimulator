@@ -302,6 +302,8 @@ private fun getPuyoImage(color: PuyoColor): Int {
 
     override fun enableAllButtons() {
         buttons.map {mRoot.findViewById<View>(it).isEnabled = true}
+        mRoot.findViewById<View>(R.id.buttonUndo).isEnabled = !mFieldHistory.isFirst()
+        mRoot.findViewById<View>(R.id.buttonRedo).isEnabled = !mFieldHistory.isLast()
     }
 
     override fun eraseCurrentPuyo() {

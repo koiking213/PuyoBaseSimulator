@@ -45,9 +45,12 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
         view.update(currentField, tsumoInfo)
     }
 
-    private fun setPairOnField(field: Field, col: Int, rot: Rotation, mainColor: PuyoColor, subColor: PuyoColor): Field? {
+    private fun setPairOnField(field: Field, tsumoInfo: TsumoInfo): Field? {
+        val col = tsumoInfo.column
+        val mainColor = tsumoInfo.currentColor[0]
+        val subColor = tsumoInfo.currentColor[1]
         val newField = SerializationUtils.clone(field) as Field
-        val success = when (rot) {
+        val success = when (tsumoInfo.rot) {
             Rotation.DEGREE0 -> newField.addPuyo(col, mainColor) and newField.addPuyo(col, subColor)
             Rotation.DEGREE90 -> newField.addPuyo(col, mainColor) and newField.addPuyo(col + 1, subColor)
             Rotation.DEGREE180 -> newField.addPuyo(col, subColor) and newField.addPuyo(col, mainColor) // 上下が逆転している
@@ -56,14 +59,9 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
         return if (success) newField else null
     }
 
-    private fun setPairOnCurrentField(): Field? {
-        return setPairOnField(currentField, tsumoController.currentCursorColumnIndex, tsumoController.currentCursorRotate, tsumoController.mainColor, tsumoController.subColor)
-    }
-
     override fun dropDown() {
-        val newField = setPairOnCurrentField() ?: return
+        val newField = setPairOnField(currentField, tsumoController.makeTsumoInfo()) ?: return
         tsumoController.addPlacementHistory()
-        tsumoController.incrementTsumo()
         view.drawField(newField)
         newField.evalNextField()
         currentField = if (newField.nextField == null) {
@@ -88,7 +86,7 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
 
     override fun redo() {
         view.redoHistory()
-        val field = setPairOnCurrentField()!!
+        val field = setPairOnField(currentField, tsumoController.makeTsumoInfo())!!
         tsumoController.redoPlacementHistory()
         view.drawField(field)
         field.evalNextField()
@@ -103,24 +101,16 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
         }
     }
 
-    private fun getPreviousColor(): Pair<PuyoColor, PuyoColor> {
-        tsumoController.decrementTsumo()
-        val c1 = tsumoController.mainColor
-        val c2 = tsumoController.subColor
-        tsumoController.incrementTsumo()
-        return c1 to c2
-    }
-
     override fun save() {
+        // TODO: 設置前の手が残っているかも？それを削除してから保存しないといけないかも？
         val base = Base()
         base.hash = tsumoController.seed
         base.placementHistory = tsumoController.placementOrderToString()
         base.allClear = currentField.allClear()
         base.point = currentField.accumulatedPoint
         base.field = if (currentField.allClear()) {
-            val (mainColor, subColor) = getPreviousColor()
-            val p = tsumoController.latestPlacementHistory()
-            val f = setPairOnField(view.latestHistory(), p.currentCursorColumnIndex, p.currentCursorRotate, mainColor, subColor)
+            val f = view.undoHistory()
+            view.redoHistory()
             f.toString()
         } else {
             currentField.toString()
@@ -132,11 +122,16 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
         val base = mDB.baseDao().findById(fieldPreview.id)
         if (base != null) {
             currentField = Field()
-            tsumoController.stringToPlacementOrder(base.placementHistory)
-            view.clearHistory()
-            // TODO: fieldHistoryをPlacementHistoryから生成する
-            tsumoController.rollbackPlacementHistory()
             tsumoController = TsumoController(Haipuyo[base.hash], base.hash)
+            view.clearHistory()
+            var f = Field()
+            for (p in tsumoController.stringToPlacementOrder(base.placementHistory)) {
+                f = setPairOnField(f, tsumoController.makeTsumoInfo(p))!!
+                view.appendHistory(f)
+            }
+            tsumoController.addPlacementHistory()
+            tsumoController.rollbackPlacementHistory()
+            currentField = view.undoAllHistory()
             initFieldPreference()
         }
     }
