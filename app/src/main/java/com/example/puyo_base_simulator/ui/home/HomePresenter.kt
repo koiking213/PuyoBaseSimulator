@@ -15,8 +15,6 @@ import java.util.*
 
 class HomePresenter internal constructor(private val view: HomeFragment, asset: AssetManager, private val activity: Activity) : Presenter {
     private var currentField = Field()
-    private var fieldStack = StackWithButton<Field>({ this.view.enableUndoButton() }) { this.view.disableUndoButton() }
-    private var fieldRedoStack = StackWithButton<Placement>({ this.view.enableRedoButton() }) { this.view.disableRedoButton() }
     private var tsumoController: TsumoController
     private var mDB: AppDatabase = Room.databaseBuilder(activity.applicationContext,
             AppDatabase::class.java, "database-name")
@@ -64,9 +62,7 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
 
     override fun dropDown() {
         val newField = setPairOnCurrentField() ?: return
-        fieldStack.push(currentField)
-        fieldRedoStack.clear()
-        tsumoController.pushPlacementOrder()
+        tsumoController.addPlacementHistory()
         tsumoController.incrementTsumo()
         view.drawField(newField)
         newField.evalNextField()
@@ -79,25 +75,23 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
             drawFieldChain(newField)
             getLastField(newField)
         }
+        view.appendHistory(currentField)
     }
 
     override fun undo() {
-        fieldRedoStack.push(tsumoController.popPlacementOrder())
-        currentField = fieldStack.pop()
-        tsumoController.decrementTsumo()
+        tsumoController.undoPlacementHistory()
+        currentField = view.undoHistory()
         val tsumoInfo = tsumoController.makeTsumoInfo()
         view.update(currentField, tsumoInfo)
         view.drawPoint(0, 0, 0, currentField.accumulatedPoint)
     }
 
     override fun redo() {
-        tsumoController.restorePlacement(fieldRedoStack.pop())
-        fieldStack.push(currentField)
+        view.redoHistory()
         val field = setPairOnCurrentField()!!
-        tsumoController.pushPlacementOrder()
+        tsumoController.redoPlacementHistory()
         view.drawField(field)
         field.evalNextField()
-        tsumoController.incrementTsumo()
         currentField = if (field.nextField == null) {
             view.drawTsumo(tsumoController.makeTsumoInfo(), field)
             field
@@ -120,13 +114,13 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
     override fun save() {
         val base = Base()
         base.hash = tsumoController.seed
-        base.placementOrder = tsumoController.placementOrderToString()
+        base.placementHistory = tsumoController.placementOrderToString()
         base.allClear = currentField.allClear()
         base.point = currentField.accumulatedPoint
         base.field = if (currentField.allClear()) {
             val (mainColor, subColor) = getPreviousColor()
-            val p = tsumoController.placementOrder.peek()
-            val f = setPairOnField(fieldStack.peek(), p.currentCursorColumnIndex, p.currentCursorRotate, mainColor, subColor)
+            val p = tsumoController.latestPlacementHistory()
+            val f = setPairOnField(view.latestHistory(), p.currentCursorColumnIndex, p.currentCursorRotate, mainColor, subColor)
             f.toString()
         } else {
             currentField.toString()
@@ -138,12 +132,10 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
         val base = mDB.baseDao().findById(fieldPreview.id)
         if (base != null) {
             currentField = Field()
-            tsumoController.stringToPlacementOrder(base.placementOrder)
-            fieldRedoStack.clear()
-            while (!tsumoController.placementOrder.isEmpty()) {
-                fieldRedoStack.push(tsumoController.popPlacementOrder())
-            }
-            fieldStack.clear()
+            tsumoController.stringToPlacementOrder(base.placementHistory)
+            view.clearHistory()
+            // TODO: fieldHistoryをPlacementHistoryから生成する
+            tsumoController.rollbackPlacementHistory()
             tsumoController = TsumoController(Haipuyo[base.hash], base.hash)
             initFieldPreference()
         }
@@ -181,9 +173,6 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
                     // 終了処理
                     activity.runOnUiThread {
                         view.enableAllButtons()
-                        if (fieldRedoStack.isEmpty()) {
-                            view.disableRedoButton()
-                        }
                         val tsumoInfo = tsumoController.makeTsumoInfo()
                         view.update(field, tsumoInfo)
                     }
@@ -198,10 +187,10 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
         try {
             val newSeed = view.specifiedSeed
             tsumoController = TsumoController(Haipuyo[newSeed], newSeed)
-            fieldRedoStack.clear()
-            fieldStack.clear()
             view.setSeedText(newSeed)
             currentField = Field()
+            view.clearHistory()
+            view.appendHistory(currentField)
             view.update(currentField, tsumoController.makeTsumoInfo())
         } catch (ignored: NumberFormatException) {
         }
@@ -209,15 +198,16 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
 
     override fun generate() {
         currentField = Field()
-        fieldRedoStack.clear()
-        fieldStack.clear()
+        view.clearHistory()
         val seed = RANDOM.nextInt(65536)
         tsumoController = TsumoController(Haipuyo[seed], seed)
         initFieldPreference()
     }
 
     override fun restart() {
-        while (!fieldStack.isEmpty()) undo()
+        for (i in 0 until tsumoController.tsumoCounter/2) {
+            undo()
+        }
     }
 
     private fun initFieldPreference() {

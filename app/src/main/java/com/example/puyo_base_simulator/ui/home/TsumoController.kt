@@ -2,34 +2,48 @@ package com.example.puyo_base_simulator.ui.home
 
 import com.example.puyo_base_simulator.ui.home.Placement.Companion.from
 import com.example.puyo_base_simulator.ui.home.PuyoColor.Companion.getPuyoColor
-import java.util.*
 
 class TsumoController(private val tsumo: String, val seed: Int) {
-    private var tsumoCounter = 0
+    var tsumoCounter = 0
     var currentCursorColumnIndex = 3
     var currentCursorRotate = Rotation.DEGREE0 // 時計回り
     private var currentColor = arrayOf(PuyoColor.RED, PuyoColor.RED)
     private var nextColor = arrayOf(arrayOf(PuyoColor.RED, PuyoColor.RED), arrayOf(PuyoColor.RED, PuyoColor.RED))
-    var placementOrder = Stack<Placement>()
-    fun pushPlacementOrder() {
-        placementOrder.push(Placement(currentCursorColumnIndex, currentCursorRotate, tsumoCounter))
+    var placementHistory = History<Placement>()
+    fun addPlacementHistory() {
+        placementHistory.undo() //実は条件判定なしでOK?
+        placementHistory.add(Placement(currentCursorColumnIndex, currentCursorRotate, tsumoCounter))
+        placementHistory.add(Placement(3, Rotation.DEGREE0, tsumoCounter+2))
     }
 
-    fun popPlacementOrder(): Placement = placementOrder.pop()
+    fun redoPlacementHistory() {
+        val p = placementHistory.redo()
+        if (p == null) {
+            tsumoCounter += 2
+            restorePlacement(Placement(3, Rotation.DEGREE0, tsumoCounter))
+        } else restorePlacement(p)
+    }
+    fun undoPlacementHistory() {
+        placementHistory.undo()?.let { restorePlacement(it) }
+    }
+    fun latestPlacementHistory() : Placement = placementHistory.latest()
+    fun rollbackPlacementHistory() {
+        restorePlacement(placementHistory.undoAll())
+    }
 
-    fun restorePlacement(plc: Placement) {
+    private fun restorePlacement(plc: Placement) {
         tsumoCounter = plc.tsumoCounter
         setTsumo()
         currentCursorColumnIndex = plc.currentCursorColumnIndex
         currentCursorRotate = plc.currentCursorRotate
     }
 
-    fun placementOrderToString() = placementOrder.joinToString(";") { it.toString() }
+    fun placementOrderToString() = placementHistory.joinToString(";") { it.toString() }
 
     fun stringToPlacementOrder(str: String) {
-        placementOrder.clear()
+        placementHistory.clear()
         for (placementStr in str.split(";").toTypedArray()) {
-            placementOrder.push(from(placementStr))
+            placementHistory.add(from(placementStr))
         }
     }
 
@@ -42,6 +56,7 @@ class TsumoController(private val tsumo: String, val seed: Int) {
                 arrayOf(getPuyoColor(tsumo[tsumoCounter + 4]), getPuyoColor(tsumo[tsumoCounter + 5])))
     }
 
+    // TODO: この2つは外に見せなくて良さそう
     fun incrementTsumo() {
         tsumoCounter += 2
         setTsumo()
