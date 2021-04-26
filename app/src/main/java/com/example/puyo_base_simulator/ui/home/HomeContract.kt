@@ -44,7 +44,7 @@ interface HomeContract {
         fun dropDown()
         fun undo()
         fun redo()
-        fun save()
+        fun save() : Boolean
         fun load(fieldPreview: FieldPreview)
         fun setSeed()
         fun restart()

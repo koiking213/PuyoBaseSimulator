@@ -101,7 +101,8 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
         }
     }
 
-    override fun save() {
+    override fun save() : Boolean {
+        if (view.isHistoryFirst()) return false
         val base = Base()
         base.hash = tsumoController.seed
         base.placementHistory = tsumoController.placementOrderToString()
@@ -115,6 +116,7 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
             currentField.toString()
         }
         mDB.baseDao().insert(base)
+        return true
     }
 
     override fun load(fieldPreview: FieldPreview) {

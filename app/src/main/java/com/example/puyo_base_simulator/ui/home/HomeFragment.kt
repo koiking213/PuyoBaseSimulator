@@ -110,8 +110,9 @@ class HomeFragment : Fragment(), HomeContract.View {
         root.findViewById<View>(R.id.buttonUndo).setOnClickListener { mPresenter.undo() }
         root.findViewById<View>(R.id.buttonRedo).setOnClickListener { mPresenter.redo() }
         root.findViewById<View>(R.id.buttonSave).setOnClickListener {
-            mPresenter.save()
-            Snackbar.make(root, "saved", Snackbar.LENGTH_SHORT).show()
+            if (mPresenter.save()) {
+                Snackbar.make(root, "saved", Snackbar.LENGTH_SHORT).show()
+            }
         }
         root.findViewById<View>(R.id.buttonLoad).setOnClickListener {
             val loadFieldPopup = LoadFieldPopup(mActivity)
@@ -342,5 +343,9 @@ private fun getPuyoImage(color: PuyoColor): Int {
 
     fun currentHistory() : Field {
         return mFieldHistory.current()
+    }
+
+    fun isHistoryFirst() : Boolean {
+        return mFieldHistory.isFirst()
     }
 }
