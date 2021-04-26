@@ -13,90 +13,27 @@ class TsumoControllerTest {
     fun setUp() {
     }
 
-    @Test
-    fun pushPlacementOrder() {
-    }
-
-    @Test
-    fun popPlacementOrder() {
-        val tc = TsumoController("rgrbyyrrgbrb", 0)
-        tc.pushPlacementOrder()
-        val p = tc.popPlacementOrder()
-        Truth.assertThat(p.currentCursorColumnIndex).isEqualTo(3)
-        Truth.assertThat(p.currentCursorRotate).isEqualTo(Rotation.DEGREE0)
-        Truth.assertThat(p.tsumoCounter).isEqualTo(0)
-    }
-
-    @Test
-    fun restorePlacement() {
-        val tc = TsumoController("rgrbyyrrgbrb", 0)
-        tc.incrementTsumo()
-        tc.rotateCurrentLeft()
-        tc.moveCurrentLeft()
-        tc.pushPlacementOrder()
-        tc.pushPlacementOrder()
-        val p = tc.popPlacementOrder()
-        val tc2 = TsumoController("rgrbyyrrgbrb", 0)
-        tc2.restorePlacement(p)
-        tc2.pushPlacementOrder()
-        val p2 = tc2.popPlacementOrder()
-        Truth.assertThat(p2.toString()).isEqualTo(p.toString())
-    }
 
     @Test
     fun placementOrderToString() {
         val tc = TsumoController("rgrbyyrrgbrb", 0)
-        tc.pushPlacementOrder()
+        val p1 = Placement(tc.currentCursorColumnIndex, tc.currentCursorRotate, tc.tsumoCounter)
+        tc.addPlacementHistory()
+        val p2 = tc.latestPlacementHistory()
+        tc.addPlacementHistory()
         val str = tc.placementOrderToString()
-        val p = tc.popPlacementOrder()
-        Truth.assertThat(str).isEqualTo(p.toString())
+        val expected = "$p1;$p2"
+        Truth.assertThat(str).isEqualTo(expected)
     }
 
     @Test
     fun stringToPlacementOrder() {
         val tc = TsumoController("rgrbyyrrgbrb", 0)
-        tc.pushPlacementOrder()
+        tc.addPlacementHistory()
         val tc2 = TsumoController("rgrbyyrrgbrb", 0)
         val str = tc.placementOrderToString()
         tc2.stringToPlacementOrder(str)
-        Truth.assertThat(tc.popPlacementOrder().toString()).isEqualTo(tc2.popPlacementOrder().toString())
-    }
-
-    @Test
-    fun incrementTsumo() {
-        val tc = TsumoController("rgrbyyrrgbrb", 0)
-        tc.incrementTsumo()
-        val info = tc.makeTsumoInfo()
-        Truth.assertThat(info.currentColor[1]).isEqualTo(PuyoColor.RED)
-        Truth.assertThat(info.currentColor[0]).isEqualTo(PuyoColor.BLUE)
-        Truth.assertThat(info.nextColor[0][0]).isEqualTo(PuyoColor.YELLOW)
-        Truth.assertThat(info.nextColor[0][1]).isEqualTo(PuyoColor.YELLOW)
-        Truth.assertThat(info.nextColor[1][0]).isEqualTo(PuyoColor.RED)
-        Truth.assertThat(info.nextColor[1][1]).isEqualTo(PuyoColor.RED)
-        Truth.assertThat(info.currentMainPos.row).isEqualTo(1)
-        Truth.assertThat(info.currentMainPos.column).isEqualTo(3)
-        Truth.assertThat(info.currentSubPos.row).isEqualTo(0)
-        Truth.assertThat(info.currentSubPos.column).isEqualTo(3)
-        Truth.assertThat(info.rot).isEqualTo(Rotation.DEGREE0)
-    }
-
-    @Test
-    fun decrementTsumo() {
-        val tc = TsumoController("rgrbyyrrgbrb", 0)
-        tc.incrementTsumo()
-        tc.decrementTsumo()
-        val info = tc.makeTsumoInfo()
-        Truth.assertThat(info.currentColor[1]).isEqualTo(PuyoColor.RED)
-        Truth.assertThat(info.currentColor[0]).isEqualTo(PuyoColor.GREEN)
-        Truth.assertThat(info.nextColor[0][0]).isEqualTo(PuyoColor.RED)
-        Truth.assertThat(info.nextColor[0][1]).isEqualTo(PuyoColor.BLUE)
-        Truth.assertThat(info.nextColor[1][0]).isEqualTo(PuyoColor.YELLOW)
-        Truth.assertThat(info.nextColor[1][1]).isEqualTo(PuyoColor.YELLOW)
-        Truth.assertThat(info.currentMainPos.row).isEqualTo(1)
-        Truth.assertThat(info.currentMainPos.column).isEqualTo(3)
-        Truth.assertThat(info.currentSubPos.row).isEqualTo(0)
-        Truth.assertThat(info.currentSubPos.column).isEqualTo(3)
-        Truth.assertThat(info.rot).isEqualTo(Rotation.DEGREE0)
+        Truth.assertThat(tc.latestPlacementHistory().toString()).isEqualTo(tc2.latestPlacementHistory().toString())
     }
 
     @Test

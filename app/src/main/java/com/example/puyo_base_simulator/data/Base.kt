@@ -13,7 +13,7 @@ class Base {
     var hash = 0
 
     @ColumnInfo(name = "placementOrder")
-    var placementOrder: String = ""
+    var placementHistory: String = ""
 
     @ColumnInfo(name = "field")
     var field: String = ""

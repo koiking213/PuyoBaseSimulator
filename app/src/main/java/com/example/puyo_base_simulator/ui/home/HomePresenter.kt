@@ -15,8 +15,6 @@ import java.util.*
 
 class HomePresenter internal constructor(private val view: HomeFragment, asset: AssetManager, private val activity: Activity) : Presenter {
     private var currentField = Field()
-    private var fieldStack = StackWithButton<Field>({ this.view.enableUndoButton() }) { this.view.disableUndoButton() }
-    private var fieldRedoStack = StackWithButton<Placement>({ this.view.enableRedoButton() }) { this.view.disableRedoButton() }
     private var tsumoController: TsumoController
     private var mDB: AppDatabase = Room.databaseBuilder(activity.applicationContext,
             AppDatabase::class.java, "database-name")
@@ -47,9 +45,12 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
         view.update(currentField, tsumoInfo)
     }
 
-    private fun setPairOnField(field: Field, col: Int, rot: Rotation, mainColor: PuyoColor, subColor: PuyoColor): Field? {
+    private fun setPairOnField(field: Field, tsumoInfo: TsumoInfo): Field? {
+        val col = tsumoInfo.column
+        val mainColor = tsumoInfo.currentColor[0]
+        val subColor = tsumoInfo.currentColor[1]
         val newField = SerializationUtils.clone(field) as Field
-        val success = when (rot) {
+        val success = when (tsumoInfo.rot) {
             Rotation.DEGREE0 -> newField.addPuyo(col, mainColor) and newField.addPuyo(col, subColor)
             Rotation.DEGREE90 -> newField.addPuyo(col, mainColor) and newField.addPuyo(col + 1, subColor)
             Rotation.DEGREE180 -> newField.addPuyo(col, subColor) and newField.addPuyo(col, mainColor) // 上下が逆転している
@@ -58,16 +59,9 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
         return if (success) newField else null
     }
 
-    private fun setPairOnCurrentField(): Field? {
-        return setPairOnField(currentField, tsumoController.currentCursorColumnIndex, tsumoController.currentCursorRotate, tsumoController.mainColor, tsumoController.subColor)
-    }
-
     override fun dropDown() {
-        val newField = setPairOnCurrentField() ?: return
-        fieldStack.push(currentField)
-        fieldRedoStack.clear()
-        tsumoController.pushPlacementOrder()
-        tsumoController.incrementTsumo()
+        val newField = setPairOnField(currentField, tsumoController.makeTsumoInfo()) ?: return
+        tsumoController.addPlacementHistory()
         view.drawField(newField)
         newField.evalNextField()
         currentField = if (newField.nextField == null) {
@@ -79,25 +73,23 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
             drawFieldChain(newField)
             getLastField(newField)
         }
+        view.appendHistory(currentField)
     }
 
     override fun undo() {
-        fieldRedoStack.push(tsumoController.popPlacementOrder())
-        currentField = fieldStack.pop()
-        tsumoController.decrementTsumo()
+        tsumoController.undoPlacementHistory()
+        currentField = view.undoHistory()
         val tsumoInfo = tsumoController.makeTsumoInfo()
         view.update(currentField, tsumoInfo)
         view.drawPoint(0, 0, 0, currentField.accumulatedPoint)
     }
 
     override fun redo() {
-        tsumoController.restorePlacement(fieldRedoStack.pop())
-        fieldStack.push(currentField)
-        val field = setPairOnCurrentField()!!
-        tsumoController.pushPlacementOrder()
+        view.redoHistory()
+        val field = setPairOnField(currentField, tsumoController.makeTsumoInfo(tsumoController.currentPlacementHistory()))!!
+        tsumoController.redoPlacementHistory()
         view.drawField(field)
         field.evalNextField()
-        tsumoController.incrementTsumo()
         currentField = if (field.nextField == null) {
             view.drawTsumo(tsumoController.makeTsumoInfo(), field)
             field
@@ -109,24 +101,15 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
         }
     }
 
-    private fun getPreviousColor(): Pair<PuyoColor, PuyoColor> {
-        tsumoController.decrementTsumo()
-        val c1 = tsumoController.mainColor
-        val c2 = tsumoController.subColor
-        tsumoController.incrementTsumo()
-        return c1 to c2
-    }
-
     override fun save() {
         val base = Base()
         base.hash = tsumoController.seed
-        base.placementOrder = tsumoController.placementOrderToString()
+        base.placementHistory = tsumoController.placementOrderToString()
         base.allClear = currentField.allClear()
         base.point = currentField.accumulatedPoint
         base.field = if (currentField.allClear()) {
-            val (mainColor, subColor) = getPreviousColor()
-            val p = tsumoController.placementOrder.peek()
-            val f = setPairOnField(fieldStack.peek(), p.currentCursorColumnIndex, p.currentCursorRotate, mainColor, subColor)
+            val f = view.undoHistory()
+            view.redoHistory()
             f.toString()
         } else {
             currentField.toString()
@@ -138,13 +121,16 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
         val base = mDB.baseDao().findById(fieldPreview.id)
         if (base != null) {
             currentField = Field()
-            tsumoController.stringToPlacementOrder(base.placementOrder)
-            fieldRedoStack.clear()
-            while (!tsumoController.placementOrder.isEmpty()) {
-                fieldRedoStack.push(tsumoController.popPlacementOrder())
-            }
-            fieldStack.clear()
             tsumoController = TsumoController(Haipuyo[base.hash], base.hash)
+            view.clearHistory()
+            var f = Field()
+            for (p in tsumoController.stringToPlacementOrder(base.placementHistory)) {
+                f = setPairOnField(f, tsumoController.makeTsumoInfo(p))!!
+                view.appendHistory(f)
+            }
+            tsumoController.addPlacementHistory()
+            tsumoController.rollbackPlacementHistory()
+            currentField = view.undoAllHistory()
             initFieldPreference()
         }
     }
@@ -181,9 +167,6 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
                     // 終了処理
                     activity.runOnUiThread {
                         view.enableAllButtons()
-                        if (fieldRedoStack.isEmpty()) {
-                            view.disableRedoButton()
-                        }
                         val tsumoInfo = tsumoController.makeTsumoInfo()
                         view.update(field, tsumoInfo)
                     }
@@ -198,10 +181,10 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
         try {
             val newSeed = view.specifiedSeed
             tsumoController = TsumoController(Haipuyo[newSeed], newSeed)
-            fieldRedoStack.clear()
-            fieldStack.clear()
             view.setSeedText(newSeed)
             currentField = Field()
+            view.clearHistory()
+            view.appendHistory(currentField)
             view.update(currentField, tsumoController.makeTsumoInfo())
         } catch (ignored: NumberFormatException) {
         }
@@ -209,15 +192,33 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
 
     override fun generate() {
         currentField = Field()
-        fieldRedoStack.clear()
-        fieldStack.clear()
+        view.clearHistory()
         val seed = RANDOM.nextInt(65536)
         tsumoController = TsumoController(Haipuyo[seed], seed)
         initFieldPreference()
     }
 
     override fun restart() {
-        while (!fieldStack.isEmpty()) undo()
+        for (i in 0 until tsumoController.tsumoCounter/2) {
+            undo()
+        }
+    }
+
+    fun setHistoryIndex(idx: Int) {
+        currentField = view.currentHistory()
+        tsumoController.setHistoryIndex(idx)
+        view.drawField(currentField)
+        view.drawTsumo(tsumoController.makeTsumoInfo(), currentField)
+    }
+
+    fun evalHistory() {
+        currentField.evalNextField()
+        if (currentField.nextField != null) {
+            view.eraseCurrentPuyo()
+            view.disableAllButtons()
+            drawFieldChain(currentField)
+            currentField = getLastField(currentField)
+        }
     }
 
     private fun initFieldPreference() {

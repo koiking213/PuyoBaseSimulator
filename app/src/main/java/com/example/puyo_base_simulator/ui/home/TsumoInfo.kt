@@ -3,7 +3,7 @@ package com.example.puyo_base_simulator.ui.home
 
 data class TsumoInfo(val currentColor: Array<PuyoColor>,
                      val nextColor: Array<Array<PuyoColor>>,
-                     private var column: Int,
+                     var column: Int,
                      val rot: Rotation) {
     val currentMainPos = Point(1, column) // row, column
     val currentSubPos = when (rot) {

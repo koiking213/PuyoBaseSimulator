@@ -1,5 +1,7 @@
 package com.example.puyo_base_simulator.ui.home
 
+import android.widget.SeekBar
+
 interface HomeContract {
     interface View {
         // 6x13のフィールド部分を描画する
@@ -26,6 +28,12 @@ interface HomeContract {
         fun enableAllButtons()
         val specifiedSeed: Int
         fun setSeedText(seed: Int)
+        fun clearHistory()
+        fun appendHistory(f: Field)
+        fun undoHistory() : Field
+        fun redoHistory() : Field
+        fun latestHistory() : Field
+        fun undoAllHistory() : Field
     }
 
     interface Presenter {

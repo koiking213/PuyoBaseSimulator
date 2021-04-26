@@ -5,9 +5,7 @@ import android.content.Context
 import android.os.Bundle
 import android.view.*
 import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.TextView
+import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.gridlayout.widget.GridLayout
 import com.example.puyo_base_simulator.R
@@ -23,6 +21,7 @@ class HomeFragment : Fragment(), HomeContract.View {
     private lateinit var mPresenter: HomePresenter
     private lateinit var mActivity: Activity
     private lateinit var mRoot: View
+    private lateinit var mFieldHistory : SeekableHistory<Field>
     private val buttons = arrayOf(
             R.id.buttonLeft,
             R.id.buttonRight,
@@ -133,8 +132,33 @@ class HomeFragment : Fragment(), HomeContract.View {
         root.findViewById<View>(R.id.buttonSetSeed).setOnClickListener { mPresenter.setSeed() }
         root.findViewById<View>(R.id.buttonGenerate).setOnClickListener { mPresenter.generate() }
         root.findViewById<View>(R.id.buttonRestart).setOnClickListener { mPresenter.restart() }
+        val seekBar = root.findViewById<SeekBar>(R.id.seekBar)
+        seekBar.max = 0
+        seekBar.setOnSeekBarChangeListener(
+                object: SeekBar.OnSeekBarChangeListener {
+                    override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
+                        if (p2) {
+                            mFieldHistory.set(p1)
+                            mPresenter.setHistoryIndex(p1)
+                        }
+                    }
+
+                    override fun onStartTrackingTouch(p0: SeekBar?) {
+                    }
+
+                    override fun onStopTrackingTouch(p0: SeekBar?) {
+                        mPresenter.evalHistory()
+                    }
+                }
+        )
+        mFieldHistory = SeekableHistory(seekBar,
+                root.findViewById(R.id.buttonUndo),
+                root.findViewById(R.id.buttonRedo)
+        )
+        mFieldHistory.add(Field())
         return root
     }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -283,9 +307,40 @@ private fun getPuyoImage(color: PuyoColor): Int {
 
     override fun enableAllButtons() {
         buttons.map {mRoot.findViewById<View>(it).isEnabled = true}
+        mRoot.findViewById<View>(R.id.buttonUndo).isEnabled = !mFieldHistory.isFirst()
+        mRoot.findViewById<View>(R.id.buttonRedo).isEnabled = !mFieldHistory.isLast()
     }
 
     override fun eraseCurrentPuyo() {
         currentPuyoView.flatten().map { it.setImageResource(R.drawable.blank) }
+    }
+
+    override fun clearHistory() {
+        mFieldHistory.clear()
+        mFieldHistory.add(Field())
+    }
+
+    override fun appendHistory(f: Field) {
+        mFieldHistory.add(f)
+    }
+
+    override fun undoHistory() : Field {
+        return mFieldHistory.undo()!!
+    }
+
+    override fun undoAllHistory() : Field {
+        return mFieldHistory.undoAll()
+    }
+
+    override fun redoHistory() : Field {
+        return mFieldHistory.redo()!!
+    }
+
+    override fun latestHistory() : Field {
+        return mFieldHistory.latest()
+    }
+
+    fun currentHistory() : Field {
+        return mFieldHistory.current()
     }
 }
