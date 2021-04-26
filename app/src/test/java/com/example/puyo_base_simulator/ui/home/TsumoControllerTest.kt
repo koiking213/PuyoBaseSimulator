@@ -20,6 +20,7 @@ class TsumoControllerTest {
         val p1 = Placement(tc.currentCursorColumnIndex, tc.currentCursorRotate, tc.tsumoCounter)
         tc.addPlacementHistory()
         val p2 = tc.latestPlacementHistory()
+        tc.addPlacementHistory()
         val str = tc.placementOrderToString()
         val expected = "$p1;$p2"
         Truth.assertThat(str).isEqualTo(expected)
@@ -33,43 +34,6 @@ class TsumoControllerTest {
         val str = tc.placementOrderToString()
         tc2.stringToPlacementOrder(str)
         Truth.assertThat(tc.latestPlacementHistory().toString()).isEqualTo(tc2.latestPlacementHistory().toString())
-    }
-
-    @Test
-    fun incrementTsumo() {
-        val tc = TsumoController("rgrbyyrrgbrb", 0)
-        tc.incrementTsumo()
-        val info = tc.makeTsumoInfo()
-        Truth.assertThat(info.currentColor[1]).isEqualTo(PuyoColor.RED)
-        Truth.assertThat(info.currentColor[0]).isEqualTo(PuyoColor.BLUE)
-        Truth.assertThat(info.nextColor[0][0]).isEqualTo(PuyoColor.YELLOW)
-        Truth.assertThat(info.nextColor[0][1]).isEqualTo(PuyoColor.YELLOW)
-        Truth.assertThat(info.nextColor[1][0]).isEqualTo(PuyoColor.RED)
-        Truth.assertThat(info.nextColor[1][1]).isEqualTo(PuyoColor.RED)
-        Truth.assertThat(info.currentMainPos.row).isEqualTo(1)
-        Truth.assertThat(info.currentMainPos.column).isEqualTo(3)
-        Truth.assertThat(info.currentSubPos.row).isEqualTo(0)
-        Truth.assertThat(info.currentSubPos.column).isEqualTo(3)
-        Truth.assertThat(info.rot).isEqualTo(Rotation.DEGREE0)
-    }
-
-    @Test
-    fun decrementTsumo() {
-        val tc = TsumoController("rgrbyyrrgbrb", 0)
-        tc.incrementTsumo()
-        tc.decrementTsumo()
-        val info = tc.makeTsumoInfo()
-        Truth.assertThat(info.currentColor[1]).isEqualTo(PuyoColor.RED)
-        Truth.assertThat(info.currentColor[0]).isEqualTo(PuyoColor.GREEN)
-        Truth.assertThat(info.nextColor[0][0]).isEqualTo(PuyoColor.RED)
-        Truth.assertThat(info.nextColor[0][1]).isEqualTo(PuyoColor.BLUE)
-        Truth.assertThat(info.nextColor[1][0]).isEqualTo(PuyoColor.YELLOW)
-        Truth.assertThat(info.nextColor[1][1]).isEqualTo(PuyoColor.YELLOW)
-        Truth.assertThat(info.currentMainPos.row).isEqualTo(1)
-        Truth.assertThat(info.currentMainPos.column).isEqualTo(3)
-        Truth.assertThat(info.currentSubPos.row).isEqualTo(0)
-        Truth.assertThat(info.currentSubPos.column).isEqualTo(3)
-        Truth.assertThat(info.rot).isEqualTo(Rotation.DEGREE0)
     }
 
     @Test
