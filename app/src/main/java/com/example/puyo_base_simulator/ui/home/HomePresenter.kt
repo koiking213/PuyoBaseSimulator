@@ -12,7 +12,7 @@ import java.io.InputStreamReader
 import java.util.*
 
 
-class HomePresenter internal constructor(private val view: HomeFragment, asset: AssetManager, private val activity: Activity) {
+class HomePresenter internal constructor(private val view: HomeFragment, asset: AssetManager, activity: Activity) {
     var currentField = Field()
     private var tsumoController: TsumoController
     private var mDB: AppDatabase = Room.databaseBuilder(activity.applicationContext,
@@ -20,30 +20,26 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
             .allowMainThreadQueries() // Main thread でも動作させたい場合
             .build()
 
-    fun getTsumoInfo() : TsumoInfo = tsumoController.makeTsumoInfo()
+    val tsumoInfo : TsumoInfo
+        get() = tsumoController.makeTsumoInfo()
+
+    val seed: Int
+        get() = tsumoController.seed
 
     fun rotateLeft() {
         tsumoController.rotateCurrentRight()
-        val tsumoInfo = tsumoController.makeTsumoInfo()
-        view.update(currentField, tsumoInfo)
     }
 
     fun rotateRight() {
         tsumoController.rotateCurrentLeft()
-        val tsumoInfo = tsumoController.makeTsumoInfo()
-        view.update(currentField, tsumoInfo)
     }
 
     fun moveLeft() {
         tsumoController.moveCurrentLeft()
-        val tsumoInfo = tsumoController.makeTsumoInfo()
-        view.update(currentField, tsumoInfo)
     }
 
     fun moveRight() {
         tsumoController.moveCurrentRight()
-        val tsumoInfo = tsumoController.makeTsumoInfo()
-        view.update(currentField, tsumoInfo)
     }
 
     private fun setPairOnField(field: Field, tsumoInfo: TsumoInfo): Field? {
@@ -60,46 +56,27 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
         return if (success) newField else null
     }
 
-    fun dropDown() {
-        val newField = setPairOnField(currentField, tsumoController.makeTsumoInfo()) ?: return
+    fun dropDown() : Field? {
+        val newField = setPairOnField(currentField, tsumoController.makeTsumoInfo()) ?: return null
         tsumoController.addPlacementHistory()
-        view.drawField(newField)
         newField.evalNextField()
-        currentField = if (newField.nextField == null) {
-            view.drawTsumo(tsumoController.makeTsumoInfo(), newField)
-            newField
-        } else {
-            view.eraseCurrentPuyo()
-            view.disableAllButtons()
-            drawFieldChain(newField)
-            getLastField(newField)
-        }
+        currentField = if (newField.nextField == null) newField else getLastField(newField)
         view.appendHistory(currentField)
+        return newField
     }
 
     fun undo() {
         tsumoController.undoPlacementHistory()
         currentField = view.undoHistory()
-        val tsumoInfo = tsumoController.makeTsumoInfo()
-        view.update(currentField, tsumoInfo)
-        view.drawPoint(0, 0, 0, currentField.accumulatedPoint)
     }
 
-    fun redo() {
+    fun redo() : Field {
         view.redoHistory()
         val field = setPairOnField(currentField, tsumoController.makeTsumoInfo(tsumoController.currentPlacementHistory()))!!
         tsumoController.redoPlacementHistory()
-        view.drawField(field)
         field.evalNextField()
-        currentField = if (field.nextField == null) {
-            view.drawTsumo(tsumoController.makeTsumoInfo(), field)
-            field
-        } else {
-            view.eraseCurrentPuyo()
-            view.disableAllButtons()
-            drawFieldChain(field)
-            getLastField(field)
-        }
+        currentField = if (field.nextField == null) field else getLastField(field)
+        return field
     }
 
     fun save() : Boolean {
@@ -134,7 +111,6 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
             tsumoController.addPlacementHistory()
             tsumoController.rollbackPlacementHistory()
             currentField = view.undoAllHistory()
-            initFieldPreference()
         }
     }
 
@@ -147,22 +123,10 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
         }
     }
 
-    private fun drawFieldChain(field: Field) {
-        view.drawFieldChainRecursive(field, true)
-    }
-
-
-    fun setSeed() {
-        try {
-            val newSeed = view.specifiedSeed
-            tsumoController = TsumoController(Haipuyo[newSeed], newSeed)
-            view.setSeedText(newSeed)
-            currentField = Field()
-            view.clearHistory()
-            view.appendHistory(currentField)
-            view.update(currentField, tsumoController.makeTsumoInfo())
-        } catch (ignored: NumberFormatException) {
-        }
+    fun setSeed(newSeed: Int) {
+        tsumoController = TsumoController(Haipuyo[newSeed], newSeed)
+        currentField = Field()
+        view.clearHistory()
     }
 
     fun generate() {
@@ -170,7 +134,6 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
         view.clearHistory()
         val seed = RANDOM.nextInt(65536)
         tsumoController = TsumoController(Haipuyo[seed], seed)
-        initFieldPreference()
     }
 
     fun restart() {
@@ -182,25 +145,6 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
     fun setHistoryIndex(idx: Int) {
         currentField = view.currentHistory()
         tsumoController.setHistoryIndex(idx)
-        view.drawField(currentField)
-        view.drawTsumo(tsumoController.makeTsumoInfo(), currentField)
-    }
-
-    fun evalHistory() {
-        currentField.evalNextField()
-        if (currentField.nextField != null) {
-            view.eraseCurrentPuyo()
-            view.disableAllButtons()
-            drawFieldChain(currentField)
-            currentField = getLastField(currentField)
-        }
-    }
-
-    private fun initFieldPreference() {
-        view.setSeedText(tsumoController.seed)
-        view.clearPoint()
-        view.clearChainNum()
-        view.update(currentField, tsumoController.makeTsumoInfo())
     }
 
     companion object {
@@ -219,6 +163,5 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
         }
         val seed = RANDOM.nextInt(65536)
         tsumoController = TsumoController(Haipuyo[seed], seed)
-        initFieldPreference()
     }
 }

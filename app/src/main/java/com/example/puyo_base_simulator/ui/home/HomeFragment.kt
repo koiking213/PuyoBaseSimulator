@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.gridlayout.widget.GridLayout
 import com.example.puyo_base_simulator.R
 import com.google.android.material.snackbar.Snackbar
+import java.lang.NullPointerException
 import java.util.*
 
 class HomeFragment : Fragment() {
@@ -33,7 +34,7 @@ class HomeFragment : Fragment() {
             R.id.buttonLoad,
             R.id.buttonSave,
     )
-    val specifiedSeed: Int
+    private val specifiedSeed: Int
         get() {
             val editText = mRoot.findViewById<EditText>(R.id.editTextSeed)
             return try {
@@ -109,13 +110,12 @@ class HomeFragment : Fragment() {
         // ボタン群
         root.findViewById<View>(R.id.buttonUndo).setOnClickListener {
             mPresenter.undo()
-            update(mPresenter.currentField, mPresenter.getTsumoInfo())
+            update()
+            drawPoint(0, 0, 0, mPresenter.currentField.accumulatedPoint)
         }
-        root.findViewById<View>(R.id.buttonRedo).setOnClickListener { mPresenter.redo() }
+        root.findViewById<View>(R.id.buttonRedo).setOnClickListener { drawEvaluatedField(mPresenter.redo()) }
         root.findViewById<View>(R.id.buttonSave).setOnClickListener {
-            if (mPresenter.save()) {
-                Snackbar.make(root, "saved", Snackbar.LENGTH_SHORT).show()
-            }
+            if (mPresenter.save()) Snackbar.make(root, "saved", Snackbar.LENGTH_SHORT).show()
         }
         root.findViewById<View>(R.id.buttonLoad).setOnClickListener {
             val loadFieldPopup = LoadFieldPopup(mActivity)
@@ -127,15 +127,25 @@ class HomeFragment : Fragment() {
                 mPresenter.load(fieldPreview)
                 loadFieldPopup.dismiss()
             }
+            initFieldPreference()
         }
-        root.findViewById<View>(R.id.buttonLeft).setOnClickListener { mPresenter.moveLeft() }
-        root.findViewById<View>(R.id.buttonRight).setOnClickListener { mPresenter.moveRight() }
-        root.findViewById<View>(R.id.buttonDown).setOnClickListener { mPresenter.dropDown() }
-        root.findViewById<View>(R.id.buttonA).setOnClickListener { mPresenter.rotateLeft() }
-        root.findViewById<View>(R.id.buttonB).setOnClickListener { mPresenter.rotateRight() }
-        root.findViewById<View>(R.id.buttonSetSeed).setOnClickListener { mPresenter.setSeed() }
-        root.findViewById<View>(R.id.buttonGenerate).setOnClickListener { mPresenter.generate() }
-        root.findViewById<View>(R.id.buttonRestart).setOnClickListener { mPresenter.restart() }
+        root.findViewById<View>(R.id.buttonLeft).setOnClickListener { onTsumoControllButtonClick(mPresenter::moveLeft) }
+        root.findViewById<View>(R.id.buttonRight).setOnClickListener { onTsumoControllButtonClick(mPresenter::moveRight) }
+        root.findViewById<View>(R.id.buttonDown).setOnClickListener { drawEvaluatedField(mPresenter.dropDown()) }
+        root.findViewById<View>(R.id.buttonA).setOnClickListener {onTsumoControllButtonClick(mPresenter::rotateLeft) }
+        root.findViewById<View>(R.id.buttonB).setOnClickListener { onTsumoControllButtonClick(mPresenter::rotateRight) }
+        root.findViewById<View>(R.id.buttonSetSeed).setOnClickListener {
+            try {
+                mPresenter.setSeed(specifiedSeed)
+                initFieldPreference()
+            } catch (e: NumberFormatException) {  // ignore
+            }
+        }
+        root.findViewById<View>(R.id.buttonGenerate).setOnClickListener {
+            onTsumoControllButtonClick(mPresenter::generate)
+            initFieldPreference()
+        }
+        root.findViewById<View>(R.id.buttonRestart).setOnClickListener { onTsumoControllButtonClick(mPresenter::restart) }
         val seekBar = root.findViewById<SeekBar>(R.id.seekBar)
         seekBar.max = 0
         seekBar.setOnSeekBarChangeListener(
@@ -144,15 +154,11 @@ class HomeFragment : Fragment() {
                         if (p2) {
                             mFieldHistory.set(p1)
                             mPresenter.setHistoryIndex(p1)
+                            update()
                         }
                     }
-
-                    override fun onStartTrackingTouch(p0: SeekBar?) {
-                    }
-
-                    override fun onStopTrackingTouch(p0: SeekBar?) {
-                        mPresenter.evalHistory()
-                    }
+                    override fun onStartTrackingTouch(p0: SeekBar?) {}
+                    override fun onStopTrackingTouch(p0: SeekBar?) {}
                 }
         )
         mFieldHistory = SeekableHistory(seekBar,
@@ -160,6 +166,7 @@ class HomeFragment : Fragment() {
                 root.findViewById(R.id.buttonRedo)
         )
         mFieldHistory.add(Field())
+        initFieldPreference()
         return root
     }
 
@@ -182,9 +189,33 @@ class HomeFragment : Fragment() {
         }
     }
 
-    fun setSeedText(seed: Int) {
+    private fun onTsumoControllButtonClick(func: () -> Unit) {
+        func()
+        update()
+    }
+
+    private fun initFieldPreference() {
+        setSeedText(mPresenter.seed)
+        clearPoint()
+        clearChainNum()
+        update()
+    }
+
+    private fun drawEvaluatedField(newField : Field?) {
+        if (newField != null) {
+            drawField(newField)
+            if (newField.nextField == null) {
+                drawTsumo(mPresenter.tsumoInfo, newField)
+            } else {
+                eraseCurrentPuyo()
+                disableAllButtons()
+                drawFieldChainRecursive(newField, true)
+            }
+        }
+    }
+    private fun setSeedText(seed: Int) {
         val view = mRoot.findViewById<TextView>(R.id.textViewSeed)
-        view.text = String.format(Locale.JAPAN, "seed: %d", seed)
+        view.text = getString(R.string.current_seed, seed)
         val inputManager = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         inputManager.hideSoftInputFromWindow(view.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
     }
@@ -214,7 +245,7 @@ class HomeFragment : Fragment() {
                     // 終了処理
                     mActivity.runOnUiThread {
                         enableAllButtons()
-                        val tsumoInfo = mPresenter.getTsumoInfo()
+                        val tsumoInfo = mPresenter.tsumoInfo
                         update(field, tsumoInfo)
                     }
                 } else {
@@ -277,7 +308,7 @@ private fun getPuyoImage(color: PuyoColor): Int {
         }
     }
 
-    fun update(field: Field, tsumoInfo: TsumoInfo) {
+    fun update(field: Field = mPresenter.currentField, tsumoInfo: TsumoInfo = mPresenter.tsumoInfo) {
         drawField(field)
         drawTsumo(tsumoInfo, field)
     }
