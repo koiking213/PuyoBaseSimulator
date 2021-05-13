@@ -148,10 +148,10 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
     }
 
     private fun drawFieldChain(field: Field) {
-        drawFieldChainRecursive(field, true, 0)
+        drawFieldChainRecursive(field, true)
     }
 
-    private fun drawFieldChainRecursive(field: Field, disappear: Boolean, sum: Int) {
+    private fun drawFieldChainRecursive(field: Field, disappear: Boolean) {
         Thread {
             try {
                 Thread.sleep(500)
@@ -159,11 +159,10 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
                 Thread.currentThread().interrupt()
             }
             if (disappear) {
-                val point = field.bonus * field.disappearPuyo.size * 10
-                view.drawPoint(field.bonus, field.disappearPuyo.size, sum + point, field.accumulatedPoint)
+                view.drawPoint(field.bonus, field.disappearPuyo.size, field.chainPoint, field.accumulatedPoint)
                 view.drawChainNum(field.chainNum)
                 activity.runOnUiThread { view.drawDisappearField(field) }
-                drawFieldChainRecursive(field.nextField!!, false, sum + point)
+                drawFieldChainRecursive(field.nextField!!, false)
             } else {
                 activity.runOnUiThread { view.drawField(field) }
                 if (field.disappearPuyo.isEmpty()) {
@@ -174,7 +173,7 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
                         view.update(field, tsumoInfo)
                     }
                 } else {
-                    drawFieldChainRecursive(field, true, sum)
+                    drawFieldChainRecursive(field, true)
                 }
             }
         }.start()

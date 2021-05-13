@@ -11,7 +11,9 @@ class Field : Serializable {
     private var heights = Array(6 ) { 0 }
     fun getHeight(column: Int) : Int { return heights[column-1]}
     var disappearPuyo = mutableListOf<Puyo>()
-    var accumulatedPoint = 0
+    var accumulatedPoint = 0  // 試合の累計ポイント
+    var chainPoint = 0  // 連鎖中の累計ポイント
+    var fieldPoint = 0  // 盤面でのポイント
     var bonus = 0
     var chainNum = 0
 
@@ -29,6 +31,7 @@ class Field : Serializable {
 
     fun evalNextField() {
         val newField = Field()
+        if (chainNum == 1) chainPoint = 0
         newField.chainNum = chainNum + 1
         var connectionBonus = 0
         // 消えるぷよを探す
@@ -59,10 +62,12 @@ class Field : Serializable {
         val colorNum = disappearPuyo.map {it.color}.toSet().size
         bonus = colorBonusConstant[colorNum] + connectionBonus + chainBonusConstant[chainNum]
         if (bonus == 0) bonus = 1
-        val point = accumulatedPoint + bonus * disappearPuyo.size * 10
-        accumulatedPoint = point
+        fieldPoint = bonus * disappearPuyo.size * 10
+        accumulatedPoint += fieldPoint
+        chainPoint += fieldPoint
         nextField = newField
-        nextField!!.accumulatedPoint = point
+        nextField!!.accumulatedPoint = accumulatedPoint
+        nextField!!.chainPoint = chainPoint
         newField.evalNextField()
     }
 
