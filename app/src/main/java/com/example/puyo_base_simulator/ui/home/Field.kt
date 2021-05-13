@@ -49,11 +49,11 @@ class Field : Serializable {
             }
         }
 
-        if (newField.allClear()) accumulatedPoint += allClearBonus
         if (disappearPuyo.size == 0) {
             chainNum = 1
             return
         }
+        if (newField.allClear()) accumulatedPoint += allClearBonus
 
         // 消えるぷよがある場合のみ次の盤面を評価
         val colorNum = disappearPuyo.map {it.color}.toSet().size
