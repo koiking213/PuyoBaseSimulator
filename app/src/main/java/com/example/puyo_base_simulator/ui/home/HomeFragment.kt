@@ -195,7 +195,36 @@ class HomeFragment : Fragment() {
         }
     }
 
-    fun drawDisappearField(field: Field) {
+    // アニメーションにしたい
+    fun drawFieldChainRecursive(field: Field, disappear: Boolean) {
+        Thread {
+            try {
+                Thread.sleep(500)
+            } catch (e: InterruptedException) {
+                Thread.currentThread().interrupt()
+            }
+            if (disappear) {
+                drawPoint(field.bonus, field.disappearPuyo.size, field.chainPoint, field.accumulatedPoint)
+                drawChainNum(field.chainNum)
+                mActivity.runOnUiThread { drawDisappearField(field) }
+                drawFieldChainRecursive(field.nextField!!, false)
+            } else {
+                mActivity.runOnUiThread { drawField(field) }
+                if (field.disappearPuyo.isEmpty()) {
+                    // 終了処理
+                    mActivity.runOnUiThread {
+                        enableAllButtons()
+                        val tsumoInfo = mPresenter.getTsumoInfo()
+                        update(field, tsumoInfo)
+                    }
+                } else {
+                    drawFieldChainRecursive(field, true)
+                }
+            }
+        }.start()
+    }
+
+    private fun drawDisappearField(field: Field) {
         field.field.flatten().map { puyo ->
             val resource = if (field.isDisappear(puyo)) R.drawable.disappear else getPuyoImage(puyo.color)
             fieldView[puyo.row][puyo.column].setImageResource(resource)

@@ -148,36 +148,9 @@ class HomePresenter internal constructor(private val view: HomeFragment, asset: 
     }
 
     private fun drawFieldChain(field: Field) {
-        drawFieldChainRecursive(field, true)
+        view.drawFieldChainRecursive(field, true)
     }
 
-    private fun drawFieldChainRecursive(field: Field, disappear: Boolean) {
-        Thread {
-            try {
-                Thread.sleep(500)
-            } catch (e: InterruptedException) {
-                Thread.currentThread().interrupt()
-            }
-            if (disappear) {
-                view.drawPoint(field.bonus, field.disappearPuyo.size, field.chainPoint, field.accumulatedPoint)
-                view.drawChainNum(field.chainNum)
-                activity.runOnUiThread { view.drawDisappearField(field) }
-                drawFieldChainRecursive(field.nextField!!, false)
-            } else {
-                activity.runOnUiThread { view.drawField(field) }
-                if (field.disappearPuyo.isEmpty()) {
-                    // 終了処理
-                    activity.runOnUiThread {
-                        view.enableAllButtons()
-                        val tsumoInfo = tsumoController.makeTsumoInfo()
-                        view.update(field, tsumoInfo)
-                    }
-                } else {
-                    drawFieldChainRecursive(field, true)
-                }
-            }
-        }.start()
-    }
 
     fun setSeed() {
         try {
