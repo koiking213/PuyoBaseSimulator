@@ -12,7 +12,7 @@ import com.example.puyo_base_simulator.R
 import com.google.android.material.snackbar.Snackbar
 import java.util.*
 
-class HomeFragment : Fragment(), HomeContract.View {
+class HomeFragment : Fragment() {
     private lateinit var fieldView: Array<Array<ImageView>>
     private lateinit var currentPuyoView: Array<Array<ImageView>>
     private lateinit var nextPuyoView: Array<Array<ImageView>>
@@ -33,7 +33,7 @@ class HomeFragment : Fragment(), HomeContract.View {
             R.id.buttonLoad,
             R.id.buttonSave,
     )
-    override val specifiedSeed: Int
+    val specifiedSeed: Int
         get() {
             val editText = mRoot.findViewById<EditText>(R.id.editTextSeed)
             return try {
@@ -107,7 +107,10 @@ class HomeFragment : Fragment(), HomeContract.View {
         mPresenter = HomePresenter(this, requireActivity().assets, mActivity)
 
         // ボタン群
-        root.findViewById<View>(R.id.buttonUndo).setOnClickListener { mPresenter.undo() }
+        root.findViewById<View>(R.id.buttonUndo).setOnClickListener {
+            mPresenter.undo()
+            update(mPresenter.currentField, mPresenter.getTsumoInfo())
+        }
         root.findViewById<View>(R.id.buttonRedo).setOnClickListener { mPresenter.redo() }
         root.findViewById<View>(R.id.buttonSave).setOnClickListener {
             if (mPresenter.save()) {
@@ -179,27 +182,27 @@ class HomeFragment : Fragment(), HomeContract.View {
         }
     }
 
-    override fun setSeedText(seed: Int) {
+    fun setSeedText(seed: Int) {
         val view = mRoot.findViewById<TextView>(R.id.textViewSeed)
         view.text = String.format(Locale.JAPAN, "seed: %d", seed)
         val inputManager = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         inputManager.hideSoftInputFromWindow(view.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
     }
 
-    override fun drawField(field: Field) {
+    fun drawField(field: Field) {
         field.field.flatten().map { (row, col, color) ->
             fieldView[row][col].setImageResource(getPuyoImage(color))
         }
     }
 
-    override fun drawDisappearField(field: Field) {
+    fun drawDisappearField(field: Field) {
         field.field.flatten().map { puyo ->
             val resource = if (field.isDisappear(puyo)) R.drawable.disappear else getPuyoImage(puyo.color)
             fieldView[puyo.row][puyo.column].setImageResource(resource)
         }
     }
 
-    override fun drawPoint(bonus: Int, puyoNum: Int, chainSum: Int, gameSum: Int) {
+    fun drawPoint(bonus: Int, puyoNum: Int, chainSum: Int, gameSum: Int) {
         mActivity.runOnUiThread { (mRoot.findViewById<View>(R.id.chainInfoTextView) as TextView).text =
                 getString(R.string.chain_info, bonus, puyoNum*10, bonus*puyoNum*10) }
         mActivity.runOnUiThread { (mRoot.findViewById<View>(R.id.chainPointTextView) as TextView).text =
@@ -208,18 +211,18 @@ class HomeFragment : Fragment(), HomeContract.View {
                 getString(R.string.game_point, gameSum) }
     }
 
-    override fun drawChainNum(chainNum: Int) {
+    fun drawChainNum(chainNum: Int) {
         mActivity.runOnUiThread { (mRoot.findViewById<View>(R.id.chainNumTextView) as TextView).text =
                 getString(R.string.chain_num, chainNum) }
     }
 
-    override fun clearPoint() {
+    fun clearPoint() {
         (mRoot.findViewById<View>(R.id.chainInfoTextView) as TextView).text = ""
         (mRoot.findViewById<View>(R.id.chainPointTextView) as TextView).text = ""
         (mRoot.findViewById<View>(R.id.gamePointTextView) as TextView).text = ""
     }
 
-    override fun clearChainNum() {
+    fun clearChainNum() {
         (mRoot.findViewById<View>(R.id.chainNumTextView) as TextView).text = ""
     }
 
@@ -245,7 +248,7 @@ private fun getPuyoImage(color: PuyoColor): Int {
         }
     }
 
-    override fun update(field: Field, tsumoInfo: TsumoInfo) {
+    fun update(field: Field, tsumoInfo: TsumoInfo) {
         drawField(field)
         drawTsumo(tsumoInfo, field)
     }
@@ -260,7 +263,7 @@ private fun getPuyoImage(color: PuyoColor): Int {
         }
     }
 
-    override fun drawTsumo(tsumoInfo: TsumoInfo, field: Field) {
+    fun drawTsumo(tsumoInfo: TsumoInfo, field: Field) {
         // draw current
         currentPuyoView.flatten().map { it.setImageResource(R.drawable.blank) }
         val mainColor = tsumoInfo.currentColor[0]
@@ -286,58 +289,58 @@ private fun getPuyoImage(color: PuyoColor): Int {
         }
     }
 
-    override fun disableUndoButton() {
+    fun disableUndoButton() {
         mRoot.findViewById<View>(R.id.buttonUndo).isEnabled = false
     }
 
-    override fun enableUndoButton() {
+    fun enableUndoButton() {
         mRoot.findViewById<View>(R.id.buttonUndo).isEnabled = true
     }
 
-    override fun disableRedoButton() {
+    fun disableRedoButton() {
         mRoot.findViewById<View>(R.id.buttonRedo).isEnabled = false
     }
 
-    override fun enableRedoButton() {
+    fun enableRedoButton() {
         mRoot.findViewById<View>(R.id.buttonRedo).isEnabled = true
     }
 
-    override fun disableAllButtons() {
+    fun disableAllButtons() {
         buttons.map {mRoot.findViewById<View>(it).isEnabled = false}
     }
 
-    override fun enableAllButtons() {
+    fun enableAllButtons() {
         buttons.map {mRoot.findViewById<View>(it).isEnabled = true}
         mRoot.findViewById<View>(R.id.buttonUndo).isEnabled = !mFieldHistory.isFirst()
         mRoot.findViewById<View>(R.id.buttonRedo).isEnabled = !mFieldHistory.isLast()
     }
 
-    override fun eraseCurrentPuyo() {
+    fun eraseCurrentPuyo() {
         currentPuyoView.flatten().map { it.setImageResource(R.drawable.blank) }
     }
 
-    override fun clearHistory() {
+    fun clearHistory() {
         mFieldHistory.clear()
         mFieldHistory.add(Field())
     }
 
-    override fun appendHistory(f: Field) {
+    fun appendHistory(f: Field) {
         mFieldHistory.add(f)
     }
 
-    override fun undoHistory() : Field {
+    fun undoHistory() : Field {
         return mFieldHistory.undo()!!
     }
 
-    override fun undoAllHistory() : Field {
+    fun undoAllHistory() : Field {
         return mFieldHistory.undoAll()
     }
 
-    override fun redoHistory() : Field {
+    fun redoHistory() : Field {
         return mFieldHistory.redo()!!
     }
 
-    override fun latestHistory() : Field {
+    fun latestHistory() : Field {
         return mFieldHistory.latest()
     }
 

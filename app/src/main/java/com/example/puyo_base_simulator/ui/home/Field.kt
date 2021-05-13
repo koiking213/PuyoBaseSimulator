@@ -57,10 +57,9 @@ class Field : Serializable {
 
         // 消えるぷよがある場合のみ次の盤面を評価
         val colorNum = disappearPuyo.map {it.color}.toSet().size
-        var bonus = colorBonusConstant[colorNum] + connectionBonus + chainBonusConstant[chainNum]
+        bonus = colorBonusConstant[colorNum] + connectionBonus + chainBonusConstant[chainNum]
         if (bonus == 0) bonus = 1
         val point = accumulatedPoint + bonus * disappearPuyo.size * 10
-        this.bonus = bonus
         accumulatedPoint = point
         nextField = newField
         nextField!!.accumulatedPoint = point
