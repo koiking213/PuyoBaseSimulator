@@ -13,20 +13,29 @@ import java.io.InputStreamReader
 import java.util.*
 
 
-class HomePresenter internal constructor(asset: AssetManager, activity: Activity) {
+class HomePresenter internal constructor(asset: AssetManager) {
     var currentField = Field()
     var mFieldHistory = History<Field>()
     private var tsumoController: TsumoController
-    private var mDB: AppDatabase = Room.databaseBuilder(activity.applicationContext,
-            AppDatabase::class.java, "database-name")
-            .allowMainThreadQueries() // Main thread でも動作させたい場合
-            .build()
+    private var mDB: AppDatabase? = null
 
     val tsumoInfo : TsumoInfo
         get() = tsumoController.makeTsumoInfo()
 
     val seed: Int
         get() = tsumoController.seed
+
+    private fun getDB(context: Context) : AppDatabase {
+        if (mDB == null) {
+            val result = Room.databaseBuilder(
+                    context.applicationContext,
+                    AppDatabase::class.java, "database-name"
+            ).allowMainThreadQueries()
+                    .build()
+            mDB = result
+        }
+        return mDB!!
+    }
 
     fun rotateLeft() {
         tsumoController.rotateCurrentRight()
@@ -81,7 +90,7 @@ class HomePresenter internal constructor(asset: AssetManager, activity: Activity
         return field
     }
 
-    fun save() : Boolean {
+    fun save(context: Context) : Boolean {
         if (mFieldHistory.isFirst()) return false
         val base = Base()
         base.hash = tsumoController.seed
@@ -93,12 +102,12 @@ class HomePresenter internal constructor(asset: AssetManager, activity: Activity
         } else {
             currentField.toString()
         }
-        mDB.baseDao().insert(base)
+        getDB(context).baseDao().insert(base)
         return true
     }
 
-    fun load(fieldPreview: FieldPreview) {
-        val base = mDB.baseDao().findById(fieldPreview.id)
+    fun load(context: Context, fieldPreview: FieldPreview) {
+        val base = getDB(context).baseDao().findById(fieldPreview.id)
         if (base != null) {
             currentField = Field()
             tsumoController = TsumoController(Haipuyo[base.hash], base.hash)

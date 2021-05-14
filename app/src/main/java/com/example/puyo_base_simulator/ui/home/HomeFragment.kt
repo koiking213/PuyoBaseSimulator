@@ -104,7 +104,7 @@ class HomeFragment : Fragment() {
         for (j in 1..6) {
             fieldView[0][j].setImageResource(R.drawable.wall)
         }
-        mPresenter = HomePresenter(requireActivity().assets, mActivity)
+        mPresenter = HomePresenter(requireActivity().assets)
 
         // ボタン群
         root.findViewById<View>(R.id.buttonUndo).setOnClickListener {
@@ -117,7 +117,7 @@ class HomeFragment : Fragment() {
             updateHistory()
         }
         root.findViewById<View>(R.id.buttonSave).setOnClickListener {
-            if (mPresenter.save()) Snackbar.make(root, "saved", Snackbar.LENGTH_SHORT).show()
+            if (mPresenter.save(mActivity as Context)) Snackbar.make(root, "saved", Snackbar.LENGTH_SHORT).show()
         }
         root.findViewById<View>(R.id.buttonLoad).setOnClickListener {
             val loadFieldPopup = LoadFieldPopup(mActivity)
@@ -126,7 +126,7 @@ class HomeFragment : Fragment() {
             loadFieldPopup.isFocusable = true
             loadFieldPopup.showAsDropDown(mRoot.findViewById(R.id.textViewSeed))
             loadFieldPopup.setFieldSelectedListener { _: Int, fieldPreview: FieldPreview ->
-                mPresenter.load(fieldPreview)
+                mPresenter.load(mActivity as Context, fieldPreview)
                 loadFieldPopup.dismiss()
                 initFieldPreference()
             }
