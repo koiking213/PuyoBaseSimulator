@@ -22,7 +22,7 @@
     <string name="chain_point">連鎖の合計: %1$d</string>
     <string name="game_point">試合の合計: %1$d</string>
     <string name="chain_num">%1$d連鎖</string>
-    <string name="current_seed">%1$d連鎖</string>
+    <string name="current_seed">seed: %1$d</string>
     <string name="generate">再生成</string>
     <string name="restart">最初から</string>
 
