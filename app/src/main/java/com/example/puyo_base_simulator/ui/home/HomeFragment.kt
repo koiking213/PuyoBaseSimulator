@@ -22,7 +22,6 @@ class HomeFragment : Fragment() {
     private lateinit var mPresenter: HomePresenter
     private lateinit var mActivity: Activity
     private lateinit var mRoot: View
-    private lateinit var mFieldHistory : SeekableHistory<Field>
     private val buttons = arrayOf(
             R.id.buttonLeft,
             R.id.buttonRight,
@@ -105,7 +104,7 @@ class HomeFragment : Fragment() {
         for (j in 1..6) {
             fieldView[0][j].setImageResource(R.drawable.wall)
         }
-        mPresenter = HomePresenter(this, requireActivity().assets, mActivity)
+        mPresenter = HomePresenter(requireActivity().assets, mActivity)
 
         // ボタン群
         root.findViewById<View>(R.id.buttonUndo).setOnClickListener {
@@ -113,7 +112,10 @@ class HomeFragment : Fragment() {
             update()
             drawPoint(0, 0, 0, mPresenter.currentField.accumulatedPoint)
         }
-        root.findViewById<View>(R.id.buttonRedo).setOnClickListener { drawEvaluatedField(mPresenter.redo()) }
+        root.findViewById<View>(R.id.buttonRedo).setOnClickListener {
+            drawEvaluatedField(mPresenter.redo())
+            updateHistory()
+        }
         root.findViewById<View>(R.id.buttonSave).setOnClickListener {
             if (mPresenter.save()) Snackbar.make(root, "saved", Snackbar.LENGTH_SHORT).show()
         }
@@ -126,12 +128,15 @@ class HomeFragment : Fragment() {
             loadFieldPopup.setFieldSelectedListener { _: Int, fieldPreview: FieldPreview ->
                 mPresenter.load(fieldPreview)
                 loadFieldPopup.dismiss()
+                initFieldPreference()
             }
-            initFieldPreference()
         }
         root.findViewById<View>(R.id.buttonLeft).setOnClickListener { onTsumoControllButtonClick(mPresenter::moveLeft) }
         root.findViewById<View>(R.id.buttonRight).setOnClickListener { onTsumoControllButtonClick(mPresenter::moveRight) }
-        root.findViewById<View>(R.id.buttonDown).setOnClickListener { drawEvaluatedField(mPresenter.dropDown()) }
+        root.findViewById<View>(R.id.buttonDown).setOnClickListener {
+            drawEvaluatedField(mPresenter.dropDown())
+            updateHistory()
+        }
         root.findViewById<View>(R.id.buttonA).setOnClickListener {onTsumoControllButtonClick(mPresenter::rotateLeft) }
         root.findViewById<View>(R.id.buttonB).setOnClickListener { onTsumoControllButtonClick(mPresenter::rotateRight) }
         root.findViewById<View>(R.id.buttonSetSeed).setOnClickListener {
@@ -152,24 +157,31 @@ class HomeFragment : Fragment() {
                 object: SeekBar.OnSeekBarChangeListener {
                     override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
                         if (p2) {
-                            mFieldHistory.set(p1)
                             mPresenter.setHistoryIndex(p1)
-                            update()
+                            drawField(mPresenter.currentField)
+                            drawTsumo(mPresenter.tsumoInfo, mPresenter.currentField)
+                            //update()
                         }
                     }
                     override fun onStartTrackingTouch(p0: SeekBar?) {}
-                    override fun onStopTrackingTouch(p0: SeekBar?) {}
+                    override fun onStopTrackingTouch(p0: SeekBar?) {
+                        updateHistory()
+                    }
                 }
         )
-        mFieldHistory = SeekableHistory(seekBar,
-                root.findViewById(R.id.buttonUndo),
-                root.findViewById(R.id.buttonRedo)
-        )
-        mFieldHistory.add(Field())
         initFieldPreference()
         return root
     }
 
+    private fun updateHistory() {
+        val seekBar = mRoot.findViewById<SeekBar>(R.id.seekBar)
+        val undoButton = mRoot.findViewById<Button>(R.id.buttonUndo)
+        val redoButton = mRoot.findViewById<Button>(R.id.buttonRedo)
+        undoButton.isEnabled = !mPresenter.mFieldHistory.isFirst()
+        redoButton.isEnabled = !mPresenter.mFieldHistory.isLast()
+        seekBar.max = mPresenter.mFieldHistory.size() - 1
+        seekBar.progress = mPresenter.mFieldHistory.index
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -227,7 +239,7 @@ class HomeFragment : Fragment() {
     }
 
     // アニメーションにしたい
-    fun drawFieldChainRecursive(field: Field, disappear: Boolean) {
+    private fun drawFieldChainRecursive(field: Field, disappear: Boolean) {
         Thread {
             try {
                 Thread.sleep(500)
@@ -262,7 +274,7 @@ class HomeFragment : Fragment() {
         }
     }
 
-    fun drawPoint(bonus: Int, puyoNum: Int, chainSum: Int, gameSum: Int) {
+    private fun drawPoint(bonus: Int, puyoNum: Int, chainSum: Int, gameSum: Int) {
         mActivity.runOnUiThread { (mRoot.findViewById<View>(R.id.chainInfoTextView) as TextView).text =
                 getString(R.string.chain_info, bonus, puyoNum*10, bonus*puyoNum*10) }
         mActivity.runOnUiThread { (mRoot.findViewById<View>(R.id.chainPointTextView) as TextView).text =
@@ -271,22 +283,22 @@ class HomeFragment : Fragment() {
                 getString(R.string.game_point, gameSum) }
     }
 
-    fun drawChainNum(chainNum: Int) {
+    private fun drawChainNum(chainNum: Int) {
         mActivity.runOnUiThread { (mRoot.findViewById<View>(R.id.chainNumTextView) as TextView).text =
                 getString(R.string.chain_num, chainNum) }
     }
 
-    fun clearPoint() {
+    private fun clearPoint() {
         (mRoot.findViewById<View>(R.id.chainInfoTextView) as TextView).text = ""
         (mRoot.findViewById<View>(R.id.chainPointTextView) as TextView).text = ""
         (mRoot.findViewById<View>(R.id.gamePointTextView) as TextView).text = ""
     }
 
-    fun clearChainNum() {
+    private fun clearChainNum() {
         (mRoot.findViewById<View>(R.id.chainNumTextView) as TextView).text = ""
     }
 
-private fun getPuyoImage(color: PuyoColor): Int {
+    private fun getPuyoImage(color: PuyoColor): Int {
         return when (color) {
             PuyoColor.RED -> R.drawable.pr
             PuyoColor.BLUE -> R.drawable.pb
@@ -308,7 +320,8 @@ private fun getPuyoImage(color: PuyoColor): Int {
         }
     }
 
-    fun update(field: Field = mPresenter.currentField, tsumoInfo: TsumoInfo = mPresenter.tsumoInfo) {
+    private fun update(field: Field = mPresenter.currentField, tsumoInfo: TsumoInfo = mPresenter.tsumoInfo) {
+        updateHistory()
         drawField(field)
         drawTsumo(tsumoInfo, field)
     }
@@ -349,66 +362,17 @@ private fun getPuyoImage(color: PuyoColor): Int {
         }
     }
 
-    fun disableUndoButton() {
-        mRoot.findViewById<View>(R.id.buttonUndo).isEnabled = false
-    }
-
-    fun enableUndoButton() {
-        mRoot.findViewById<View>(R.id.buttonUndo).isEnabled = true
-    }
-
-    fun disableRedoButton() {
-        mRoot.findViewById<View>(R.id.buttonRedo).isEnabled = false
-    }
-
-    fun enableRedoButton() {
-        mRoot.findViewById<View>(R.id.buttonRedo).isEnabled = true
-    }
-
-    fun disableAllButtons() {
+    private fun disableAllButtons() {
         buttons.map {mRoot.findViewById<View>(it).isEnabled = false}
     }
 
-    fun enableAllButtons() {
+    private fun enableAllButtons() {
         buttons.map {mRoot.findViewById<View>(it).isEnabled = true}
-        mRoot.findViewById<View>(R.id.buttonUndo).isEnabled = !mFieldHistory.isFirst()
-        mRoot.findViewById<View>(R.id.buttonRedo).isEnabled = !mFieldHistory.isLast()
+        mRoot.findViewById<View>(R.id.buttonUndo).isEnabled = !mPresenter.mFieldHistory.isFirst()
+        mRoot.findViewById<View>(R.id.buttonRedo).isEnabled = !mPresenter.mFieldHistory.isLast()
     }
 
-    fun eraseCurrentPuyo() {
+    private fun eraseCurrentPuyo() {
         currentPuyoView.flatten().map { it.setImageResource(R.drawable.blank) }
-    }
-
-    fun clearHistory() {
-        mFieldHistory.clear()
-        mFieldHistory.add(Field())
-    }
-
-    fun appendHistory(f: Field) {
-        mFieldHistory.add(f)
-    }
-
-    fun undoHistory() : Field {
-        return mFieldHistory.undo()!!
-    }
-
-    fun undoAllHistory() : Field {
-        return mFieldHistory.undoAll()
-    }
-
-    fun redoHistory() : Field {
-        return mFieldHistory.redo()!!
-    }
-
-    fun latestHistory() : Field {
-        return mFieldHistory.latest()
-    }
-
-    fun currentHistory() : Field {
-        return mFieldHistory.current()
-    }
-
-    fun isHistoryFirst() : Boolean {
-        return mFieldHistory.isFirst()
     }
 }
