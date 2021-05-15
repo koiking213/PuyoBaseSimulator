@@ -1,6 +1,5 @@
 package com.example.puyo_base_simulator.ui.home
 
-import android.app.Activity
 import android.content.Context
 import android.content.res.AssetManager
 import androidx.room.Room
@@ -71,7 +70,7 @@ class HomePresenter internal constructor(asset: AssetManager) {
         val newField = setPairOnField(currentField, tsumoController.makeTsumoInfo()) ?: return null
         tsumoController.addPlacementHistory()
         newField.evalNextField()
-        currentField = if (newField.nextField == null) newField else getLastField(newField)
+        currentField = getLastField(newField)
         mFieldHistory.add(currentField)
         return newField
     }
@@ -86,7 +85,7 @@ class HomePresenter internal constructor(asset: AssetManager) {
         val field = setPairOnField(currentField, tsumoController.makeTsumoInfo(tsumoController.currentPlacementHistory()))!!
         tsumoController.redoPlacementHistory()
         field.evalNextField()
-        currentField = if (field.nextField == null) field else getLastField(field)
+        currentField = getLastField(field)
         return field
     }
 
@@ -115,6 +114,8 @@ class HomePresenter internal constructor(asset: AssetManager) {
             var f = Field()
             for (p in tsumoController.stringToPlacementOrder(base.placementHistory)) {
                 f = setPairOnField(f, tsumoController.makeTsumoInfo(p))!!
+                f.evalNextField()
+                f = getLastField(f)
                 mFieldHistory.add(f)
             }
             tsumoController.addPlacementHistory()

@@ -61,7 +61,7 @@ open class History<T> () : Iterable<T> {
 
     fun latest() : T = content.last()
     fun current() : T = content[index]
-    fun previous() : T? = if (index <= 0) null else content[index]
+    fun previous() : T? = if (index <= 0) null else content[index-1]
 
     fun size() : Int = content.size
 
