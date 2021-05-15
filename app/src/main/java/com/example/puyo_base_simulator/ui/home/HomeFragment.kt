@@ -158,9 +158,10 @@ class HomeFragment : Fragment() {
                     override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
                         if (p2) {
                             mPresenter.setHistoryIndex(p1)
+                            clearPoint()
+                            clearChainNum()
                             drawField(mPresenter.currentField)
                             drawTsumo(mPresenter.tsumoInfo, mPresenter.currentField)
-                            //update()
                         }
                     }
                     override fun onStartTrackingTouch(p0: SeekBar?) {}
