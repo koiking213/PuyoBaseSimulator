@@ -2,6 +2,7 @@ package com.example.puyo_base_simulator.ui.home
 
 import android.app.Activity
 import android.content.Context
+import android.graphics.Color
 import android.os.Bundle
 import android.view.*
 import android.view.inputmethod.InputMethodManager
@@ -12,6 +13,27 @@ import com.example.puyo_base_simulator.R
 import com.google.android.material.snackbar.Snackbar
 import java.lang.NullPointerException
 import java.util.*
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color.Companion.Red
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 class HomeFragment : Fragment() {
     private lateinit var fieldView: Array<Array<ImageView>>
@@ -50,12 +72,335 @@ class HomeFragment : Fragment() {
 
         }
 
+    @Composable
+    fun CallToActionButton(
+        text: String,
+        onClick: () -> Unit,
+        modifier: Modifier = Modifier,
+    ) {
+        Button(
+            colors = ButtonDefaults.buttonColors(
+                backgroundColor = MaterialTheme.colors.secondary
+            ),
+            onClick = onClick,
+            modifier = modifier,
+            shape = RoundedCornerShape(20)
+        ) {
+            Text(text, fontSize = 10.sp)
+        }
+    }
+
+    @Composable
+    fun CursorKeys(size: Dp) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(5.dp)
+        ) {
+            Row(
+                modifier = Modifier.padding(5.dp)
+            ) {
+                CallToActionButton(
+                    text = "←",
+                    onClick = {},
+                    modifier = Modifier.size(size, size)
+                );
+                CallToActionButton(
+                    text = "→",
+                    onClick = {},
+                    modifier = Modifier.size(size, size)
+                );
+            }
+            CallToActionButton(
+                text = "↓",
+                onClick = {},
+                modifier = Modifier.size(size, size)
+            );
+        }
+    }
+
+    @Composable
+    fun RotationKeys(size: Dp) {
+        Column(
+            modifier = Modifier
+                .width(size * 3 / 2)
+                .padding(5.dp)
+        ) {
+            CallToActionButton(
+                text = "A",
+                onClick = {},
+                modifier = Modifier
+                    .size(size, size)
+                    .absoluteOffset(size / 2, 0.dp)
+            );
+            CallToActionButton(
+                text = "B",
+                onClick = {},
+                modifier = Modifier
+                    .size(size, size)
+                    .absoluteOffset(0.dp, 0.dp)
+            );
+        }
+    }
+
+    @Composable
+    fun Cell(id: Int, size: Dp) {
+        Image(
+            painter = painterResource(id),
+            contentDescription = null,
+            modifier = Modifier.size(size, size)
+        )
+    }
+    
+    @Composable
+    fun SaveLoad(size: Dp) {
+        Row(
+            modifier = Modifier.padding(5.dp)
+        ) {
+            CallToActionButton(
+                text = "SAVE",
+                onClick = {},
+                modifier = Modifier
+                    .height(size)
+                    .width(size * 2)
+            );
+            CallToActionButton(
+                text = "LOAD",
+                onClick = {},
+                modifier = Modifier
+                    .height(size)
+                    .width(size * 2)
+            );
+        }
+    }
+
+    @Composable
+    fun TsumoControlButtonArea() {
+        Row() {
+            val size = 90.dp
+            CursorKeys(size)
+            RotationKeys(size)
+        }
+    }
+
+    @Composable
+    fun TextFieldWithButton(
+        size: Dp,
+        state: MutableState<TextFieldValue>,
+        textLabel: String,
+        buttonLabel: String
+    ) {
+        Row(
+            verticalAlignment = Alignment.Bottom
+        ) {
+            OutlinedTextField(
+                value = state.value,
+                onValueChange = { state.value = it },
+                label = { Text(textLabel, fontSize = 10.sp) },
+                modifier = Modifier
+                    .height(size)
+                    .width(size * 2)
+            )
+            CallToActionButton(
+                text = buttonLabel,
+                onClick = {},
+                modifier = Modifier
+                    .height(size)
+                    .width(size * 2)
+            )
+        }
+    }
+
+    // いい感じに大きさを決めたい
+    @Composable
+    fun FieldGeneration(size: Dp) {
+        val seedTextState = remember { mutableStateOf(TextFieldValue())}
+        val patternTextState = remember { mutableStateOf(TextFieldValue())}
+        Column(
+            horizontalAlignment = Alignment.End,
+            modifier = Modifier.padding(5.dp),
+        ) {
+            TextFieldWithButton(size = size, state = seedTextState, textLabel = "seed", buttonLabel = "生成")
+            TextFieldWithButton(size = size, state = patternTextState, textLabel = "pattern", buttonLabel = "生成")
+            CallToActionButton(
+                text = "ランダム生成",
+                onClick = {},
+                modifier = Modifier
+                    .height(size)
+                    .width(size * 3)
+            );
+        }
+    }
+
+    @Composable
+    fun CurrentSeed(seed: Int) {
+         Text("seed: $seed")
+    }
+
+    @Composable
+    fun PuyoImage(color: PuyoColor, size: Dp) {
+        val id = when(color) {
+            PuyoColor.RED -> R.drawable.pr
+            PuyoColor.BLUE -> R.drawable.pb
+            PuyoColor.GREEN -> R.drawable.pg
+            PuyoColor.YELLOW -> R.drawable.py
+            PuyoColor.PURPLE -> R.drawable.pp
+            PuyoColor.EMPTY -> R.drawable.blank
+        }
+        Cell(id, size)
+    }
+
+    @Composable
+    fun Wall(size: Dp) {
+        Cell(R.drawable.wall, size)
+    }
+
+    @Composable
+    fun MainField(field: Field, size: Dp) {
+        val colors = Array(13) { i -> Array(6) { j -> field.field[13-i-1][j].color} }
+        PuyoField(puyoMatrix = colors, size)
+    }
+
+    @Composable
+    fun PuyoField(puyoMatrix: Array<Array<PuyoColor>>, size: Dp) {
+        Column() {
+            for (r in puyoMatrix) {
+                Row() {
+                    for (c in r) {
+                        PuyoImage(c, size)
+                    }
+                }
+            }
+        }
+    }
+    
+    @Composable
+    fun SideWall(size: Dp) {
+        Column() {
+            for (r in 0..13) {
+                Wall(size)
+            }
+        }
+    }
+
+    @Composable
+    fun BottomWall(size: Dp) {
+        Row() {
+            for (c in 0..5) {
+                Wall(size)
+            }
+        }
+    }
+
+    private fun createNextTsumoColorMap(tsumoInfo: TsumoInfo) : Array<Array<PuyoColor>>{
+        var ret = Array(4) {Array(2){PuyoColor.EMPTY}}
+        ret[0][0] = tsumoInfo.nextColor[0][0]
+        ret[1][0] = tsumoInfo.nextColor[0][1]
+        ret[2][1] = tsumoInfo.nextColor[1][0]
+        ret[3][1] = tsumoInfo.nextColor[1][1]
+        return ret
+    }
+
+    private fun createCurrentTsumoColorMap(tsumoInfo: TsumoInfo) : Array<Array<PuyoColor>>{
+        var ret = Array(3) {Array(6){PuyoColor.EMPTY}}
+        val p1 = tsumoInfo.currentMainPos
+        ret[p1.row][p1.column] = tsumoInfo.currentColor[0]
+        val p2 = tsumoInfo.currentSubPos
+        ret[p2.row][p2.column] = tsumoInfo.currentColor[1]
+        return ret
+    }
+
+    @Composable
+    fun CurrentTsumoFrame(tsumoInfo: TsumoInfo, size: Dp) {
+        val colors = createCurrentTsumoColorMap(tsumoInfo)
+        PuyoField(colors, size)
+    }
+
+    @Composable
+    fun NextTsumoFrame(tsumoInfo: TsumoInfo, size: Dp) {
+        val colors = createNextTsumoColorMap(tsumoInfo)
+        PuyoField(colors, size)
+    }
+    
+    @Composable
+    fun FieldFrame(field: Field, tsumoInfo: TsumoInfo, size: Dp) {
+        Row {
+            Row(verticalAlignment = Alignment.Bottom)
+            {
+                SideWall(size)
+                Column {
+                    CurrentTsumoFrame(tsumoInfo, size)
+                    MainField(field, size)
+                    BottomWall(size)
+                }
+                SideWall(size)
+            }
+            NextTsumoFrame(tsumoInfo, size)
+        }
+    }
+
+    @Composable
+    fun SliderFrame() {
+        var sliderPosition = remember { mutableStateOf(0f) }
+        Slider(value = sliderPosition.value, onValueChange = { sliderPosition.value = it })
+    }
+
+    @Composable
+    fun Home(field: Field, tsumoInfo: TsumoInfo)  {
+        Column (
+            modifier = Modifier.fillMaxHeight().padding(5.dp)
+        )
+        {
+            Row(
+                modifier = Modifier.weight(6f)
+            ) {
+                FieldFrame(field = field, tsumoInfo = tsumoInfo, 20.dp)
+                Column (horizontalAlignment = Alignment.End){
+                    CurrentSeed(seed = 0)
+                    FieldGeneration(40.dp)
+                    SaveLoad(40.dp)
+                }
+            }
+            Box (
+                modifier = Modifier.weight(1f)
+            ) {
+                SliderFrame()
+            }
+            Box (
+                modifier = Modifier.weight(3f)
+            ) {
+                TsumoControlButtonArea()
+            }
+        }
+    }
+
+    @Preview
+    @Composable
+    fun PreviewGreeting() {
+        //CallToAction button("SET SEED", mPresenter.set_seed(), )
+        //MainField(field = Field())
+        val sampleTsumoInfo = TsumoInfo(
+            Array(2) {PuyoColor.RED},
+            Array(2) {Array(2) {PuyoColor.RED}},
+            3,
+            Rotation.DEGREE0
+        )
+        val sampleField = Field.from("rrrbbbggg")
+        //FieldFrame(field = sampleField, sampleTsumoInfo)
+        Home(field = sampleField, sampleTsumoInfo)
+    }
+
     override fun onCreateView(inflater: LayoutInflater,
                               container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val root = inflater.inflate(R.layout.fragment_home, container, false)
         mRoot = root
         val activity = requireActivity()
         mActivity = activity
+
+        return ComposeView(requireContext()).apply {
+            setContent {
+                Text("Hello world!")
+            }
+        }
 
         // current puyo area
         currentPuyoView = Array(3) { i -> Array(7) { j ->
