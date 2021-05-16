@@ -1,6 +1,7 @@
 package com.example.puyo_base_simulator.ui.home
 
 import com.example.puyo_base_simulator.ui.home.PuyoColor.Companion.getPuyoColor
+import org.apache.commons.lang.SerializationUtils
 import java.io.Serializable
 import java.util.*
 
@@ -16,6 +17,14 @@ class Field : Serializable {
     var fieldPoint = 0  // 盤面でのポイント
     var bonus = 0
     var chainNum = 0
+    val disappearingField : Field
+        get() {
+            var f = SerializationUtils.clone(this) as Field
+            for (p in f.field.flatten()) {
+                if (p in f.disappearPuyo) p.color = PuyoColor.DISAPPEAR
+            }
+            return f
+        }
 
     fun addPuyo(column: Int, color: PuyoColor): Boolean {
         val row = heights[column-1] + 1
@@ -28,6 +37,7 @@ class Field : Serializable {
     fun allClear() = heights.all {it == 0}
 
     fun isDisappear(puyo: Puyo) = disappearPuyo.contains(puyo)
+
 
     fun evalNextField() {
         val newField = Field()

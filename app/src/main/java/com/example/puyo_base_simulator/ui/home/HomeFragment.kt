@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
@@ -17,9 +18,12 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -29,11 +33,16 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.getSystemService
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 
 class HomeFragment : Fragment() {
     private lateinit var fieldView: Array<Array<ImageView>>
@@ -91,7 +100,11 @@ class HomeFragment : Fragment() {
     }
 
     @Composable
-    fun CursorKeys(size: Dp) {
+    fun CursorKeys(
+        onLeftClick: () -> Unit,
+        onRightClick: () -> Unit,
+        onDownClick: () -> Unit,
+    ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(5.dp)
@@ -101,44 +114,53 @@ class HomeFragment : Fragment() {
             ) {
                 CallToActionButton(
                     text = "←",
-                    onClick = {},
-                    modifier = Modifier.size(size, size)
+                    onClick = onLeftClick,
+                    modifier = Modifier.size(90.dp)
                 );
                 CallToActionButton(
                     text = "→",
-                    onClick = {},
-                    modifier = Modifier.size(size, size)
+                    onClick = onRightClick,
+                    modifier = Modifier.size(90.dp)
                 );
             }
             CallToActionButton(
                 text = "↓",
-                onClick = {},
-                modifier = Modifier.size(size, size)
+                onClick = onDownClick,
+                modifier = Modifier.size(90.dp)
             );
         }
     }
 
     @Composable
-    fun RotationKeys(size: Dp) {
+    fun RotationKeys(
+        onAClick: () -> Unit,
+        onBClick: () -> Unit,
+    ) {
         Column(
-            modifier = Modifier
-                .width(size * 3 / 2)
-                .padding(5.dp)
+            modifier = Modifier.padding(5.dp)
         ) {
-            CallToActionButton(
-                text = "A",
-                onClick = {},
+            Column(
+                horizontalAlignment = Alignment.End,
                 modifier = Modifier
-                    .size(size, size)
-                    .absoluteOffset(size / 2, 0.dp)
-            );
-            CallToActionButton(
-                text = "B",
-                onClick = {},
-                modifier = Modifier
-                    .size(size, size)
-                    .absoluteOffset(0.dp, 0.dp)
-            );
+                    .width(180.dp)
+                    .padding(5.dp)
+            ) {
+                CallToActionButton(
+                    text = "A",
+                    onClick = onAClick,
+                    modifier = Modifier.size(90.dp)
+                )
+            }
+            Column(
+                horizontalAlignment = Alignment.Start,
+                modifier = Modifier.width(180.dp)
+            ) {
+                CallToActionButton(
+                    text = "B",
+                    onClick = onBClick,
+                    modifier = Modifier.size(90.dp)
+                )
+            }
         }
     }
 
@@ -152,33 +174,35 @@ class HomeFragment : Fragment() {
     }
     
     @Composable
-    fun SaveLoad(size: Dp) {
+    fun SaveLoad(
+        onSaveClick: () -> Unit,
+        onLoadClick: () -> Unit,
+    ) {
         Row(
             modifier = Modifier.padding(5.dp)
         ) {
             CallToActionButton(
                 text = "SAVE",
-                onClick = {},
-                modifier = Modifier
-                    .height(size)
-                    .width(size * 2)
+                onClick = onSaveClick,
             );
             CallToActionButton(
                 text = "LOAD",
-                onClick = {},
-                modifier = Modifier
-                    .height(size)
-                    .width(size * 2)
+                onClick = onLoadClick,
             );
         }
     }
 
     @Composable
-    fun TsumoControlButtonArea() {
+    fun TsumoControlButtonArea(
+        onAClick: () -> Unit,
+        onBClick: () -> Unit,
+        onLeftClick: () -> Unit,
+        onRightClick: () -> Unit,
+        onDownClick: () -> Unit,
+    ) {
         Row() {
-            val size = 90.dp
-            CursorKeys(size)
-            RotationKeys(size)
+            CursorKeys(onLeftClick, onRightClick, onDownClick)
+            RotationKeys(onAClick, onBClick)
         }
     }
 
@@ -192,35 +216,37 @@ class HomeFragment : Fragment() {
         Row(
             verticalAlignment = Alignment.Bottom
         ) {
-            OutlinedTextField(
-                value = state.value,
-                onValueChange = { state.value = it },
-                label = { Text(textLabel, fontSize = 10.sp) },
-                modifier = Modifier
-                    .height(size)
-                    .width(size * 2)
-            )
+            //OutlinedTextField(
+            //    value = state.value,
+            //    onValueChange = { state.value = it },
+            //    label = { Text(textLabel, fontSize = 10.sp) },
+            //    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            //    modifier = Modifier.weight(1f)
+            //)
             CallToActionButton(
                 text = buttonLabel,
-                onClick = {},
-                modifier = Modifier
-                    .height(size)
-                    .width(size * 2)
+                onClick = {
+                    val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
+                },
+                modifier = Modifier.weight(1f)
             )
         }
     }
 
     // いい感じに大きさを決めたい
     @Composable
-    fun FieldGeneration(size: Dp) {
+    fun FieldGeneration(
+        size: Dp
+    ) {
         val seedTextState = remember { mutableStateOf(TextFieldValue())}
         val patternTextState = remember { mutableStateOf(TextFieldValue())}
         Column(
             horizontalAlignment = Alignment.End,
             modifier = Modifier.padding(5.dp),
         ) {
-            TextFieldWithButton(size = size, state = seedTextState, textLabel = "seed", buttonLabel = "生成")
-            TextFieldWithButton(size = size, state = patternTextState, textLabel = "pattern", buttonLabel = "生成")
+            TextFieldWithButton(size = size, state = seedTextState, textLabel = "seed", buttonLabel = "シード値から生成")
+            TextFieldWithButton(size = size, state = patternTextState, textLabel = "pattern", buttonLabel = "初手パターンから生成")
             CallToActionButton(
                 text = "ランダム生成",
                 onClick = {},
@@ -236,17 +262,16 @@ class HomeFragment : Fragment() {
          Text("seed: $seed")
     }
 
-    @Composable
-    fun PuyoImage(color: PuyoColor, size: Dp) {
-        val id = when(color) {
+    fun puyoResourceId(color: PuyoColor) : Int {
+        return when(color) {
             PuyoColor.RED -> R.drawable.pr
             PuyoColor.BLUE -> R.drawable.pb
             PuyoColor.GREEN -> R.drawable.pg
             PuyoColor.YELLOW -> R.drawable.py
             PuyoColor.PURPLE -> R.drawable.pp
             PuyoColor.EMPTY -> R.drawable.blank
+            PuyoColor.DISAPPEAR -> R.drawable.disappear
         }
-        Cell(id, size)
     }
 
     @Composable
@@ -255,24 +280,25 @@ class HomeFragment : Fragment() {
     }
 
     @Composable
-    fun MainField(field: Field, size: Dp) {
-        val colors = Array(13) { i -> Array(6) { j -> field.field[13-i-1][j].color} }
-        PuyoField(puyoMatrix = colors, size)
+    fun MainField(field: Field, tsumoInfo: TsumoInfo, size: Dp) {
+        val colors = Array(13) { i -> Array(6) { j -> puyoResourceId(field.field[i][j].color)} }
+        val colorsWithDot = dotColors(tsumoInfo = tsumoInfo, field = field, colors)
+        PuyoField(colorsWithDot.reversed().toTypedArray(), size)
     }
 
     @Composable
-    fun PuyoField(puyoMatrix: Array<Array<PuyoColor>>, size: Dp) {
+    fun PuyoField(colors: Array<Array<Int>>, size: Dp) {
         Column() {
-            for (r in puyoMatrix) {
+            for (row in colors) {
                 Row() {
-                    for (c in r) {
-                        PuyoImage(c, size)
+                    for (c in row) {
+                        Cell(c, size)
                     }
                 }
             }
         }
     }
-    
+
     @Composable
     fun SideWall(size: Dp) {
         Column() {
@@ -291,21 +317,21 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun createNextTsumoColorMap(tsumoInfo: TsumoInfo) : Array<Array<PuyoColor>>{
-        var ret = Array(4) {Array(2){PuyoColor.EMPTY}}
-        ret[0][0] = tsumoInfo.nextColor[0][0]
-        ret[1][0] = tsumoInfo.nextColor[0][1]
-        ret[2][1] = tsumoInfo.nextColor[1][0]
-        ret[3][1] = tsumoInfo.nextColor[1][1]
+    private fun createNextTsumoColorMap(tsumoInfo: TsumoInfo) : Array<Array<Int>>{
+        var ret = Array(4) {Array(2){puyoResourceId(PuyoColor.EMPTY)}}
+        ret[0][0] = puyoResourceId(tsumoInfo.nextColor[0][0])
+        ret[1][0] = puyoResourceId(tsumoInfo.nextColor[0][1])
+        ret[2][1] = puyoResourceId(tsumoInfo.nextColor[1][0])
+        ret[3][1] = puyoResourceId(tsumoInfo.nextColor[1][1])
         return ret
     }
 
-    private fun createCurrentTsumoColorMap(tsumoInfo: TsumoInfo) : Array<Array<PuyoColor>>{
-        var ret = Array(3) {Array(6){PuyoColor.EMPTY}}
+    private fun createCurrentTsumoColorMap(tsumoInfo: TsumoInfo) : Array<Array<Int>>{
+        var ret = Array(3) {Array(6){puyoResourceId(PuyoColor.EMPTY)}}
         val p1 = tsumoInfo.currentMainPos
-        ret[p1.row][p1.column] = tsumoInfo.currentColor[0]
+        ret[p1.row][p1.column-1] = puyoResourceId(tsumoInfo.currentColor[0])
         val p2 = tsumoInfo.currentSubPos
-        ret[p2.row][p2.column] = tsumoInfo.currentColor[1]
+        ret[p2.row][p2.column-1] = puyoResourceId(tsumoInfo.currentColor[1])
         return ret
     }
 
@@ -329,7 +355,7 @@ class HomeFragment : Fragment() {
                 SideWall(size)
                 Column {
                     CurrentTsumoFrame(tsumoInfo, size)
-                    MainField(field, size)
+                    MainField(field, tsumoInfo, size)
                     BottomWall(size)
                 }
                 SideWall(size)
@@ -339,25 +365,42 @@ class HomeFragment : Fragment() {
     }
 
     @Composable
-    fun SliderFrame() {
+    fun SliderFrame(modifier: Modifier = Modifier) {
         var sliderPosition = remember { mutableStateOf(0f) }
-        Slider(value = sliderPosition.value, onValueChange = { sliderPosition.value = it })
+        Slider(
+            value = sliderPosition.value,
+            onValueChange = { sliderPosition.value = it },
+            modifier = modifier,
+        )
     }
 
     @Composable
-    fun Home(field: Field, tsumoInfo: TsumoInfo)  {
+    fun Home(presenter: HomePresenter)  {
+        val sampleTsumoInfo = TsumoInfo(
+            Array(2) {PuyoColor.RED},
+            Array(2) {Array(2) {PuyoColor.RED}},
+            3,
+            Rotation.DEGREE0
+        )
+        val tsumoInfo: TsumoInfo = presenter.tsumoInfo.observeAsState(sampleTsumoInfo).value
+        val currentField: Field = presenter.currentField.observeAsState(Field()).value
         Column (
-            modifier = Modifier.fillMaxHeight().padding(5.dp)
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(5.dp)
         )
         {
             Row(
                 modifier = Modifier.weight(6f)
             ) {
-                FieldFrame(field = field, tsumoInfo = tsumoInfo, 20.dp)
+                FieldFrame(field = currentField, tsumoInfo = tsumoInfo, 20.dp)
                 Column (horizontalAlignment = Alignment.End){
                     CurrentSeed(seed = 0)
                     FieldGeneration(40.dp)
-                    SaveLoad(40.dp)
+                    SaveLoad(
+                        onLoadClick = {},
+                        onSaveClick = {},
+                    )
                 }
             }
             Box (
@@ -368,9 +411,22 @@ class HomeFragment : Fragment() {
             Box (
                 modifier = Modifier.weight(3f)
             ) {
-                TsumoControlButtonArea()
+                TsumoControlButtonArea(
+                    onAClick = presenter::rotateLeft,
+                    onBClick = presenter::rotateRight,
+                    onLeftClick = presenter::moveLeft,
+                    onRightClick = presenter::moveRight,
+                    onDownClick = {
+                        presenter.dropDown(mActivity)
+                    }
+                )
             }
         }
+    }
+
+    @Composable
+    fun MainApp(presenter: HomePresenter) {
+        Home(presenter)
     }
 
     @Preview
@@ -386,7 +442,7 @@ class HomeFragment : Fragment() {
         )
         val sampleField = Field.from("rrrbbbggg")
         //FieldFrame(field = sampleField, sampleTsumoInfo)
-        Home(field = sampleField, sampleTsumoInfo)
+        //Home()
     }
 
     override fun onCreateView(inflater: LayoutInflater,
@@ -395,70 +451,22 @@ class HomeFragment : Fragment() {
         mRoot = root
         val activity = requireActivity()
         mActivity = activity
+        mPresenter = HomePresenter(requireActivity().assets)
 
         return ComposeView(requireContext()).apply {
             setContent {
-                Text("Hello world!")
+                MainApp(mPresenter)
             }
         }
-
-        // current puyo area
-        currentPuyoView = Array(3) { i -> Array(7) { j ->
-            val view = ImageView(getActivity())
-            val params = GridLayout.LayoutParams()
-            params.rowSpec = GridLayout.spec(i)
-            params.columnSpec = GridLayout.spec(j)
-            view.layoutParams = params
-            view.setImageResource(R.drawable.blank)
-            view
-        } }
-        currentPuyoLayout = root.findViewById(R.id.currentPuyoLayout)
-        currentPuyoView.flatten().map {currentPuyoLayout.addView(it)}
-
-        // next puyo area
-        val views = Array(4) { i -> Array(2) { j ->
-            val view = ImageView(getActivity())
-            val params = GridLayout.LayoutParams()
-            params.rowSpec = GridLayout.spec(i)
-            params.columnSpec = GridLayout.spec(j)
-            view.layoutParams = params
-            view.setImageResource(R.drawable.blank)
-            view
-        } }
-        nextPuyoView = arrayOf(arrayOf(views[0][0], views[1][0]), arrayOf(views[2][1], views[3][1]))
-        nextPuyoLayout = root.findViewById(R.id.nextPuyoLayout)
-        views.flatten().map {nextPuyoLayout.addView(it)}
-
-        // main field
-        val fieldLayout: GridLayout = root.findViewById(R.id.fieldLayout)
-        fieldView = Array(14) { i -> Array (8) { j ->
-            val view = ImageView(getActivity())
-            val params = GridLayout.LayoutParams()
-            params.rowSpec = GridLayout.spec(13-i)
-            params.columnSpec = GridLayout.spec(j)
-            view.layoutParams = params
-            fieldLayout.addView(view)
-            view
-        }}
-
-        // wall
-        for (i in 0..12) {
-            fieldView[i][0].setImageResource(R.drawable.wall)
-            fieldView[i][7].setImageResource(R.drawable.wall)
-        }
-        for (j in 1..6) {
-            fieldView[0][j].setImageResource(R.drawable.wall)
-        }
-        mPresenter = HomePresenter(requireActivity().assets)
 
         // ボタン群
         root.findViewById<View>(R.id.buttonUndo).setOnClickListener {
             mPresenter.undo()
             update()
-            drawPoint(0, 0, 0, mPresenter.currentField.accumulatedPoint)
+            //drawPoint(0, 0, 0, mPresenter.currentField.accumulatedPoint)
         }
         root.findViewById<View>(R.id.buttonRedo).setOnClickListener {
-            drawEvaluatedField(mPresenter.redo())
+            //drawEvaluatedField(mPresenter.redo())
             updateHistory()
         }
         root.findViewById<View>(R.id.buttonSave).setOnClickListener {
@@ -476,14 +484,6 @@ class HomeFragment : Fragment() {
                 initFieldPreference()
             }
         }
-        root.findViewById<View>(R.id.buttonLeft).setOnClickListener { onTsumoControllButtonClick(mPresenter::moveLeft) }
-        root.findViewById<View>(R.id.buttonRight).setOnClickListener { onTsumoControllButtonClick(mPresenter::moveRight) }
-        root.findViewById<View>(R.id.buttonDown).setOnClickListener {
-            drawEvaluatedField(mPresenter.dropDown())
-            updateHistory()
-        }
-        root.findViewById<View>(R.id.buttonA).setOnClickListener {onTsumoControllButtonClick(mPresenter::rotateLeft) }
-        root.findViewById<View>(R.id.buttonB).setOnClickListener { onTsumoControllButtonClick(mPresenter::rotateRight) }
         root.findViewById<View>(R.id.buttonSetSeed).setOnClickListener {
             try {
                 mPresenter.setSeed(specifiedSeed)
@@ -495,7 +495,6 @@ class HomeFragment : Fragment() {
             onTsumoControllButtonClick(mPresenter::generate)
             initFieldPreference()
         }
-        root.findViewById<View>(R.id.buttonRestart).setOnClickListener { onTsumoControllButtonClick(mPresenter::restart) }
         val seekBar = root.findViewById<SeekBar>(R.id.seekBar)
         seekBar.max = 0
         seekBar.setOnSeekBarChangeListener(
@@ -505,8 +504,8 @@ class HomeFragment : Fragment() {
                             mPresenter.setHistoryIndex(p1)
                             clearPoint()
                             clearChainNum()
-                            drawField(mPresenter.currentField)
-                            drawTsumo(mPresenter.tsumoInfo, mPresenter.currentField)
+                            //drawField(mPresenter.currentField)
+                            //drawTsumo(mPresenter.tsumoInfo, mPresenter.currentField)
                         }
                     }
                     override fun onStartTrackingTouch(p0: SeekBar?) {}
@@ -515,7 +514,6 @@ class HomeFragment : Fragment() {
                     }
                 }
         )
-        initFieldPreference()
         return root
     }
 
@@ -559,18 +557,6 @@ class HomeFragment : Fragment() {
         update()
     }
 
-    private fun drawEvaluatedField(newField : Field?) {
-        if (newField != null) {
-            drawField(newField)
-            if (newField.nextField == null) {
-                drawTsumo(mPresenter.tsumoInfo, newField)
-            } else {
-                eraseCurrentPuyo()
-                disableAllButtons()
-                drawFieldChainRecursive(newField, true)
-            }
-        }
-    }
     private fun setSeedText(seed: Int) {
         val view = mRoot.findViewById<TextView>(R.id.textViewSeed)
         view.text = getString(R.string.current_seed, seed)
@@ -603,7 +589,7 @@ class HomeFragment : Fragment() {
                     // 終了処理
                     mActivity.runOnUiThread {
                         enableAllButtons()
-                        val tsumoInfo = mPresenter.tsumoInfo
+                        val tsumoInfo = mPresenter.tsumoInfo.value!!
                         update(field, tsumoInfo)
                     }
                 } else {
@@ -645,67 +631,50 @@ class HomeFragment : Fragment() {
     }
 
     private fun getPuyoImage(color: PuyoColor): Int {
-        return when (color) {
-            PuyoColor.RED -> R.drawable.pr
-            PuyoColor.BLUE -> R.drawable.pb
-            PuyoColor.YELLOW -> R.drawable.py
-            PuyoColor.GREEN -> R.drawable.pg
-            PuyoColor.PURPLE -> R.drawable.pp
-            PuyoColor.EMPTY -> R.drawable.blank
-        }
+        return 0
     }
 
-    private fun getDotImage(color: PuyoColor): Int {
+    private fun getDotResource(color: PuyoColor): Int {
         return when (color) {
             PuyoColor.RED -> R.drawable.dotr
             PuyoColor.BLUE -> R.drawable.dotb
-            PuyoColor.YELLOW -> R.drawable.doty
             PuyoColor.GREEN -> R.drawable.dotg
+            PuyoColor.YELLOW -> R.drawable.doty
             PuyoColor.PURPLE -> R.drawable.dotp
             PuyoColor.EMPTY -> R.drawable.blank
+            PuyoColor.DISAPPEAR -> R.drawable.blank
         }
     }
 
-    private fun update(field: Field = mPresenter.currentField, tsumoInfo: TsumoInfo = mPresenter.tsumoInfo) {
-        updateHistory()
-        drawField(field)
-        drawTsumo(tsumoInfo, field)
+    private fun update(field: Field = mPresenter.currentField.value!!, tsumoInfo: TsumoInfo = mPresenter.tsumoInfo.value!!) {
     }
 
     // リストで渡された順に下から積み上げる
-    private fun drawDot(column: Int, colors: List<PuyoColor>, field: Field) {
+    private fun drawDot(column: Int, dots: List<PuyoColor>, field: Field, colors: Array<Array<Int>>) {
         var row = field.getHeight(column) + 1
-        for (color in colors) {
+        for (dot in dots) {
             if (row <= 13) {
-                fieldView[row++][column].setImageResource(getDotImage(color))
+                colors[row-1][column-1] = getDotResource(dot)
+                row++
             }
         }
     }
 
-    fun drawTsumo(tsumoInfo: TsumoInfo, field: Field) {
+    fun dotColors(tsumoInfo: TsumoInfo, field: Field, colors: Array<Array<Int>>) : Array<Array<Int>> {
         // draw current
-        currentPuyoView.flatten().map { it.setImageResource(R.drawable.blank) }
         val mainColor = tsumoInfo.currentColor[0]
         val subColor = tsumoInfo.currentColor[1]
-        currentPuyoView[tsumoInfo.currentMainPos.row][tsumoInfo.currentMainPos.column].setImageResource(getPuyoImage(mainColor))
-        currentPuyoView[tsumoInfo.currentSubPos.row][tsumoInfo.currentSubPos.column].setImageResource(getPuyoImage(subColor))
-
-        // draw next and next next
-        for (i in 0..1) {
-            for (j in 0..1) {
-                nextPuyoView[i][j].setImageResource(getPuyoImage(tsumoInfo.nextColor[i][j]))
-            }
-        }
 
         // draw dot
         when (tsumoInfo.rot) {
-            Rotation.DEGREE0 -> drawDot(tsumoInfo.currentMainPos.column, listOf(mainColor, subColor), field)
+            Rotation.DEGREE0 -> drawDot(tsumoInfo.currentMainPos.column, listOf(mainColor, subColor), field, colors)
             Rotation.DEGREE90, Rotation.DEGREE270 -> {
-                drawDot(tsumoInfo.currentMainPos.column, listOf(mainColor), field)
-                drawDot(tsumoInfo.currentSubPos.column, listOf(subColor), field)
+                drawDot(tsumoInfo.currentMainPos.column, listOf(mainColor), field, colors)
+                drawDot(tsumoInfo.currentSubPos.column, listOf(subColor), field, colors)
             }
-            Rotation.DEGREE180 -> drawDot(tsumoInfo.currentMainPos.column, listOf(subColor, mainColor), field)
+            Rotation.DEGREE180 -> drawDot(tsumoInfo.currentMainPos.column, listOf(subColor, mainColor), field, colors)
         }
+        return colors
     }
 
     private fun disableAllButtons() {
