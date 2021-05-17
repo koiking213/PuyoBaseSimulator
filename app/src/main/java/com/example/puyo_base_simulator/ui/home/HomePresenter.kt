@@ -34,8 +34,8 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
     val currentField: LiveData<Field> = _currentField
     private val _seed = MutableLiveData(0)
     val seed: LiveData<Int> = _seed
-    private val _historyIndex = MutableLiveData(0)
-    val historyIndex = _historyIndex
+    private val _historySliderValue = MutableLiveData(0f)
+    val historySliderValue = _historySliderValue
     private val _historySize = MutableLiveData(0)
     val historySize = _historySize
 
@@ -91,7 +91,7 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
         newField.evalNextField()
         _currentField.value = newField
         fieldHistory.add(newField)
-        _historyIndex.value = fieldHistory.index
+        _historySliderValue.value = fieldHistory.index.toFloat()
         _historySize.value = fieldHistory.size()
         _tsumoInfo.value = tsumoController.makeTsumoInfo()
         if (newField.nextField != null) {
@@ -108,7 +108,7 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
 
     fun redo(activity: Activity) : Field {
         fieldHistory.redo()
-        _historyIndex.value = fieldHistory.index
+        _historySliderValue.value = fieldHistory.index.toFloat()
         val field = setPairOnField(currentField.value!!, tsumoController.makeTsumoInfo(tsumoController.currentPlacementHistory()))!!
         tsumoController.redoPlacementHistory()
         field.evalNextField()
@@ -153,7 +153,7 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
             tsumoController.addPlacementHistory()
             tsumoController.rollbackPlacementHistory()
             _currentField.value = fieldHistory.undoAll()
-            _historyIndex.value = fieldHistory.index
+            _historySliderValue.value = fieldHistory.index.toFloat()
             _historySize.value = fieldHistory.size()
         }
         _tsumoInfo.value = tsumoController.makeTsumoInfo()
@@ -162,7 +162,7 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
     private fun clearFieldHistory() {
         fieldHistory.clear()
         fieldHistory.add(Field())
-        _historyIndex.value = fieldHistory.index
+        _historySliderValue.value = fieldHistory.index.toFloat()
         _historySize.value = fieldHistory.size()
     }
 
@@ -193,8 +193,8 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
     }
 
     fun setHistoryIndex(idx: Float) {
+        _historySliderValue.value = idx
         fieldHistory.index = idx.roundToInt()
-        _historyIndex.value = fieldHistory.index
         _currentField.value = fieldHistory.current()
         tsumoController.setHistoryIndex(idx.roundToInt())
         _tsumoInfo.value = tsumoController.makeTsumoInfo()

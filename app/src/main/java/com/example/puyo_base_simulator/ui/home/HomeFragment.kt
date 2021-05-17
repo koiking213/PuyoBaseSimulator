@@ -364,14 +364,13 @@ class HomeFragment : Fragment() {
     @Composable
     fun SliderFrame(
         onValueChange: (Float) -> Unit,
-        index: Int,
+        index: Float,
         max: Int,
         modifier: Modifier = Modifier
     ) {
         Slider(
-            value = index.toFloat(),
+            value = index,
             onValueChange = onValueChange,
-            //onValueChange = {},
             modifier = modifier,
             steps = max(max-1, 0),
             valueRange = 0f..(max.toFloat()),
@@ -389,7 +388,7 @@ class HomeFragment : Fragment() {
         val tsumoInfo = presenter.tsumoInfo.observeAsState(sampleTsumoInfo).value
         val currentField = presenter.currentField.observeAsState(Field()).value
         val seed = presenter.seed.observeAsState(0).value
-        val historyIndex = presenter.historyIndex.observeAsState(0).value
+        val historySliderValue = presenter.historySliderValue.observeAsState(0f).value
         val historySize = presenter.historySize.observeAsState(0).value
         Column (
             modifier = Modifier
@@ -420,7 +419,7 @@ class HomeFragment : Fragment() {
                 modifier = Modifier.weight(1f)
             ) {
                 SliderFrame(
-                    index = max(historyIndex, 0),
+                    index = max(historySliderValue, 0f),
                     max = max(historySize - 1, 0),
                     onValueChange = presenter::setHistoryIndex
                 )
@@ -477,14 +476,6 @@ class HomeFragment : Fragment() {
         }
 
         // ボタン群
-        root.findViewById<View>(R.id.buttonUndo).setOnClickListener {
-            mPresenter.undo()
-            update()
-            //drawPoint(0, 0, 0, mPresenter.currentField.accumulatedPoint)
-        }
-        root.findViewById<View>(R.id.buttonRedo).setOnClickListener {
-            //drawEvaluatedField(mPresenter.redo())
-        }
         root.findViewById<View>(R.id.buttonSave).setOnClickListener {
             if (mPresenter.save(mActivity as Context)) Snackbar.make(root, "saved", Snackbar.LENGTH_SHORT).show()
         }
@@ -505,23 +496,6 @@ class HomeFragment : Fragment() {
             } catch (e: NumberFormatException) {  // ignore
             }
         }
-        val seekBar = root.findViewById<SeekBar>(R.id.seekBar)
-        seekBar.max = 0
-        seekBar.setOnSeekBarChangeListener(
-                object: SeekBar.OnSeekBarChangeListener {
-                    override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
-                        if (p2) {
-                            clearPoint()
-                            clearChainNum()
-                            //drawField(mPresenter.currentField)
-                            //drawTsumo(mPresenter.tsumoInfo, mPresenter.currentField)
-                        }
-                    }
-                    override fun onStartTrackingTouch(p0: SeekBar?) {}
-                    override fun onStopTrackingTouch(p0: SeekBar?) {
-                    }
-                }
-        )
         return root
     }
 
@@ -543,59 +517,6 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun onTsumoControllButtonClick(func: () -> Unit) {
-        func()
-        update()
-    }
-
-    private fun setSeedText(seed: Int) {
-        val view = mRoot.findViewById<TextView>(R.id.textViewSeed)
-        view.text = getString(R.string.current_seed, seed)
-        val inputManager = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        inputManager.hideSoftInputFromWindow(view.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
-    }
-
-    fun drawField(field: Field) {
-        field.field.flatten().map { (row, col, color) ->
-            fieldView[row][col].setImageResource(getPuyoImage(color))
-        }
-    }
-
-    private fun drawDisappearField(field: Field) {
-        field.field.flatten().map { puyo ->
-            val resource = if (field.isDisappear(puyo)) R.drawable.disappear else getPuyoImage(puyo.color)
-            fieldView[puyo.row][puyo.column].setImageResource(resource)
-        }
-    }
-
-    private fun drawPoint(bonus: Int, puyoNum: Int, chainSum: Int, gameSum: Int) {
-        mActivity.runOnUiThread { (mRoot.findViewById<View>(R.id.chainInfoTextView) as TextView).text =
-                getString(R.string.chain_info, bonus, puyoNum*10, bonus*puyoNum*10) }
-        mActivity.runOnUiThread { (mRoot.findViewById<View>(R.id.chainPointTextView) as TextView).text =
-                getString(R.string.chain_point, chainSum) }
-        mActivity.runOnUiThread { (mRoot.findViewById<View>(R.id.gamePointTextView) as TextView).text =
-                getString(R.string.game_point, gameSum) }
-    }
-
-    private fun drawChainNum(chainNum: Int) {
-        mActivity.runOnUiThread { (mRoot.findViewById<View>(R.id.chainNumTextView) as TextView).text =
-                getString(R.string.chain_num, chainNum) }
-    }
-
-    private fun clearPoint() {
-        (mRoot.findViewById<View>(R.id.chainInfoTextView) as TextView).text = ""
-        (mRoot.findViewById<View>(R.id.chainPointTextView) as TextView).text = ""
-        (mRoot.findViewById<View>(R.id.gamePointTextView) as TextView).text = ""
-    }
-
-    private fun clearChainNum() {
-        (mRoot.findViewById<View>(R.id.chainNumTextView) as TextView).text = ""
-    }
-
-    private fun getPuyoImage(color: PuyoColor): Int {
-        return 0
-    }
-
     private fun getDotResource(color: PuyoColor): Int {
         return when (color) {
             PuyoColor.RED -> R.drawable.dotr
@@ -606,9 +527,6 @@ class HomeFragment : Fragment() {
             PuyoColor.EMPTY -> R.drawable.blank
             PuyoColor.DISAPPEAR -> R.drawable.blank
         }
-    }
-
-    private fun update(field: Field = mPresenter.currentField.value!!, tsumoInfo: TsumoInfo = mPresenter.tsumoInfo.value!!) {
     }
 
     // リストで渡された順に下から積み上げる
@@ -622,7 +540,7 @@ class HomeFragment : Fragment() {
         }
     }
 
-    fun dotColors(tsumoInfo: TsumoInfo, field: Field, colors: Array<Array<Int>>) : Array<Array<Int>> {
+    private fun dotColors(tsumoInfo: TsumoInfo, field: Field, colors: Array<Array<Int>>) : Array<Array<Int>> {
         // draw current
         val mainColor = tsumoInfo.currentColor[0]
         val subColor = tsumoInfo.currentColor[1]
