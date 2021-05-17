@@ -63,7 +63,7 @@ class Field : Serializable {
         }
 
         if (disappearPuyo.size == 0) {
-            chainNum = 1
+            chainNum = 0
             return
         }
         if (newField.allClear()) accumulatedPoint += allClearBonus

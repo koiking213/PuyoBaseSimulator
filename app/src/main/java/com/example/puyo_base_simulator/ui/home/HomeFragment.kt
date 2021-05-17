@@ -2,9 +2,7 @@ package com.example.puyo_base_simulator.ui.home
 
 import android.app.Activity
 import android.content.Context
-import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
@@ -12,14 +10,9 @@ import androidx.fragment.app.Fragment
 import androidx.gridlayout.widget.GridLayout
 import com.example.puyo_base_simulator.R
 import com.google.android.material.snackbar.Snackbar
-import java.lang.NullPointerException
-import java.util.*
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -28,21 +21,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color.Companion.Red
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat.getSystemService
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import kotlin.math.*
 
 class HomeFragment : Fragment() {
     private lateinit var fieldView: Array<Array<ImageView>>
@@ -80,6 +65,15 @@ class HomeFragment : Fragment() {
             }
 
         }
+
+    @Composable
+    fun ChainInfoArea(field: Field) {
+        val puyoNum = field.disappearPuyo.size
+        Text("${field.bonus} * ${puyoNum*10} = ${field.bonus*puyoNum*10}")
+        Text("連鎖の合計: ${field.chainPoint}")
+        Text("試合の合計: ${field.accumulatedPoint}")
+        Text("${field.chainNum}連鎖")
+    }
 
     @Composable
     fun CallToActionButton(
@@ -237,7 +231,10 @@ class HomeFragment : Fragment() {
     // いい感じに大きさを決めたい
     @Composable
     fun FieldGeneration(
-        size: Dp
+        size: Dp,
+        onSeedGenClicked: () -> Unit,
+        onPatternGenClicked: () -> Unit,
+        onRandomGenClicked: () -> Unit,
     ) {
         val seedTextState = remember { mutableStateOf(TextFieldValue())}
         val patternTextState = remember { mutableStateOf(TextFieldValue())}
@@ -249,7 +246,7 @@ class HomeFragment : Fragment() {
             TextFieldWithButton(size = size, state = patternTextState, textLabel = "pattern", buttonLabel = "初手パターンから生成")
             CallToActionButton(
                 text = "ランダム生成",
-                onClick = {},
+                onClick = onRandomGenClicked,
                 modifier = Modifier
                     .height(size)
                     .width(size * 3)
@@ -262,7 +259,7 @@ class HomeFragment : Fragment() {
          Text("seed: $seed")
     }
 
-    fun puyoResourceId(color: PuyoColor) : Int {
+    private fun puyoResourceId(color: PuyoColor) : Int {
         return when(color) {
             PuyoColor.RED -> R.drawable.pr
             PuyoColor.BLUE -> R.drawable.pb
@@ -365,12 +362,19 @@ class HomeFragment : Fragment() {
     }
 
     @Composable
-    fun SliderFrame(modifier: Modifier = Modifier) {
-        var sliderPosition = remember { mutableStateOf(0f) }
+    fun SliderFrame(
+        onValueChange: (Float) -> Unit,
+        index: Int,
+        max: Int,
+        modifier: Modifier = Modifier
+    ) {
         Slider(
-            value = sliderPosition.value,
-            onValueChange = { sliderPosition.value = it },
+            value = index.toFloat(),
+            onValueChange = onValueChange,
+            //onValueChange = {},
             modifier = modifier,
+            steps = max(max-1, 0),
+            valueRange = 0f..(max.toFloat()),
         )
     }
 
@@ -382,8 +386,11 @@ class HomeFragment : Fragment() {
             3,
             Rotation.DEGREE0
         )
-        val tsumoInfo: TsumoInfo = presenter.tsumoInfo.observeAsState(sampleTsumoInfo).value
-        val currentField: Field = presenter.currentField.observeAsState(Field()).value
+        val tsumoInfo = presenter.tsumoInfo.observeAsState(sampleTsumoInfo).value
+        val currentField = presenter.currentField.observeAsState(Field()).value
+        val seed = presenter.seed.observeAsState(0).value
+        val historyIndex = presenter.historyIndex.observeAsState(0).value
+        val historySize = presenter.historySize.observeAsState(0).value
         Column (
             modifier = Modifier
                 .fillMaxHeight()
@@ -395,8 +402,14 @@ class HomeFragment : Fragment() {
             ) {
                 FieldFrame(field = currentField, tsumoInfo = tsumoInfo, 20.dp)
                 Column (horizontalAlignment = Alignment.End){
-                    CurrentSeed(seed = 0)
-                    FieldGeneration(40.dp)
+                    CurrentSeed(seed = seed)
+                    FieldGeneration(
+                        size = 40.dp,
+                        onSeedGenClicked = {},
+                        onPatternGenClicked = {},
+                        onRandomGenClicked = presenter::randomGenerate,
+                    )
+                    ChainInfoArea(field = currentField)
                     SaveLoad(
                         onLoadClick = {},
                         onSaveClick = {},
@@ -406,7 +419,11 @@ class HomeFragment : Fragment() {
             Box (
                 modifier = Modifier.weight(1f)
             ) {
-                SliderFrame()
+                SliderFrame(
+                    index = max(historyIndex, 0),
+                    max = max(historySize - 1, 0),
+                    onValueChange = presenter::setHistoryIndex
+                )
             }
             Box (
                 modifier = Modifier.weight(3f)
@@ -429,21 +446,21 @@ class HomeFragment : Fragment() {
         Home(presenter)
     }
 
-    @Preview
-    @Composable
-    fun PreviewGreeting() {
-        //CallToAction button("SET SEED", mPresenter.set_seed(), )
-        //MainField(field = Field())
-        val sampleTsumoInfo = TsumoInfo(
-            Array(2) {PuyoColor.RED},
-            Array(2) {Array(2) {PuyoColor.RED}},
-            3,
-            Rotation.DEGREE0
-        )
-        val sampleField = Field.from("rrrbbbggg")
-        //FieldFrame(field = sampleField, sampleTsumoInfo)
-        //Home()
-    }
+    //@Preview
+    //@Composable
+    //fun PreviewGreeting() {
+    //    //CallToAction button("SET SEED", mPresenter.set_seed(), )
+    //    //MainField(field = Field())
+    //    val sampleTsumoInfo = TsumoInfo(
+    //        Array(2) {PuyoColor.RED},
+    //        Array(2) {Array(2) {PuyoColor.RED}},
+    //        3,
+    //        Rotation.DEGREE0
+    //    )
+    //    val sampleField = Field.from("rrrbbbggg")
+    //    //FieldFrame(field = sampleField, sampleTsumoInfo)
+    //    //Home()
+    //}
 
     override fun onCreateView(inflater: LayoutInflater,
                               container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -467,7 +484,6 @@ class HomeFragment : Fragment() {
         }
         root.findViewById<View>(R.id.buttonRedo).setOnClickListener {
             //drawEvaluatedField(mPresenter.redo())
-            updateHistory()
         }
         root.findViewById<View>(R.id.buttonSave).setOnClickListener {
             if (mPresenter.save(mActivity as Context)) Snackbar.make(root, "saved", Snackbar.LENGTH_SHORT).show()
@@ -481,19 +497,13 @@ class HomeFragment : Fragment() {
             loadFieldPopup.setFieldSelectedListener { _: Int, fieldPreview: FieldPreview ->
                 mPresenter.load(mActivity as Context, fieldPreview)
                 loadFieldPopup.dismiss()
-                initFieldPreference()
             }
         }
         root.findViewById<View>(R.id.buttonSetSeed).setOnClickListener {
             try {
                 mPresenter.setSeed(specifiedSeed)
-                initFieldPreference()
             } catch (e: NumberFormatException) {  // ignore
             }
-        }
-        root.findViewById<View>(R.id.buttonGenerate).setOnClickListener {
-            onTsumoControllButtonClick(mPresenter::generate)
-            initFieldPreference()
         }
         val seekBar = root.findViewById<SeekBar>(R.id.seekBar)
         seekBar.max = 0
@@ -501,7 +511,6 @@ class HomeFragment : Fragment() {
                 object: SeekBar.OnSeekBarChangeListener {
                     override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
                         if (p2) {
-                            mPresenter.setHistoryIndex(p1)
                             clearPoint()
                             clearChainNum()
                             //drawField(mPresenter.currentField)
@@ -510,21 +519,10 @@ class HomeFragment : Fragment() {
                     }
                     override fun onStartTrackingTouch(p0: SeekBar?) {}
                     override fun onStopTrackingTouch(p0: SeekBar?) {
-                        updateHistory()
                     }
                 }
         )
         return root
-    }
-
-    private fun updateHistory() {
-        val seekBar = mRoot.findViewById<SeekBar>(R.id.seekBar)
-        val undoButton = mRoot.findViewById<Button>(R.id.buttonUndo)
-        val redoButton = mRoot.findViewById<Button>(R.id.buttonRedo)
-        undoButton.isEnabled = !mPresenter.mFieldHistory.isFirst()
-        redoButton.isEnabled = !mPresenter.mFieldHistory.isLast()
-        seekBar.max = mPresenter.mFieldHistory.size() - 1
-        seekBar.progress = mPresenter.mFieldHistory.index
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -550,13 +548,6 @@ class HomeFragment : Fragment() {
         update()
     }
 
-    private fun initFieldPreference() {
-        setSeedText(mPresenter.seed)
-        clearPoint()
-        clearChainNum()
-        update()
-    }
-
     private fun setSeedText(seed: Int) {
         val view = mRoot.findViewById<TextView>(R.id.textViewSeed)
         view.text = getString(R.string.current_seed, seed)
@@ -568,35 +559,6 @@ class HomeFragment : Fragment() {
         field.field.flatten().map { (row, col, color) ->
             fieldView[row][col].setImageResource(getPuyoImage(color))
         }
-    }
-
-    // アニメーションにしたい
-    private fun drawFieldChainRecursive(field: Field, disappear: Boolean) {
-        Thread {
-            try {
-                Thread.sleep(500)
-            } catch (e: InterruptedException) {
-                Thread.currentThread().interrupt()
-            }
-            if (disappear) {
-                drawPoint(field.bonus, field.disappearPuyo.size, field.chainPoint, field.accumulatedPoint)
-                drawChainNum(field.chainNum)
-                mActivity.runOnUiThread { drawDisappearField(field) }
-                drawFieldChainRecursive(field.nextField!!, false)
-            } else {
-                mActivity.runOnUiThread { drawField(field) }
-                if (field.disappearPuyo.isEmpty()) {
-                    // 終了処理
-                    mActivity.runOnUiThread {
-                        enableAllButtons()
-                        val tsumoInfo = mPresenter.tsumoInfo.value!!
-                        update(field, tsumoInfo)
-                    }
-                } else {
-                    drawFieldChainRecursive(field, true)
-                }
-            }
-        }.start()
     }
 
     private fun drawDisappearField(field: Field) {
@@ -677,17 +639,4 @@ class HomeFragment : Fragment() {
         return colors
     }
 
-    private fun disableAllButtons() {
-        buttons.map {mRoot.findViewById<View>(it).isEnabled = false}
-    }
-
-    private fun enableAllButtons() {
-        buttons.map {mRoot.findViewById<View>(it).isEnabled = true}
-        mRoot.findViewById<View>(R.id.buttonUndo).isEnabled = !mPresenter.mFieldHistory.isFirst()
-        mRoot.findViewById<View>(R.id.buttonRedo).isEnabled = !mPresenter.mFieldHistory.isLast()
-    }
-
-    private fun eraseCurrentPuyo() {
-        currentPuyoView.flatten().map { it.setImageResource(R.drawable.blank) }
-    }
 }

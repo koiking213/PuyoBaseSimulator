@@ -14,10 +14,11 @@ import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
 import java.util.*
+import kotlin.math.roundToInt
 
 
 class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
-    var mFieldHistory = History<Field>()
+    var fieldHistory = History<Field>()
     private var tsumoController: TsumoController
     private var mDB: AppDatabase? = null
     // todo: lateinitとか何かで消せない？
@@ -31,9 +32,12 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
     val tsumoInfo: LiveData<TsumoInfo> = _tsumoInfo
     private val _currentField = MutableLiveData(Field())
     val currentField: LiveData<Field> = _currentField
-
-    val seed: Int
-        get() = tsumoController.seed
+    private val _seed = MutableLiveData(0)
+    val seed: LiveData<Int> = _seed
+    private val _historyIndex = MutableLiveData(0)
+    val historyIndex = _historyIndex
+    private val _historySize = MutableLiveData(0)
+    val historySize = _historySize
 
     private fun getDB(context: Context) : AppDatabase {
         if (mDB == null) {
@@ -86,7 +90,9 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
         tsumoController.addPlacementHistory()
         newField.evalNextField()
         _currentField.value = newField
-        mFieldHistory.add(newField)
+        fieldHistory.add(newField)
+        _historyIndex.value = fieldHistory.index
+        _historySize.value = fieldHistory.size()
         _tsumoInfo.value = tsumoController.makeTsumoInfo()
         if (newField.nextField != null) {
             chain(newField, activity)
@@ -96,12 +102,13 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
 
     fun undo() {
         tsumoController.undoPlacementHistory()
-        _currentField.value = mFieldHistory.undo()!!
+        _currentField.value = fieldHistory.undo()!!
         _tsumoInfo.value = tsumoController.makeTsumoInfo()
     }
 
     fun redo(activity: Activity) : Field {
-        mFieldHistory.redo()
+        fieldHistory.redo()
+        _historyIndex.value = fieldHistory.index
         val field = setPairOnField(currentField.value!!, tsumoController.makeTsumoInfo(tsumoController.currentPlacementHistory()))!!
         tsumoController.redoPlacementHistory()
         field.evalNextField()
@@ -114,15 +121,15 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
     }
 
     fun save(context: Context) : Boolean {
-        if (mFieldHistory.isFirst()) return false
+        if (fieldHistory.isFirst()) return false
         val base = Base()
-        base.hash = tsumoController.seed
+        base.hash = seed.value!!
         base.placementHistory = tsumoController.placementOrderToString()
         val field = currentField.value!!
         base.allClear = field.allClear()
         base.point = field.accumulatedPoint
         base.field = if (field.allClear()) {
-            mFieldHistory.previous().toString()
+            fieldHistory.previous().toString()
         } else {
             field.toString()
         }
@@ -141,18 +148,22 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
                 f = setPairOnField(f, tsumoController.makeTsumoInfo(p))!!
                 f.evalNextField()
                 f = getLastField(f)
-                mFieldHistory.add(f)
+                fieldHistory.add(f)
             }
             tsumoController.addPlacementHistory()
             tsumoController.rollbackPlacementHistory()
-            _currentField.value = mFieldHistory.undoAll()
+            _currentField.value = fieldHistory.undoAll()
+            _historyIndex.value = fieldHistory.index
+            _historySize.value = fieldHistory.size()
         }
         _tsumoInfo.value = tsumoController.makeTsumoInfo()
     }
 
     private fun clearFieldHistory() {
-        mFieldHistory.clear()
-        mFieldHistory.add(Field())
+        fieldHistory.clear()
+        fieldHistory.add(Field())
+        _historyIndex.value = fieldHistory.index
+        _historySize.value = fieldHistory.size()
     }
 
     private fun getLastField(field: Field): Field {
@@ -165,30 +176,27 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
     }
 
     fun setSeed(newSeed: Int) {
+        _seed.value = newSeed
         tsumoController = TsumoController(Haipuyo[newSeed], newSeed)
         _currentField.value = Field()
         clearFieldHistory()
         _tsumoInfo.value = tsumoController.makeTsumoInfo()
     }
 
-    fun generate() {
+    fun randomGenerate() {
         _currentField.value = Field()
         clearFieldHistory()
         val seed = RANDOM.nextInt(65536)
+        _seed.value = seed
         tsumoController = TsumoController(Haipuyo[seed], seed)
         _tsumoInfo.value = tsumoController.makeTsumoInfo()
     }
 
-    fun restart() {
-        for (i in 0 until tsumoController.tsumoCounter/2) {
-            undo()
-        }
-    }
-
-    fun setHistoryIndex(idx: Int) {
-        mFieldHistory.index = idx
-        _currentField.value = mFieldHistory.current()
-        tsumoController.setHistoryIndex(idx)
+    fun setHistoryIndex(idx: Float) {
+        fieldHistory.index = idx.roundToInt()
+        _historyIndex.value = fieldHistory.index
+        _currentField.value = fieldHistory.current()
+        tsumoController.setHistoryIndex(idx.roundToInt())
         _tsumoInfo.value = tsumoController.makeTsumoInfo()
     }
 
@@ -223,6 +231,7 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
             e.printStackTrace()
         }
         val seed = RANDOM.nextInt(65536)
+        _seed.value = seed
         tsumoController = TsumoController(Haipuyo[seed], seed)
         _tsumoInfo.value = tsumoController.makeTsumoInfo()
         clearFieldHistory()
