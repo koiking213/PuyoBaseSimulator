@@ -3,6 +3,7 @@ package com.example.puyo_base_simulator.ui.home
 import android.app.Activity
 import android.content.Context
 import android.content.res.AssetManager
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -175,12 +176,17 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
         }
     }
 
-    fun setSeed(newSeed: Int) {
-        _seed.value = newSeed
-        tsumoController = TsumoController(Haipuyo[newSeed], newSeed)
-        _currentField.value = Field()
-        clearFieldHistory()
-        _tsumoInfo.value = tsumoController.makeTsumoInfo()
+    fun setSeed(newSeedText: TextFieldValue) {
+        try {
+            val newSeed = newSeedText.text.toInt()
+            _seed.value = newSeed
+            tsumoController = TsumoController(Haipuyo[newSeed], newSeed)
+            _currentField.value = Field()
+            clearFieldHistory()
+            _tsumoInfo.value = tsumoController.makeTsumoInfo()
+        } catch (e: NumberFormatException) {
+
+        }
     }
 
     fun randomGenerate() {

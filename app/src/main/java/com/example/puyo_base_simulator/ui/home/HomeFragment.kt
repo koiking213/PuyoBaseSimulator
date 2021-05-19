@@ -13,6 +13,8 @@ import com.google.android.material.snackbar.Snackbar
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -20,15 +22,22 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.w3c.dom.Text
 import kotlin.math.*
 
+@ExperimentalComposeUiApi
 class HomeFragment : Fragment() {
     private lateinit var fieldView: Array<Array<ImageView>>
     private lateinit var currentPuyoView: Array<Array<ImageView>>
@@ -203,26 +212,31 @@ class HomeFragment : Fragment() {
     @Composable
     fun TextFieldWithButton(
         size: Dp,
-        state: MutableState<TextFieldValue>,
         textLabel: String,
-        buttonLabel: String
+        keyboardType: KeyboardType,
+        onClick: (TextFieldValue) -> Unit
     ) {
+        val keyboardController = LocalSoftwareKeyboardController.current
+
+        val state = remember { mutableStateOf(TextFieldValue()) }
         Row(
             verticalAlignment = Alignment.Bottom
         ) {
-            //OutlinedTextField(
-            //    value = state.value,
-            //    onValueChange = { state.value = it },
-            //    label = { Text(textLabel, fontSize = 10.sp) },
-            //    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            //    modifier = Modifier.weight(1f)
-            //)
-            CallToActionButton(
-                text = buttonLabel,
-                onClick = {
-                    val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                    imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
-                },
+            OutlinedTextField(
+                value = state.value,
+                onValueChange = { state.value = it },
+                label = { Text(textLabel, fontSize = 10.sp) },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = keyboardType,
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        onClick(state.value)
+                        keyboardController?.hide()
+                    }
+                ),
+                singleLine = true,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -232,25 +246,33 @@ class HomeFragment : Fragment() {
     @Composable
     fun FieldGeneration(
         size: Dp,
-        onSeedGenClicked: () -> Unit,
-        onPatternGenClicked: () -> Unit,
+        onSeedGenClicked: (TextFieldValue) -> Unit,
+        onPatternGenClicked: (TextFieldValue) -> Unit,
         onRandomGenClicked: () -> Unit,
     ) {
-        val seedTextState = remember { mutableStateOf(TextFieldValue())}
-        val patternTextState = remember { mutableStateOf(TextFieldValue())}
         Column(
             horizontalAlignment = Alignment.End,
             modifier = Modifier.padding(5.dp),
         ) {
-            TextFieldWithButton(size = size, state = seedTextState, textLabel = "seed", buttonLabel = "シード値から生成")
-            TextFieldWithButton(size = size, state = patternTextState, textLabel = "pattern", buttonLabel = "初手パターンから生成")
+            TextFieldWithButton(
+                size = size,
+                textLabel = "generate by seed",
+                keyboardType = KeyboardType.Number,
+                onClick = onSeedGenClicked
+            )
+            TextFieldWithButton(
+                size = size,
+                textLabel = "generate by pattern",
+                keyboardType = KeyboardType.Ascii,
+                onClick = onPatternGenClicked
+            )
             CallToActionButton(
                 text = "ランダム生成",
                 onClick = onRandomGenClicked,
                 modifier = Modifier
                     .height(size)
                     .width(size * 3)
-            );
+            )
         }
     }
 
@@ -404,7 +426,7 @@ class HomeFragment : Fragment() {
                     CurrentSeed(seed = seed)
                     FieldGeneration(
                         size = 40.dp,
-                        onSeedGenClicked = {},
+                        onSeedGenClicked = presenter::setSeed,
                         onPatternGenClicked = {},
                         onRandomGenClicked = presenter::randomGenerate,
                     )
@@ -492,7 +514,7 @@ class HomeFragment : Fragment() {
         }
         root.findViewById<View>(R.id.buttonSetSeed).setOnClickListener {
             try {
-                mPresenter.setSeed(specifiedSeed)
+                //mPresenter.setSeed(specifiedSeed)
             } catch (e: NumberFormatException) {  // ignore
             }
         }
