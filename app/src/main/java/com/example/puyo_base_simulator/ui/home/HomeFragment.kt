@@ -11,22 +11,26 @@ import androidx.gridlayout.widget.GridLayout
 import com.example.puyo_base_simulator.R
 import com.google.android.material.snackbar.Snackbar
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.internal.isLiveLiteralsEnabled
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -34,7 +38,9 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.w3c.dom.Text
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
+import com.example.puyo_base_simulator.data.Base
 import kotlin.math.*
 
 @ExperimentalComposeUiApi
@@ -212,6 +218,7 @@ class HomeFragment : Fragment() {
     @Composable
     fun TextFieldWithButton(
         size: Dp,
+        isError: Boolean,
         textLabel: String,
         keyboardType: KeyboardType,
         onClick: (TextFieldValue) -> Unit
@@ -223,6 +230,7 @@ class HomeFragment : Fragment() {
             verticalAlignment = Alignment.Bottom
         ) {
             OutlinedTextField(
+                //isError = isError,
                 value = state.value,
                 onValueChange = { state.value = it },
                 label = { Text(textLabel, fontSize = 10.sp) },
@@ -237,7 +245,7 @@ class HomeFragment : Fragment() {
                     }
                 ),
                 singleLine = true,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.size((10*textLabel.length).dp, size)
             )
         }
     }
@@ -250,18 +258,22 @@ class HomeFragment : Fragment() {
         onPatternGenClicked: (TextFieldValue) -> Unit,
         onRandomGenClicked: () -> Unit,
     ) {
+        val (seedError, setSeedError) = remember { mutableStateOf(false)}
+        val (patternError, setPatternError) = remember { mutableStateOf(false)}
         Column(
             horizontalAlignment = Alignment.End,
             modifier = Modifier.padding(5.dp),
         ) {
             TextFieldWithButton(
                 size = size,
+                isError = seedError,
                 textLabel = "generate by seed",
                 keyboardType = KeyboardType.Number,
                 onClick = onSeedGenClicked
             )
             TextFieldWithButton(
                 size = size,
+                isError = patternError,
                 textLabel = "generate by pattern",
                 keyboardType = KeyboardType.Ascii,
                 onClick = onPatternGenClicked
@@ -400,6 +412,153 @@ class HomeFragment : Fragment() {
     }
 
     @Composable
+    fun FieldPicker(
+        header: String,
+        bases: List<Base>,
+        onFieldClicked: (Base) -> Unit
+    ) {
+        val rows = 5
+        val chunkedList = bases.chunked(rows)
+        Column {
+            Text(header, style = MaterialTheme.typography.h5)  // stickyHeaderとどう使い分ける？
+            Divider()
+            LazyColumn {
+                items(chunkedList.size) { idx ->
+                    Row {
+                        chunkedList[idx].forEachIndexed { _, base ->
+                            Card(
+                                Modifier.background(Color.White, RoundedCornerShape(16.dp))
+                                    .border(1.dp, Color.Black).clickable(onClick = {onFieldClicked(base)})
+                            ) {
+                                FieldPickerItem(base, onFieldClicked)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun getColor(c: Char): Int {
+        return when (c) {
+            'r' -> R.drawable.pr
+            'b' -> R.drawable.pb
+            'g' -> R.drawable.pg
+            'y' -> R.drawable.py
+            'p' -> R.drawable.pp
+            else -> R.drawable.blank
+        }
+    }
+    private fun fieldStrToColors(str: String): Array<Array<Int>> {
+        return Array(13) { i -> Array(6) { j -> getColor(str[i * 6 + j]) } }
+    }
+
+    @Composable
+    private fun FieldPickerItem(base: Base, onClicked: (Base) -> Unit) {
+        val numOfPlacement =  TsumoController.getNumOfPlacement(base.placementHistory)
+        Column() {
+            Text(
+                if (base.allClear) {
+                    "全消し"
+                } else {
+                    ""
+                }
+            )
+            Text("${numOfPlacement}手目")
+            Text("${base.point}点")
+
+            val colors = fieldStrToColors(base.field)
+            PuyoField(colors.reversed().toTypedArray(), 10.dp)
+
+        }
+        //Text(field.toString(), Modifier.clickable(onClick = { onClicked(field) }))
+    }
+
+    private fun getSeed(str: String) : Int?{
+        return try {
+            val seed = str.toInt()
+            if (seed in 0..65536) seed
+            else throw java.lang.NumberFormatException()
+        } catch (e: java.lang.NumberFormatException) {
+            null
+        }
+    }
+
+    private fun isValidPattern(str: String) : Boolean{
+        return str.map {it in "abcde"}.reduce {acc, it -> acc && it}
+    }
+
+    @Composable
+    fun LoadPopupWindow(
+        size: Dp,
+        closeFun: () -> Unit,
+        onShowSeedClick: (Int) -> MutableList<Base>,
+        onShowPatternClick: (String) -> MutableList<Base>,
+        onShowAllClick: () -> MutableList<Base>,
+        onFieldClick: (Base) -> Unit,
+    ) {
+        val (bases, setBases) = remember { mutableStateOf(mutableListOf<Base>()) }
+        val (seedError, setSeedError) = remember { mutableStateOf(false)}
+        val (patternError, setPatternError) = remember { mutableStateOf(false)}
+        Popup(
+            alignment = Alignment.Center,
+            properties = PopupProperties(focusable = true),
+            onDismissRequest = closeFun
+        ) {
+            Card(
+                Modifier.background(Color.White, RoundedCornerShape(16.dp))
+                    .border(1.dp, Color.Black)
+            ) {
+                Column () {
+                    TextFieldWithButton(
+                        size = size,
+                        isError = seedError,
+                        textLabel = "search by seed",
+                        keyboardType = KeyboardType.Number,
+                        onClick = {
+                            val seed = getSeed((it.text))
+                            if (seed == null) {
+                                setSeedError(true)
+                            } else {
+                                setSeedError(false)
+                                setBases(onShowSeedClick(seed))
+                            }
+                        }
+                    )
+                    TextFieldWithButton(
+                        size = size,
+                        isError = patternError,
+                        textLabel = "search by pattern",
+                        keyboardType = KeyboardType.Ascii,
+                        onClick = {
+                            if (isValidPattern(it.text)){
+                                setPatternError(false)
+                                setBases(onShowPatternClick(it.text))
+                            } else {
+                                setPatternError(true)
+                            }
+                        }
+                    )
+                    CallToActionButton(
+                        text = "すべて表示",
+                        onClick = {
+                            setBases(onShowAllClick())
+                        },
+                    )
+                    FieldPicker(
+                        header = "fields:",
+                        bases = bases,
+                        onFieldClicked = {
+                            onFieldClick(it)
+                            closeFun()
+                        },
+                    )
+                }
+            }
+        }
+    }
+
+    @Composable
     fun Home(presenter: HomePresenter)  {
         val sampleTsumoInfo = TsumoInfo(
             Array(2) {PuyoColor.RED},
@@ -412,6 +571,7 @@ class HomeFragment : Fragment() {
         val seed = presenter.seed.observeAsState(0).value
         val historySliderValue = presenter.historySliderValue.observeAsState(0f).value
         val historySize = presenter.historySize.observeAsState(0).value
+        val (showLoadPopup, setShowLoadPopup) = remember { mutableStateOf(false) }
         Column (
             modifier = Modifier
                 .fillMaxHeight()
@@ -421,18 +581,36 @@ class HomeFragment : Fragment() {
             Row(
                 modifier = Modifier.weight(6f)
             ) {
+                if (showLoadPopup) {
+                    LoadPopupWindow(
+                        size = 60.dp,
+                        closeFun = { setShowLoadPopup(false) },
+                        onShowSeedClick = {
+                            presenter.searchBySeed(it, requireContext())
+                        },
+                        onShowPatternClick = {
+                            presenter.searchByPattern(it, requireContext())
+                        },
+                        onShowAllClick = {
+                            presenter.showAll(requireContext())
+                        },
+                        onFieldClick = presenter::load
+                    )
+                }
                 FieldFrame(field = currentField, tsumoInfo = tsumoInfo, 20.dp)
                 Column (horizontalAlignment = Alignment.End){
                     CurrentSeed(seed = seed)
                     FieldGeneration(
-                        size = 40.dp,
+                        size = 60.dp,
                         onSeedGenClicked = presenter::setSeed,
                         onPatternGenClicked = {},
                         onRandomGenClicked = presenter::randomGenerate,
                     )
                     ChainInfoArea(field = currentField)
                     SaveLoad(
-                        onLoadClick = {},
+                        onLoadClick = {
+                                      setShowLoadPopup(true)
+                        },
                         onSaveClick = {},
                     )
                 }
@@ -500,23 +678,6 @@ class HomeFragment : Fragment() {
         // ボタン群
         root.findViewById<View>(R.id.buttonSave).setOnClickListener {
             if (mPresenter.save(mActivity as Context)) Snackbar.make(root, "saved", Snackbar.LENGTH_SHORT).show()
-        }
-        root.findViewById<View>(R.id.buttonLoad).setOnClickListener {
-            val loadFieldPopup = LoadFieldPopup(mActivity)
-            loadFieldPopup.height = WindowManager.LayoutParams.WRAP_CONTENT
-            loadFieldPopup.isOutsideTouchable = true
-            loadFieldPopup.isFocusable = true
-            loadFieldPopup.showAsDropDown(mRoot.findViewById(R.id.textViewSeed))
-            loadFieldPopup.setFieldSelectedListener { _: Int, fieldPreview: FieldPreview ->
-                mPresenter.load(mActivity as Context, fieldPreview)
-                loadFieldPopup.dismiss()
-            }
-        }
-        root.findViewById<View>(R.id.buttonSetSeed).setOnClickListener {
-            try {
-                //mPresenter.setSeed(specifiedSeed)
-            } catch (e: NumberFormatException) {  // ignore
-            }
         }
         return root
     }

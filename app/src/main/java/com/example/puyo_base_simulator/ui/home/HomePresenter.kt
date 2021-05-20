@@ -15,6 +15,7 @@ import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
 import java.util.*
+import java.util.stream.Collectors
 import kotlin.math.roundToInt
 
 
@@ -139,25 +140,23 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
         return true
     }
 
-    fun load(context: Context, fieldPreview: FieldPreview) {
-        val base = getDB(context).baseDao().findById(fieldPreview.id)
-        if (base != null) {
-            tsumoController = TsumoController(Haipuyo[base.hash], base.hash)
-            clearFieldHistory()
-            var f = Field()
-            for (p in tsumoController.stringToPlacementOrder(base.placementHistory)) {
-                f = setPairOnField(f, tsumoController.makeTsumoInfo(p))!!
-                f.evalNextField()
-                f = getLastField(f)
-                fieldHistory.add(f)
-            }
-            tsumoController.addPlacementHistory()
-            tsumoController.rollbackPlacementHistory()
-            _currentField.value = fieldHistory.undoAll()
-            _historySliderValue.value = fieldHistory.index.toFloat()
-            _historySize.value = fieldHistory.size()
+    fun load(base: Base) {
+        tsumoController = TsumoController(Haipuyo[base.hash], base.hash)
+        clearFieldHistory()
+        var f = Field()
+        for (p in tsumoController.stringToPlacementOrder(base.placementHistory)) {
+            f = setPairOnField(f, tsumoController.makeTsumoInfo(p))!!
+            f.evalNextField()
+            f = getLastField(f)
+            fieldHistory.add(f)
         }
+        tsumoController.addPlacementHistory()
+        tsumoController.rollbackPlacementHistory()
+        _currentField.value = fieldHistory.undoAll()
+        _historySliderValue.value = fieldHistory.index.toFloat()
+        _historySize.value = fieldHistory.size()
         _tsumoInfo.value = tsumoController.makeTsumoInfo()
+        _seed.value = base.hash // TODO: 名前がおかしいので修正する
     }
 
     private fun clearFieldHistory() {
@@ -220,6 +219,27 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
                 chain(field.nextField!!, activity)
             }
         }.start()
+    }
+
+    fun searchBySeed(seed : Int, context: Context) : MutableList<Base> {
+        if (seed !in 0..65535) {
+            throw NumberFormatException("should enter 0-65535")
+        }
+        val bases = getDB(context).baseDao().findByHash(seed)
+        return bases.toMutableList()
+    }
+
+    fun searchByPattern(pattern : String, context: Context) : MutableList<Base> {
+        val seeds = Haipuyo.searchSeedWithPattern(pattern)
+        val seedsChunks = seeds.chunked(100)
+        val bases = seedsChunks.parallelStream().map { seed: List<Int> -> getDB(context).baseDao().findByAllHash(seed) }.flatMap { obj: List<Base> -> obj.stream() }.collect(
+            Collectors.toList())
+        return bases.toMutableList()
+    }
+
+    fun showAll (context: Context) : MutableList<Base> {
+        val bases = getDB(context).baseDao().all
+        return bases.toMutableList()
     }
 
     companion object {
