@@ -15,6 +15,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -172,7 +174,7 @@ class HomeFragment : Fragment() {
         onRightClick: () -> Unit,
         onDownClick: () -> Unit,
     ) {
-        Row() {
+        Row {
             CursorKeys(onLeftClick, onRightClick, onDownClick)
             RotationKeys(onAClick, onBClick)
         }
@@ -182,6 +184,7 @@ class HomeFragment : Fragment() {
     fun TextFieldWithButton(
         size: Dp,
         isError: Boolean,
+        trailingIcon: @Composable (() -> Unit)? = null,
         textLabel: String,
         keyboardType: KeyboardType,
         onClick: (TextFieldValue) -> Unit
@@ -193,7 +196,8 @@ class HomeFragment : Fragment() {
             verticalAlignment = Alignment.Bottom
         ) {
             OutlinedTextField(
-                //isError = isError,
+                isError = isError,
+                trailingIcon = trailingIcon,
                 value = state.value,
                 onValueChange = { state.value = it },
                 label = { Text(textLabel, fontSize = 10.sp) },
@@ -213,34 +217,79 @@ class HomeFragment : Fragment() {
         }
     }
 
+    @Composable
+    fun PatternInputField(
+        size: Dp,
+        onClick: (String) -> Unit,
+        textLabel: String
+    ) {
+        val (seedError, setSeedError) = remember { mutableStateOf(false)}
+        TextFieldWithButton(
+            size = size,
+            isError = seedError,
+            trailingIcon = {
+                Icon(
+                    Icons.Filled.Info,
+                    contentDescription = "pattern"
+                )
+            },
+            textLabel = textLabel,
+            keyboardType = KeyboardType.Ascii,
+            onClick = {
+                if (isValidPattern(it.text)) {
+                    setSeedError(false)
+                    onClick(it.text)
+                } else {
+                    setSeedError(true)
+                }
+            }
+        )
+    }
+
+    @Composable
+    fun SeedInputField(
+        size: Dp,
+        onClick: (Int) -> Unit,
+        textLabel: String
+    ) {
+        val (seedError, setSeedError) = remember { mutableStateOf(false)}
+        TextFieldWithButton(
+            size = size,
+            isError = seedError,
+            trailingIcon = {
+                Icon(
+                    Icons.Filled.Info,
+                    contentDescription = "seed"
+                )
+            },
+            textLabel = textLabel,
+            keyboardType = KeyboardType.Number,
+            onClick = {
+                val seed = getSeed((it.text))
+                if (seed != null) {
+                    setSeedError(false)
+                    onClick(seed)
+                } else {
+                    setSeedError(true)
+                }
+            }
+        )
+    }
+
     // いい感じに大きさを決めたい
     @Composable
     fun FieldGeneration(
         size: Dp,
-        onSeedGenClicked: (TextFieldValue) -> Unit,
-        onPatternGenClicked: (TextFieldValue) -> Unit,
+        onSeedGenClicked: (Int) -> Unit,
+        onPatternGenClicked: (String) -> Unit,
         onRandomGenClicked: () -> Unit,
     ) {
-        val (seedError, setSeedError) = remember { mutableStateOf(false)}
-        val (patternError, setPatternError) = remember { mutableStateOf(false)}
         Column(
             horizontalAlignment = Alignment.End,
             modifier = Modifier.padding(5.dp),
         ) {
-            TextFieldWithButton(
-                size = size,
-                isError = seedError,
-                textLabel = "generate by seed",
-                keyboardType = KeyboardType.Number,
-                onClick = onSeedGenClicked
-            )
-            TextFieldWithButton(
-                size = size,
-                isError = patternError,
-                textLabel = "generate by pattern",
-                keyboardType = KeyboardType.Ascii,
-                onClick = onPatternGenClicked
-            )
+            SeedInputField(size = size, onClick = onSeedGenClicked, textLabel = "generate by seed")
+            PatternInputField(size = size, onClick = onPatternGenClicked, textLabel = "generate by pattern")
             CallToActionButton(
                 text = "ランダム生成",
                 onClick = onRandomGenClicked,
@@ -282,9 +331,9 @@ class HomeFragment : Fragment() {
 
     @Composable
     fun PuyoField(colors: Array<Array<Int>>, size: Dp) {
-        Column() {
+        Column {
             for (row in colors) {
-                Row() {
+                Row {
                     for (c in row) {
                         Cell(c, size)
                     }
@@ -295,7 +344,7 @@ class HomeFragment : Fragment() {
 
     @Composable
     fun SideWall(size: Dp) {
-        Column() {
+        Column {
             for (r in 0..13) {
                 Wall(size)
             }
@@ -304,7 +353,7 @@ class HomeFragment : Fragment() {
 
     @Composable
     fun BottomWall(size: Dp) {
-        Row() {
+        Row {
             for (c in 0..5) {
                 Wall(size)
             }
@@ -390,10 +439,12 @@ class HomeFragment : Fragment() {
                     Row {
                         chunkedList[idx].forEachIndexed { _, base ->
                             Card(
-                                Modifier.background(Color.White, RoundedCornerShape(16.dp))
-                                    .border(1.dp, Color.Black).clickable(onClick = {onFieldClicked(base)})
+                                Modifier
+                                    .background(Color.White, RoundedCornerShape(16.dp))
+                                    .border(1.dp, Color.Black)
+                                    .clickable(onClick = { onFieldClicked(base) })
                             ) {
-                                FieldPickerItem(base, onFieldClicked)
+                                FieldPickerItem(base)
                             }
                         }
                     }
@@ -417,9 +468,9 @@ class HomeFragment : Fragment() {
     }
 
     @Composable
-    private fun FieldPickerItem(base: Base, onClicked: (Base) -> Unit) {
+    private fun FieldPickerItem(base: Base) {
         val numOfPlacement =  TsumoController.getNumOfPlacement(base.placementHistory)
-        Column() {
+        Column {
             Text(
                 if (base.allClear) {
                     "全消し"
@@ -434,7 +485,6 @@ class HomeFragment : Fragment() {
             PuyoField(colors.reversed().toTypedArray(), 10.dp)
 
         }
-        //Text(field.toString(), Modifier.clickable(onClick = { onClicked(field) }))
     }
 
     private fun getSeed(str: String) : Int?{
@@ -461,47 +511,19 @@ class HomeFragment : Fragment() {
         onFieldClick: (Base) -> Unit,
     ) {
         val (bases, setBases) = remember { mutableStateOf(mutableListOf<Base>()) }
-        val (seedError, setSeedError) = remember { mutableStateOf(false)}
-        val (patternError, setPatternError) = remember { mutableStateOf(false)}
         Popup(
             alignment = Alignment.Center,
             properties = PopupProperties(focusable = true),
             onDismissRequest = closeFun
         ) {
             Card(
-                Modifier.background(Color.White, RoundedCornerShape(16.dp))
+                Modifier
+                    .background(Color.White, RoundedCornerShape(16.dp))
                     .border(1.dp, Color.Black)
             ) {
-                Column () {
-                    TextFieldWithButton(
-                        size = size,
-                        isError = seedError,
-                        textLabel = "search by seed",
-                        keyboardType = KeyboardType.Number,
-                        onClick = {
-                            val seed = getSeed((it.text))
-                            if (seed == null) {
-                                setSeedError(true)
-                            } else {
-                                setSeedError(false)
-                                setBases(onShowSeedClick(seed))
-                            }
-                        }
-                    )
-                    TextFieldWithButton(
-                        size = size,
-                        isError = patternError,
-                        textLabel = "search by pattern",
-                        keyboardType = KeyboardType.Ascii,
-                        onClick = {
-                            if (isValidPattern(it.text)){
-                                setPatternError(false)
-                                setBases(onShowPatternClick(it.text))
-                            } else {
-                                setPatternError(true)
-                            }
-                        }
-                    )
+                Column {
+                    SeedInputField(size = size, onClick = { setBases(onShowSeedClick(it)) }, textLabel = "search by seed")
+                    PatternInputField(size = size, onClick = { setBases(onShowPatternClick(it)) }, textLabel = "search by pattern")
                     CallToActionButton(
                         text = "すべて表示",
                         onClick = {

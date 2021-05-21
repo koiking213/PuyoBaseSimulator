@@ -175,17 +175,12 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
         }
     }
 
-    fun setSeed(newSeedText: TextFieldValue) {
-        try {
-            val newSeed = newSeedText.text.toInt()
-            _seed.value = newSeed
-            tsumoController = TsumoController(Haipuyo[newSeed], newSeed)
-            _currentField.value = Field()
-            clearFieldHistory()
-            _tsumoInfo.value = tsumoController.makeTsumoInfo()
-        } catch (e: NumberFormatException) {
-
-        }
+    fun setSeed(newSeed: Int) {
+        _seed.value = newSeed
+        tsumoController = TsumoController(Haipuyo[newSeed], newSeed)
+        _currentField.value = Field()
+        clearFieldHistory()
+        _tsumoInfo.value = tsumoController.makeTsumoInfo()
     }
 
     fun randomGenerate() {
