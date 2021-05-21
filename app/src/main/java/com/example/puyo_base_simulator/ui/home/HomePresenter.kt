@@ -3,7 +3,6 @@ package com.example.puyo_base_simulator.ui.home
 import android.app.Activity
 import android.content.Context
 import android.content.res.AssetManager
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -92,7 +91,7 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
         tsumoController.addPlacementHistory()
         newField.evalNextField()
         _currentField.value = newField
-        fieldHistory.add(newField)
+        fieldHistory.add(getLastField(newField))
         _historySliderValue.value = fieldHistory.index.toFloat()
         _historySize.value = fieldHistory.size()
         _tsumoInfo.value = tsumoController.makeTsumoInfo()
@@ -213,7 +212,13 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
             }
             Thread.sleep(500)
             activity.runOnUiThread {
-                _currentField.value = field.nextField!!
+                val f = SerializationUtils.clone(field.nextField!!) as Field
+                f.accumulatedPoint = field.accumulatedPoint
+                f.bonus = field.bonus
+                f.chainNum = field.chainNum
+                f.chainPoint = field.chainPoint
+                f.disappearPuyo = field.disappearPuyo
+                _currentField.value = f
             }
             if (field.nextField!!.nextField != null) {
                 chain(field.nextField!!, activity)
