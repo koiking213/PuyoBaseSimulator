@@ -594,7 +594,7 @@ class HomeFragment : Fragment() {
                             FieldGeneration(
                                 size = 60.dp,
                                 onSeedGenClicked = presenter::setSeed,
-                                onPatternGenClicked = {},
+                                onPatternGenClicked = presenter::generateByPattern,
                                 onRandomGenClicked = presenter::randomGenerate,
                             )
                             ChainInfoArea(field = currentField)

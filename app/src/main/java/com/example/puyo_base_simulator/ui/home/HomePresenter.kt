@@ -183,6 +183,11 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
         _tsumoInfo.value = tsumoController.makeTsumoInfo()
     }
 
+    fun generateByPattern(pattern: String) {
+        val seeds = Haipuyo.searchSeedWithPattern(pattern)
+        setSeed(seeds.random())
+    }
+
     fun randomGenerate() {
         _currentField.value = Field()
         clearFieldHistory()
