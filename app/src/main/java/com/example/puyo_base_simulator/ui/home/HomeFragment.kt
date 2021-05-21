@@ -25,6 +25,7 @@ import androidx.compose.runtime.internal.isLiveLiteralsEnabled
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -41,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import com.example.puyo_base_simulator.data.Base
+import kotlinx.coroutines.launch
 import kotlin.math.*
 
 @ExperimentalComposeUiApi
@@ -572,72 +574,85 @@ class HomeFragment : Fragment() {
         val historySliderValue = presenter.historySliderValue.observeAsState(0f).value
         val historySize = presenter.historySize.observeAsState(0).value
         val (showLoadPopup, setShowLoadPopup) = remember { mutableStateOf(false) }
-        Column (
-            modifier = Modifier
-                .fillMaxHeight()
-                .padding(5.dp)
-        )
-        {
-            Row(
-                modifier = Modifier.weight(6f)
-            ) {
-                if (showLoadPopup) {
-                    LoadPopupWindow(
-                        size = 60.dp,
-                        closeFun = { setShowLoadPopup(false) },
-                        onShowSeedClick = {
-                            presenter.searchBySeed(it, requireContext())
-                        },
-                        onShowPatternClick = {
-                            presenter.searchByPattern(it, requireContext())
-                        },
-                        onShowAllClick = {
-                            presenter.showAll(requireContext())
-                        },
-                        onFieldClick = presenter::load
-                    )
-                }
-                FieldFrame(field = currentField, tsumoInfo = tsumoInfo, 20.dp)
-                Column (horizontalAlignment = Alignment.End){
-                    CurrentSeed(seed = seed)
-                    FieldGeneration(
-                        size = 60.dp,
-                        onSeedGenClicked = presenter::setSeed,
-                        onPatternGenClicked = {},
-                        onRandomGenClicked = presenter::randomGenerate,
-                    )
-                    ChainInfoArea(field = currentField)
-                    SaveLoad(
-                        onLoadClick = {
-                                      setShowLoadPopup(true)
-                        },
-                        onSaveClick = {},
-                    )
-                }
-            }
-            Box (
-                modifier = Modifier.weight(1f)
-            ) {
-                SliderFrame(
-                    index = max(historySliderValue, 0f),
-                    max = max(historySize - 1, 0),
-                    onValueChange = presenter::setHistoryIndex
+        val scaffoldState = rememberScaffoldState()
+        val scope = rememberCoroutineScope()
+
+        Scaffold(
+            scaffoldState = scaffoldState,
+            content = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .padding(5.dp)
                 )
-            }
-            Box (
-                modifier = Modifier.weight(3f)
-            ) {
-                TsumoControlButtonArea(
-                    onAClick = presenter::rotateLeft,
-                    onBClick = presenter::rotateRight,
-                    onLeftClick = presenter::moveLeft,
-                    onRightClick = presenter::moveRight,
-                    onDownClick = {
-                        presenter.dropDown(mActivity)
+                {
+                    Row(
+                        modifier = Modifier.weight(6f)
+                    ) {
+                        if (showLoadPopup) {
+                            LoadPopupWindow(
+                                size = 60.dp,
+                                closeFun = { setShowLoadPopup(false) },
+                                onShowSeedClick = {
+                                    presenter.searchBySeed(it, requireContext())
+                                },
+                                onShowPatternClick = {
+                                    presenter.searchByPattern(it, requireContext())
+                                },
+                                onShowAllClick = {
+                                    presenter.showAll(requireContext())
+                                },
+                                onFieldClick = presenter::load
+                            )
+                        }
+                        FieldFrame(field = currentField, tsumoInfo = tsumoInfo, 20.dp)
+                        Column(horizontalAlignment = Alignment.End) {
+                            CurrentSeed(seed = seed)
+                            FieldGeneration(
+                                size = 60.dp,
+                                onSeedGenClicked = presenter::setSeed,
+                                onPatternGenClicked = {},
+                                onRandomGenClicked = presenter::randomGenerate,
+                            )
+                            ChainInfoArea(field = currentField)
+                            SaveLoad(
+                                onLoadClick = {
+                                    setShowLoadPopup(true)
+                                },
+                                onSaveClick = {
+                                    presenter.save(requireContext())
+                                    scope.launch {
+                                        scaffoldState.snackbarHostState.showSnackbar("saved.")
+                                    }
+                                }
+                            )
+                        }
                     }
-                )
-            }
-        }
+                    Box(
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        SliderFrame(
+                            index = max(historySliderValue, 0f),
+                            max = max(historySize - 1, 0),
+                            onValueChange = presenter::setHistoryIndex
+                        )
+                    }
+                    Box(
+                        modifier = Modifier.weight(3f)
+                    ) {
+                        TsumoControlButtonArea(
+                            onAClick = presenter::rotateLeft,
+                            onBClick = presenter::rotateRight,
+                            onLeftClick = presenter::moveLeft,
+                            onRightClick = presenter::moveRight,
+                            onDownClick = {
+                                presenter.dropDown(mActivity)
+                            }
+                        )
+                    }
+                }
+            },
+        )
     }
 
     @Composable
@@ -674,12 +689,6 @@ class HomeFragment : Fragment() {
                 MainApp(mPresenter)
             }
         }
-
-        // ボタン群
-        root.findViewById<View>(R.id.buttonSave).setOnClickListener {
-            if (mPresenter.save(mActivity as Context)) Snackbar.make(root, "saved", Snackbar.LENGTH_SHORT).show()
-        }
-        return root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
