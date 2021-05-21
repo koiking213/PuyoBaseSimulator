@@ -19,7 +19,7 @@ class Field : Serializable {
     var chainNum = 0
     val disappearingField : Field
         get() {
-            var f = SerializationUtils.clone(this) as Field
+            val f = SerializationUtils.clone(this) as Field
             for (p in f.field.flatten()) {
                 if (p in f.disappearPuyo) p.color = PuyoColor.DISAPPEAR
             }
@@ -127,7 +127,7 @@ class Field : Serializable {
     }
 
     companion object {
-        private val chainBonusConstant = intArrayOf(0, 0, 8, 16, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 480, 512)
+        private val chainBonusConstant = intArrayOf(0, 8, 16, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 480, 512)
         private val colorBonusConstant = intArrayOf(0, 0, 3, 6, 12)
         private const val allClearBonus = 2100
         private fun connectionBonusConstant(connectionNum: Int): Int {
