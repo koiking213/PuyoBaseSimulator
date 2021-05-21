@@ -1,15 +1,10 @@
 package com.example.puyo_base_simulator.ui.home
 
-import android.app.Activity
-import android.content.Context
 import android.os.Bundle
-import android.view.*
-import android.view.inputmethod.InputMethodManager
-import android.widget.*
-import androidx.fragment.app.Fragment
-import androidx.gridlayout.widget.GridLayout
-import com.example.puyo_base_simulator.R
-import com.google.android.material.snackbar.Snackbar
+import android.view.LayoutInflater
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewGroup
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -21,7 +16,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.internal.isLiveLiteralsEnabled
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,47 +35,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import androidx.fragment.app.Fragment
+import com.example.puyo_base_simulator.R
 import com.example.puyo_base_simulator.data.Base
 import kotlinx.coroutines.launch
-import kotlin.math.*
+import kotlin.math.max
 
 @ExperimentalComposeUiApi
 class HomeFragment : Fragment() {
-    private lateinit var fieldView: Array<Array<ImageView>>
-    private lateinit var currentPuyoView: Array<Array<ImageView>>
-    private lateinit var nextPuyoView: Array<Array<ImageView>>
-    private lateinit var currentPuyoLayout: GridLayout
-    private lateinit var nextPuyoLayout: GridLayout
-    private lateinit var mPresenter: HomePresenter
-    private lateinit var mActivity: Activity
-    private lateinit var mRoot: View
-    private val buttons = arrayOf(
-            R.id.buttonLeft,
-            R.id.buttonRight,
-            R.id.buttonDown,
-            R.id.buttonA,
-            R.id.buttonB,
-            R.id.buttonUndo,
-            R.id.buttonRedo,
-            R.id.buttonLoad,
-            R.id.buttonSave,
-    )
-    private val specifiedSeed: Int
-        get() {
-            val editText = mRoot.findViewById<EditText>(R.id.editTextSeed)
-            return try {
-                val seed = editText.text.toString().toInt()
-                if (seed in 0..65535) {
-                    seed
-                } else {
-                    throw NumberFormatException()
-                }
-            } catch (e: NumberFormatException) {
-                editText.error = "should enter 0-65535."
-                throw e
-            }
-
-        }
 
     @Composable
     fun ChainInfoArea(field: Field) {
@@ -127,18 +88,18 @@ class HomeFragment : Fragment() {
                     text = "←",
                     onClick = onLeftClick,
                     modifier = Modifier.size(90.dp)
-                );
+                )
                 CallToActionButton(
                     text = "→",
                     onClick = onRightClick,
                     modifier = Modifier.size(90.dp)
-                );
+                )
             }
             CallToActionButton(
                 text = "↓",
                 onClick = onDownClick,
                 modifier = Modifier.size(90.dp)
-            );
+            )
         }
     }
 
@@ -195,11 +156,11 @@ class HomeFragment : Fragment() {
             CallToActionButton(
                 text = "SAVE",
                 onClick = onSaveClick,
-            );
+            )
             CallToActionButton(
                 text = "LOAD",
                 onClick = onLoadClick,
-            );
+            )
         }
     }
 
@@ -351,7 +312,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun createNextTsumoColorMap(tsumoInfo: TsumoInfo) : Array<Array<Int>>{
-        var ret = Array(4) {Array(2){puyoResourceId(PuyoColor.EMPTY)}}
+        val ret = Array(4) {Array(2){puyoResourceId(PuyoColor.EMPTY)}}
         ret[0][0] = puyoResourceId(tsumoInfo.nextColor[0][0])
         ret[1][0] = puyoResourceId(tsumoInfo.nextColor[0][1])
         ret[2][1] = puyoResourceId(tsumoInfo.nextColor[1][0])
@@ -360,7 +321,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun createCurrentTsumoColorMap(tsumoInfo: TsumoInfo) : Array<Array<Int>>{
-        var ret = Array(3) {Array(6){puyoResourceId(PuyoColor.EMPTY)}}
+        val ret = Array(3) {Array(6){puyoResourceId(PuyoColor.EMPTY)}}
         val p1 = tsumoInfo.currentMainPos
         ret[p1.row][p1.column-1] = puyoResourceId(tsumoInfo.currentColor[0])
         val p2 = tsumoInfo.currentSubPos
@@ -646,7 +607,7 @@ class HomeFragment : Fragment() {
                             onLeftClick = presenter::moveLeft,
                             onRightClick = presenter::moveRight,
                             onDownClick = {
-                                presenter.dropDown(mActivity)
+                                presenter.dropDown(requireActivity())
                             }
                         )
                     }
@@ -660,33 +621,11 @@ class HomeFragment : Fragment() {
         Home(presenter)
     }
 
-    //@Preview
-    //@Composable
-    //fun PreviewGreeting() {
-    //    //CallToAction button("SET SEED", mPresenter.set_seed(), )
-    //    //MainField(field = Field())
-    //    val sampleTsumoInfo = TsumoInfo(
-    //        Array(2) {PuyoColor.RED},
-    //        Array(2) {Array(2) {PuyoColor.RED}},
-    //        3,
-    //        Rotation.DEGREE0
-    //    )
-    //    val sampleField = Field.from("rrrbbbggg")
-    //    //FieldFrame(field = sampleField, sampleTsumoInfo)
-    //    //Home()
-    //}
-
     override fun onCreateView(inflater: LayoutInflater,
-                              container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val root = inflater.inflate(R.layout.fragment_home, container, false)
-        mRoot = root
-        val activity = requireActivity()
-        mActivity = activity
-        mPresenter = HomePresenter(requireActivity().assets)
-
+                              container: ViewGroup?, savedInstanceState: Bundle?): View {
         return ComposeView(requireContext()).apply {
             setContent {
-                MainApp(mPresenter)
+                MainApp(HomePresenter(requireActivity().assets))
             }
         }
     }
@@ -699,13 +638,6 @@ class HomeFragment : Fragment() {
                 view.requestFocus()
             }
             v?.onTouchEvent(event) ?: true
-        }
-        val editText = mRoot.findViewById<EditText>(R.id.editTextSeed)
-        editText.setOnFocusChangeListener { v, hasFocus ->
-            if (!hasFocus) {
-                val inputManager = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                inputManager.hideSoftInputFromWindow(v.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
-            }
         }
     }
 
