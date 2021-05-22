@@ -90,7 +90,7 @@ fun MainField(field: Field, tsumoInfo: TsumoInfo, size: Dp) {
 @Composable
 fun SideWall(size: Dp) {
     Column {
-        for (r in 0..13) {
+        for (r in 0..12) {
             Wall(size)
         }
     }
