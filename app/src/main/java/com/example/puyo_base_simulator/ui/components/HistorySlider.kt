@@ -11,7 +11,8 @@ fun SliderFrame(
     onValueChange: (Float) -> Unit,
     index: Float,
     max: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     Slider(
         value = index,
@@ -19,5 +20,6 @@ fun SliderFrame(
         modifier = modifier,
         steps = max(max-1, 0),
         valueRange = 0f..(max.toFloat()),
+        enabled = enabled,
     )
 }

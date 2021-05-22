@@ -43,6 +43,7 @@ class HomeFragment : Fragment() {
     fun SaveLoad(
         onSaveClick: () -> Unit,
         onLoadClick: () -> Unit,
+        enabled: Boolean = true,
     ) {
         Row(
             modifier = Modifier.padding(5.dp)
@@ -50,10 +51,12 @@ class HomeFragment : Fragment() {
             ActionButton(
                 text = "SAVE",
                 onClick = onSaveClick,
+                enabled = enabled,
             )
             ActionButton(
                 text = "LOAD",
                 onClick = onLoadClick,
+                enabled = enabled,
             )
         }
     }
@@ -65,16 +68,18 @@ class HomeFragment : Fragment() {
         onSeedGenClicked: (Int) -> Unit,
         onPatternGenClicked: (String) -> Unit,
         onRandomGenClicked: () -> Unit,
+        enabled: Boolean,
     ) {
         Column(
             horizontalAlignment = Alignment.End,
             modifier = Modifier.padding(5.dp),
         ) {
-            SeedInputField(size = size, onClick = onSeedGenClicked, textLabel = "generate by seed")
-            PatternInputField(size = size, onClick = onPatternGenClicked, textLabel = "generate by pattern")
+            SeedInputField(size = size, onClick = onSeedGenClicked, textLabel = "generate by seed", enabled = enabled)
+            PatternInputField(size = size, onClick = onPatternGenClicked, textLabel = "generate by pattern", enabled = enabled)
             ActionButton(
                 text = "ランダム生成",
                 onClick = onRandomGenClicked,
+                enabled = enabled,
                 modifier = Modifier
                     .height(size)
                     .width(size * 3)
@@ -94,19 +99,21 @@ class HomeFragment : Fragment() {
         onSliderChange: (Float) -> Unit,
         sliderValue : Float,
         max: Int,
+        enabled: Boolean,
     ) {
         Column (modifier = Modifier.fillMaxWidth()){
             Row (
                 horizontalArrangement= Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ){
-                ActionButton(text = "UNDO", onClick = onUndoClick)
-                ActionButton(text = "REDO", onClick = onRedoClick)
+                ActionButton(text = "UNDO", onClick = onUndoClick, enabled = enabled)
+                ActionButton(text = "REDO", onClick = onRedoClick, enabled = enabled)
             }
             SliderFrame(
                 index = sliderValue,
                 max = max,
-                onValueChange = onSliderChange
+                onValueChange = onSliderChange,
+                enabled = enabled,
             )
         }
 
@@ -161,6 +168,7 @@ class HomeFragment : Fragment() {
                                 onSeedGenClicked = presenter::setSeed,
                                 onPatternGenClicked = presenter::generateByPattern,
                                 onRandomGenClicked = presenter::randomGenerate,
+                                enabled = !duringChain,
                             )
                             ChainInfoArea(chainInfo)
                             SaveLoad(
@@ -172,7 +180,8 @@ class HomeFragment : Fragment() {
                                     scope.launch {
                                         scaffoldState.snackbarHostState.showSnackbar("saved.")
                                     }
-                                }
+                                },
+                                enabled = !duringChain,
                             )
                         }
                     }
@@ -185,6 +194,7 @@ class HomeFragment : Fragment() {
                             onSliderChange = presenter::setHistoryIndex,
                             sliderValue = max(historySliderValue, 0f),
                             max = max(historySize - 1, 0),
+                            enabled = !duringChain,
                         )
                     }
                     Box(

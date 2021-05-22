@@ -29,12 +29,14 @@ import androidx.compose.ui.unit.sp
 fun PatternInputField(
     size: Dp,
     onClick: (String) -> Unit,
-    textLabel: String
+    textLabel: String,
+    enabled: Boolean = true,
 ) {
     val (seedError, setSeedError) = remember { mutableStateOf(false) }
     TextFieldWithButton(
         size = size,
         isError = seedError,
+        enabled = enabled,
         trailingIcon = {
             Icon(
                 Icons.Filled.Info,
@@ -59,12 +61,14 @@ fun PatternInputField(
 fun SeedInputField(
     size: Dp,
     onClick: (Int) -> Unit,
-    textLabel: String
+    textLabel: String,
+    enabled: Boolean = true,
 ) {
     val (seedError, setSeedError) = remember { mutableStateOf(false) }
     TextFieldWithButton(
         size = size,
         isError = seedError,
+        enabled = enabled,
         trailingIcon = {
             Icon(
                 Icons.Filled.Info,
@@ -108,7 +112,8 @@ fun TextFieldWithButton(
     trailingIcon: @Composable (() -> Unit)? = null,
     textLabel: String,
     keyboardType: KeyboardType,
-    onClick: (TextFieldValue) -> Unit
+    onClick: (TextFieldValue) -> Unit,
+    enabled: Boolean = true,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -118,6 +123,7 @@ fun TextFieldWithButton(
     ) {
         OutlinedTextField(
             isError = isError,
+            enabled = enabled,
             trailingIcon = trailingIcon,
             value = state.value,
             onValueChange = { state.value = it },
