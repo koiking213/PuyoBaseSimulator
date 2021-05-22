@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
@@ -58,7 +59,7 @@ fun LoadPopupWindow(
                     },
                 )
                 FieldPicker(
-                    header = "fields:",
+                    header = "${bases.size}件",
                     bases = bases,
                     onFieldClicked = {
                         onFieldClick(it)
@@ -81,7 +82,10 @@ fun FieldPicker(
     Column {
         Text(header, style = MaterialTheme.typography.h5)  // stickyHeaderとどう使い分ける？
         Divider()
-        LazyColumn {
+        LazyColumn (
+            modifier = Modifier.size((60*5).dp, 200.dp)
+                )
+        {
             items(chunkedList.size) { idx ->
                 Row {
                     chunkedList[idx].forEachIndexed { _, base ->
