@@ -8,12 +8,9 @@ import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Icon
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DoubleArrow
-import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -22,6 +19,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.puyo_base_simulator.ui.components.*
@@ -214,7 +212,9 @@ class MainActivity : AppCompatActivity() {
                             Icon(
                                 Icons.Filled.DoubleArrow,
                                 contentDescription = "skip",
-                                modifier = Modifier.size(40.dp).clickable(onClick = presenter::fastenChainSpeed)
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clickable(onClick = presenter::fastenChainSpeed)
                             )
                         }
                     }
@@ -240,6 +240,16 @@ class MainActivity : AppCompatActivity() {
 
     @Composable
     fun MainApp(presenter: HomePresenter, context: Context, activity: Activity) {
-        Home(presenter, context, activity)
+        val LightColors = lightColors(
+            primary = Color(0xead5dc),
+            secondary = Color(0xB0D169),
+            background = Color(0xdeaf7a),
+            surface = Color(0x94d0ff)
+        )
+        MaterialTheme(
+            colors = LightColors
+        ) {
+            Home(presenter, context, activity)
+        }
     }
 }

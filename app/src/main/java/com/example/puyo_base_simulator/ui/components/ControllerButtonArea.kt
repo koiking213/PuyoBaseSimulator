@@ -1,6 +1,10 @@
 package com.example.puyo_base_simulator.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,25 +42,10 @@ fun CursorKeys(
         Row(
             modifier = Modifier.padding(5.dp)
         ) {
-            ActionButton(
-                text = "←",
-                onClick = onLeftClick,
-                enabled = enabled,
-                modifier = Modifier.size(size)
-            )
-            ActionButton(
-                text = "→",
-                onClick = onRightClick,
-                enabled = enabled,
-                modifier = Modifier.size(size)
-            )
+            ActionIcon(icon = Icons.Filled.ArrowLeft, size = size, enabled = enabled, onClick = onLeftClick)
+            ActionIcon(icon = Icons.Filled.ArrowRight, size = size, enabled = enabled, onClick = onRightClick)
         }
-        ActionButton(
-            text = "↓",
-            onClick = onDownClick,
-            enabled = enabled,
-            modifier = Modifier.size(size)
-        )
+        ActionIcon(icon = Icons.Filled.ArrowDropDown, size = size, enabled = enabled, onClick = onDownClick)
     }
 }
 
@@ -73,26 +62,16 @@ fun RotationKeys(
         Column(
             horizontalAlignment = Alignment.End,
             modifier = Modifier
-                .width(size*2)
+                .width(size * 2)
                 .padding(5.dp)
         ) {
-            ActionButton(
-                text = "A",
-                onClick = onAClick,
-                enabled = enabled,
-                modifier = Modifier.size(size)
-            )
+            ActionIcon(icon = Icons.Filled.RotateRight, size = size, enabled = enabled, onClick = onAClick)
         }
         Column(
             horizontalAlignment = Alignment.Start,
             modifier = Modifier.width(size)
         ) {
-            ActionButton(
-                text = "B",
-                onClick = onBClick,
-                enabled = enabled,
-                modifier = Modifier.size(size)
-            )
+            ActionIcon(icon = Icons.Filled.RotateLeft, size = size, enabled = enabled, onClick = onBClick)
         }
     }
 }
