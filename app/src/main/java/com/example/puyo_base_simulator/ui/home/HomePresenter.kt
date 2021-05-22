@@ -100,7 +100,6 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
         _historySize.value = fieldHistory.size()
         _tsumoInfo.value = tsumoController.makeTsumoInfo()
         if (newField.nextField != null) {
-            _duringChain.value = true
             chain(newField, activity)
         }
     }
@@ -213,6 +212,9 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
     }
 
     private fun chain(field: Field, activity: Activity) {
+        activity.runOnUiThread {
+            _duringChain.value = true
+        }
         Thread {
             Thread.sleep(500)
             activity.runOnUiThread {
