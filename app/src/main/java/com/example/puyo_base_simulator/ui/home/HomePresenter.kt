@@ -22,7 +22,6 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
     var fieldHistory = History<Field>()
     private var tsumoController: TsumoController
     private var mDB: AppDatabase? = null
-    // todo: lateinitとか何かで消せない？
     val emptyTsumoInfo : TsumoInfo
         get() = TsumoInfo(
         Array(2) {PuyoColor.EMPTY},
@@ -40,6 +39,8 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
     val historySliderValue = _historySliderValue
     private val _historySize = MutableLiveData(0)
     val historySize = _historySize
+    private val _duringChain = MutableLiveData(false)
+    val duringChain = _duringChain
 
     private fun getDB(context: Context) : AppDatabase {
         if (mDB == null) {
@@ -97,6 +98,7 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
         _historySize.value = fieldHistory.size()
         _tsumoInfo.value = tsumoController.makeTsumoInfo()
         if (newField.nextField != null) {
+            _duringChain.value = true
             chain(newField, activity)
         }
     }
@@ -222,6 +224,10 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
             }
             if (field.nextField!!.nextField != null) {
                 chain(field.nextField!!, activity)
+            } else {
+                activity.runOnUiThread {
+                    _duringChain.value = false
+                }
             }
         }.start()
     }

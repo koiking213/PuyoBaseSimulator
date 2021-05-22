@@ -15,10 +15,11 @@ fun TsumoControlButtonArea(
     onRightClick: () -> Unit,
     onDownClick: () -> Unit,
     size: Dp,
+    enabled: Boolean,
 ) {
     Row {
-        CursorKeys(onLeftClick, onRightClick, onDownClick, size)
-        RotationKeys(onAClick, onBClick, size)
+        CursorKeys(onLeftClick, onRightClick, onDownClick, size, enabled)
+        RotationKeys(onAClick, onBClick, size, enabled)
     }
 }
 
@@ -28,6 +29,7 @@ fun CursorKeys(
     onRightClick: () -> Unit,
     onDownClick: () -> Unit,
     size: Dp,
+    enabled: Boolean,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -39,17 +41,20 @@ fun CursorKeys(
             ActionButton(
                 text = "←",
                 onClick = onLeftClick,
+                enabled = enabled,
                 modifier = Modifier.size(size)
             )
             ActionButton(
                 text = "→",
                 onClick = onRightClick,
+                enabled = enabled,
                 modifier = Modifier.size(size)
             )
         }
         ActionButton(
             text = "↓",
             onClick = onDownClick,
+            enabled = enabled,
             modifier = Modifier.size(size)
         )
     }
@@ -60,6 +65,7 @@ fun RotationKeys(
     onAClick: () -> Unit,
     onBClick: () -> Unit,
     size: Dp,
+    enabled: Boolean,
 ) {
     Column(
         modifier = Modifier.padding(5.dp)
@@ -73,6 +79,7 @@ fun RotationKeys(
             ActionButton(
                 text = "A",
                 onClick = onAClick,
+                enabled = enabled,
                 modifier = Modifier.size(size)
             )
         }
@@ -83,6 +90,7 @@ fun RotationKeys(
             ActionButton(
                 text = "B",
                 onClick = onBClick,
+                enabled = enabled,
                 modifier = Modifier.size(size)
             )
         }

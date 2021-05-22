@@ -14,6 +14,7 @@ fun ActionButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     Button(
         colors = ButtonDefaults.buttonColors(
@@ -21,6 +22,7 @@ fun ActionButton(
         ),
         onClick = onClick,
         modifier = modifier,
+        enabled = enabled,
         shape = RoundedCornerShape(20)
     ) {
         Text(text, fontSize = 10.sp)

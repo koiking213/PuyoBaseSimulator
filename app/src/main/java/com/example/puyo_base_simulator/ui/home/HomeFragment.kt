@@ -120,6 +120,7 @@ class HomeFragment : Fragment() {
         val (showLoadPopup, setShowLoadPopup) = remember { mutableStateOf(false) }
         val scaffoldState = rememberScaffoldState()
         val scope = rememberCoroutineScope()
+        val duringChain = presenter.duringChain.observeAsState(false).value
 
         Scaffold(
             scaffoldState = scaffoldState,
@@ -195,6 +196,7 @@ class HomeFragment : Fragment() {
                                 presenter.dropDown(requireActivity())
                             },
                             size = 80.dp,
+                            enabled = !duringChain
                         )
                     }
                 }
