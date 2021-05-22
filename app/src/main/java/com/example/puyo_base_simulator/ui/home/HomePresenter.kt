@@ -23,13 +23,14 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
     private var tsumoController: TsumoController
     private var mDB: AppDatabase? = null
     // todo: lateinitとか何かで消せない？
-    private val sampleTsumoInfo = TsumoInfo(
-        Array(2) {PuyoColor.RED},
-        Array(2) {Array(2) {PuyoColor.RED}},
+    val emptyTsumoInfo : TsumoInfo
+        get() = TsumoInfo(
+        Array(2) {PuyoColor.EMPTY},
+        Array(2) {Array(2) {PuyoColor.EMPTY}},
         3,
         Rotation.DEGREE0
-    )
-    private val _tsumoInfo = MutableLiveData(sampleTsumoInfo)
+        )
+    private val _tsumoInfo = MutableLiveData(emptyTsumoInfo)
     val tsumoInfo: LiveData<TsumoInfo> = _tsumoInfo
     private val _currentField = MutableLiveData(Field())
     val currentField: LiveData<Field> = _currentField
