@@ -41,6 +41,8 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
     val historySize = _historySize
     private val _duringChain = MutableLiveData(false)
     val duringChain = _duringChain
+    private val _chainInfo = MutableLiveData(ChainInfo(0, 0, 0, 0, 0))
+    val chainInfo = _chainInfo
 
     private fun getDB(context: Context) : AppDatabase {
         if (mDB == null) {
@@ -211,16 +213,11 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
             Thread.sleep(500)
             activity.runOnUiThread {
                 _currentField.value = field.disappearingField
+                _chainInfo.value = ChainInfo(field.bonus, field.disappearPuyo.size, field.chainPoint, field.accumulatedPoint, field.chainNum+1)
             }
             Thread.sleep(500)
             activity.runOnUiThread {
-                val f = SerializationUtils.clone(field.nextField!!) as Field
-                f.accumulatedPoint = field.accumulatedPoint
-                f.bonus = field.bonus
-                f.chainNum = field.chainNum
-                f.chainPoint = field.chainPoint
-                f.disappearPuyo = field.disappearPuyo
-                _currentField.value = f
+                _currentField.value = field.nextField!!
             }
             if (field.nextField!!.nextField != null) {
                 chain(field.nextField!!, activity)

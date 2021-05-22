@@ -29,12 +29,14 @@ import kotlin.math.max
 class HomeFragment : Fragment() {
 
     @Composable
-    fun ChainInfoArea(field: Field) {
-        val puyoNum = field.disappearPuyo.size
-        Text("${field.bonus} * ${puyoNum*10} = ${field.bonus*puyoNum*10}")
-        Text("連鎖の合計: ${field.chainPoint}")
-        Text("試合の合計: ${field.accumulatedPoint}")
-        Text("${field.chainNum}連鎖")
+    fun ChainInfoArea(chainInfo: ChainInfo) {
+        val puyoNum = chainInfo.disappearPuyo
+        Text("${chainInfo.bonus} * ${puyoNum*10} = ${chainInfo.bonus*puyoNum*10}")
+        Text("連鎖の合計: ${chainInfo.chainPoint}")
+        Text("試合の合計: ${chainInfo.accumulatedPoint}")
+        if (chainInfo.chainNum != 0) {
+            Text("${chainInfo.chainNum}連鎖")
+        }
     }
 
     @Composable
@@ -121,6 +123,7 @@ class HomeFragment : Fragment() {
         val scaffoldState = rememberScaffoldState()
         val scope = rememberCoroutineScope()
         val duringChain = presenter.duringChain.observeAsState(false).value
+        val chainInfo = presenter.chainInfo.observeAsState(ChainInfo(0,0,0,0,0)).value
 
         Scaffold(
             scaffoldState = scaffoldState,
@@ -159,7 +162,7 @@ class HomeFragment : Fragment() {
                                 onPatternGenClicked = presenter::generateByPattern,
                                 onRandomGenClicked = presenter::randomGenerate,
                             )
-                            ChainInfoArea(field = currentField)
+                            ChainInfoArea(chainInfo)
                             SaveLoad(
                                 onLoadClick = {
                                     setShowLoadPopup(true)
