@@ -86,6 +86,31 @@ class HomeFragment : Fragment() {
     }
 
     @Composable
+    fun HistoryControlArea(
+        onUndoClick: () -> Unit,
+        onRedoClick: () -> Unit,
+        onSliderChange: (Float) -> Unit,
+        sliderValue : Float,
+        max: Int,
+    ) {
+        Column (modifier = Modifier.fillMaxWidth()){
+            Row (
+                horizontalArrangement= Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ){
+                ActionButton(text = "UNDO", onClick = onUndoClick)
+                ActionButton(text = "REDO", onClick = onRedoClick)
+            }
+            SliderFrame(
+                index = sliderValue,
+                max = max,
+                onValueChange = onSliderChange
+            )
+        }
+
+    }
+
+    @Composable
     fun Home(presenter: HomePresenter)  {
         val tsumoInfo = presenter.tsumoInfo.observeAsState(presenter.emptyTsumoInfo).value
         val currentField = presenter.currentField.observeAsState(Field()).value
@@ -150,10 +175,12 @@ class HomeFragment : Fragment() {
                     Box(
                         modifier = Modifier.weight(1f)
                     ) {
-                        SliderFrame(
-                            index = max(historySliderValue, 0f),
+                        HistoryControlArea(
+                            onUndoClick = presenter::undo,
+                            onRedoClick = {presenter.redo(requireActivity())},
+                            onSliderChange = presenter::setHistoryIndex,
+                            sliderValue = max(historySliderValue, 0f),
                             max = max(historySize - 1, 0),
-                            onValueChange = presenter::setHistoryIndex
                         )
                     }
                     Box(

@@ -87,8 +87,8 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
         return if (success) newField else null
     }
 
-    fun dropDown(activity: Activity) : Field? {
-        val newField = setPairOnField(currentField.value!!, tsumoController.makeTsumoInfo()) ?: return null
+    fun dropDown(activity: Activity) {
+        val newField = setPairOnField(currentField.value!!, tsumoController.makeTsumoInfo()) ?: return
         tsumoController.addPlacementHistory()
         newField.evalNextField()
         _currentField.value = newField
@@ -99,16 +99,16 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
         if (newField.nextField != null) {
             chain(newField, activity)
         }
-        return newField
     }
 
     fun undo() {
         tsumoController.undoPlacementHistory()
         _currentField.value = fieldHistory.undo()!!
+        _historySliderValue.value = fieldHistory.index.toFloat()
         _tsumoInfo.value = tsumoController.makeTsumoInfo()
     }
 
-    fun redo(activity: Activity) : Field {
+    fun redo(activity: Activity) {
         fieldHistory.redo()
         _historySliderValue.value = fieldHistory.index.toFloat()
         val field = setPairOnField(currentField.value!!, tsumoController.makeTsumoInfo(tsumoController.currentPlacementHistory()))!!
@@ -119,7 +119,6 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
         if (field.nextField != null) {
             chain(field, activity)
         }
-        return field
     }
 
     fun save(context: Context) : Boolean {
