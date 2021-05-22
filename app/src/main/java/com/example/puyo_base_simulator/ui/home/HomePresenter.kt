@@ -106,16 +106,20 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
     }
 
     fun undo() {
+        val f = fieldHistory.undo() ?: return
         tsumoController.undoPlacementHistory()
-        _currentField.value = fieldHistory.undo()!!
+        _currentField.value = f
         _historySliderValue.value = fieldHistory.index.toFloat()
         _tsumoInfo.value = tsumoController.makeTsumoInfo()
     }
 
     fun redo(activity: Activity) {
-        fieldHistory.redo()
+        fieldHistory.redo() ?: return
         _historySliderValue.value = fieldHistory.index.toFloat()
-        val field = setPairOnField(currentField.value!!, tsumoController.makeTsumoInfo(tsumoController.currentPlacementHistory()))!!
+        val field = setPairOnField(
+            currentField.value!!,
+            tsumoController.makeTsumoInfo(tsumoController.currentPlacementHistory())
+        )!!
         tsumoController.redoPlacementHistory()
         field.evalNextField()
         _currentField.value = field
