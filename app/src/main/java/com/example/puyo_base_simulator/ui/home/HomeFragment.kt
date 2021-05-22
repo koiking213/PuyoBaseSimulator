@@ -5,9 +5,14 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.Icon
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DoubleArrow
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
@@ -186,6 +191,7 @@ class HomeFragment : Fragment() {
                         }
                     }
                     Box(
+                        contentAlignment = Alignment.Center,
                         modifier = Modifier.weight(1f)
                     ) {
                         HistoryControlArea(
@@ -196,6 +202,13 @@ class HomeFragment : Fragment() {
                             max = max(historySize - 1, 0),
                             enabled = !duringChain,
                         )
+                        if (duringChain) {
+                            Icon(
+                                Icons.Filled.DoubleArrow,
+                                contentDescription = "skip",
+                                modifier = Modifier.size(40.dp).clickable(onClick = presenter::fastenChainSpeed)
+                            )
+                        }
                     }
                     Box(
                         modifier = Modifier.weight(3f)

@@ -44,6 +44,16 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
     private val _chainInfo = MutableLiveData(ChainInfo(0, 0, 0, 0, 0))
     val chainInfo = _chainInfo
 
+    var chainSpeed: Long = 500
+
+    fun fastenChainSpeed() {
+        chainSpeed = 100
+    }
+
+    fun normalChainSpeed() {
+        chainSpeed = 500
+    }
+
     private fun getDB(context: Context) : AppDatabase {
         if (mDB == null) {
             val result = Room.databaseBuilder(
@@ -100,7 +110,9 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
         _historySize.value = fieldHistory.size()
         _tsumoInfo.value = tsumoController.makeTsumoInfo()
         if (newField.nextField != null) {
-            chain(newField, activity)
+            Thread {
+                chain(newField, activity)
+            }.start()
         }
     }
 
@@ -124,7 +136,9 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
         _currentField.value = field
         _tsumoInfo.value = tsumoController.makeTsumoInfo()
         if (field.nextField != null) {
-            chain(field, activity)
+            Thread {
+                chain(field, activity)
+            }.start()
         }
     }
 
@@ -215,24 +229,23 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
         activity.runOnUiThread {
             _duringChain.value = true
         }
-        Thread {
-            Thread.sleep(500)
+        Thread.sleep(chainSpeed)
+        activity.runOnUiThread {
+            _currentField.value = field.disappearingField
+            _chainInfo.value = ChainInfo(field.bonus, field.disappearPuyo.size, field.chainPoint, field.accumulatedPoint, field.chainNum+1)
+        }
+        Thread.sleep(chainSpeed)
+        activity.runOnUiThread {
+            _currentField.value = field.nextField!!
+        }
+        if (field.nextField!!.nextField != null) {
+            chain(field.nextField!!, activity)
+        } else {
             activity.runOnUiThread {
-                _currentField.value = field.disappearingField
-                _chainInfo.value = ChainInfo(field.bonus, field.disappearPuyo.size, field.chainPoint, field.accumulatedPoint, field.chainNum+1)
+                _duringChain.value = false
+                normalChainSpeed()
             }
-            Thread.sleep(500)
-            activity.runOnUiThread {
-                _currentField.value = field.nextField!!
-            }
-            if (field.nextField!!.nextField != null) {
-                chain(field.nextField!!, activity)
-            } else {
-                activity.runOnUiThread {
-                    _duringChain.value = false
-                }
-            }
-        }.start()
+        }
     }
 
     fun searchBySeed(seed : Int, context: Context) : MutableList<Base> {
