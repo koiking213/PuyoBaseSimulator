@@ -1,5 +1,6 @@
 package com.example.puyo_base_simulator.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
@@ -9,6 +10,7 @@ import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,14 +39,8 @@ fun PatternInputField(
         size = size,
         isError = seedError,
         enabled = enabled,
-        trailingIcon = {
-            Icon(
-                Icons.Filled.Info,
-                contentDescription = "pattern"
-            )
-        },
         textLabel = textLabel,
-        keyboardType = KeyboardType.Ascii,
+        keyboardType = KeyboardType.Email,
         onClick = {
             if (isValidPattern(it.text)) {
                 setSeedError(false)
@@ -69,12 +65,6 @@ fun SeedInputField(
         size = size,
         isError = seedError,
         enabled = enabled,
-        trailingIcon = {
-            Icon(
-                Icons.Filled.Info,
-                contentDescription = "seed"
-            )
-        },
         textLabel = textLabel,
         keyboardType = KeyboardType.Number,
         onClick = {
@@ -109,7 +99,6 @@ private fun isValidPattern(str: String) : Boolean{
 fun TextFieldWithButton(
     size: Dp,
     isError: Boolean,
-    trailingIcon: @Composable (() -> Unit)? = null,
     textLabel: String,
     keyboardType: KeyboardType,
     onClick: (TextFieldValue) -> Unit,
@@ -124,7 +113,13 @@ fun TextFieldWithButton(
         OutlinedTextField(
             isError = isError,
             enabled = enabled,
-            trailingIcon = trailingIcon,
+            trailingIcon = {
+                Icon(
+                    Icons.Filled.Send,
+                    contentDescription = "",
+                    modifier = Modifier.clickable { onClick(state.value) },
+                )
+            },
             value = state.value,
             onValueChange = { state.value = it },
             label = { Text(textLabel, fontSize = 10.sp) },

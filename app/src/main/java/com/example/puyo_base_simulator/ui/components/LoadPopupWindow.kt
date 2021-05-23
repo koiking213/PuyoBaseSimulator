@@ -8,10 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.Divider
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,33 +36,43 @@ fun LoadPopupWindow(
     onFieldClick: (Base) -> Unit,
 ) {
     val (bases, setBases) = remember { mutableStateOf(mutableListOf<Base>()) }
-    Popup(
-        alignment = Alignment.Center,
-        properties = PopupProperties(focusable = true),
-        onDismissRequest = closeFun
-    ) {
-        Card(
-            Modifier
-                .background(Color.White, RoundedCornerShape(16.dp))
-                .border(1.dp, Color.Black)
+        Popup(
+            alignment = Alignment.Center,
+            properties = PopupProperties(focusable = true),
+            onDismissRequest = closeFun,
         ) {
-            Column {
-                SeedInputField(size = size, onClick = { setBases(onShowSeedClick(it)) }, textLabel = "search by seed")
-                PatternInputField(size = size, onClick = { setBases(onShowPatternClick(it)) }, textLabel = "search by pattern")
-                ActionButton(
-                    text = "すべて表示",
-                    onClick = {
-                        setBases(onShowAllClick())
-                    },
-                )
-                FieldPicker(
-                    header = "${bases.size}件",
-                    bases = bases,
-                    onFieldClicked = {
-                        onFieldClick(it)
-                        closeFun()
-                    },
-                )
+            Surface (color = MaterialTheme.colors.background) {
+            Card(
+                Modifier
+                    .background(Color.White, RoundedCornerShape(16.dp))
+                    .border(1.dp, Color.Black)
+            ) {
+                Column {
+                    SeedInputField(
+                        size = size,
+                        onClick = { setBases(onShowSeedClick(it)) },
+                        textLabel = "search by seed"
+                    )
+                    PatternInputField(
+                        size = size,
+                        onClick = { setBases(onShowPatternClick(it)) },
+                        textLabel = "search by pattern"
+                    )
+                    ActionButton(
+                        text = "すべて表示",
+                        onClick = {
+                            setBases(onShowAllClick())
+                        },
+                    )
+                    FieldPicker(
+                        header = "${bases.size}件",
+                        bases = bases,
+                        onFieldClicked = {
+                            onFieldClick(it)
+                            closeFun()
+                        },
+                    )
+                }
             }
         }
     }

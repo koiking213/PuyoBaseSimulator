@@ -10,7 +10,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowLeft
 import androidx.compose.material.icons.filled.DoubleArrow
+import androidx.compose.material.icons.filled.Redo
+import androidx.compose.material.icons.filled.Undo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -90,7 +93,7 @@ class MainActivity : AppCompatActivity() {
             SeedInputField(size = size, onClick = onSeedGenClicked, textLabel = "generate by seed", enabled = enabled)
             PatternInputField(size = size, onClick = onPatternGenClicked, textLabel = "generate by pattern", enabled = enabled)
             ActionButton(
-                text = "ランダム生成",
+                text = "generate randomly",
                 onClick = onRandomGenClicked,
                 enabled = enabled,
                 modifier = Modifier
@@ -112,6 +115,7 @@ class MainActivity : AppCompatActivity() {
         onSliderChange: (Float) -> Unit,
         sliderValue : Float,
         max: Int,
+        size: Dp,
         enabled: Boolean,
     ) {
         Column (modifier = Modifier.fillMaxWidth()){
@@ -119,8 +123,8 @@ class MainActivity : AppCompatActivity() {
                 horizontalArrangement= Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ){
-                ActionButton(text = "UNDO", onClick = onUndoClick, enabled = enabled)
-                ActionButton(text = "REDO", onClick = onRedoClick, enabled = enabled)
+                ActionIcon(icon = Icons.Filled.Undo, size = size, enabled = enabled, onClick = onUndoClick)
+                ActionIcon(icon = Icons.Filled.Redo, size = size, enabled = enabled, onClick = onRedoClick)
             }
             SliderFrame(
                 index = sliderValue,
@@ -208,16 +212,11 @@ class MainActivity : AppCompatActivity() {
                             onSliderChange = presenter::setHistoryIndex,
                             sliderValue = max(historySliderValue, 0f),
                             max = max(historySize - 1, 0),
+                            size = 40.dp,
                             enabled = !duringChain,
                         )
                         if (duringChain) {
-                            Icon(
-                                Icons.Filled.DoubleArrow,
-                                contentDescription = "skip",
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .clickable(onClick = presenter::fastenChainSpeed)
-                            )
+                            ActionIcon(icon = Icons.Filled.DoubleArrow, size = 40.dp, enabled = true, onClick = presenter::fastenChainSpeed)
                         }
                     }
                     Box(
@@ -243,10 +242,11 @@ class MainActivity : AppCompatActivity() {
     @Composable
     fun MainApp(presenter: HomePresenter, context: Context, activity: Activity) {
         val LightColors = lightColors(
-            primary = Color(0xead5dc),
-            secondary = Color(0xB0D169),
-            background = Color(0xdeaf7a),
-            surface = Color(0x94d0ff)
+            //surface = Color(0xffd5d5d5),
+            secondary = Color(0xFFB0D169),
+            background = Color(0xffffffff),
+            primary = Color(0xFFB0D169),
+            //primary = Color(0xff94d0ff)
         )
         MaterialTheme(
             colors = LightColors
