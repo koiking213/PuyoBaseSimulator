@@ -39,12 +39,13 @@ fun CursorKeys(
         modifier = Modifier.padding(5.dp)
     ) {
         Row(
+            horizontalArrangement= Arrangement.SpaceBetween,
             modifier = Modifier.padding(5.dp)
         ) {
-            ActionIcon(icon = Icons.Filled.ArrowLeft, size = size, enabled = enabled, onClick = onLeftClick)
-            ActionIcon(icon = Icons.Filled.ArrowRight, size = size, enabled = enabled, onClick = onRightClick)
+            ActionIcon(icon = Icons.Filled.ArrowBack, size = size, enabled = enabled, onClick = onLeftClick)
+            ActionIcon(icon = Icons.Filled.ArrowForward, size = size, enabled = enabled, onClick = onRightClick)
         }
-        ActionIcon(icon = Icons.Filled.ArrowDropDown, size = size, enabled = enabled, onClick = onDownClick)
+        ActionIcon(icon = Icons.Filled.ArrowDownward, size = size, enabled = enabled, onClick = onDownClick)
     }
 }
 
