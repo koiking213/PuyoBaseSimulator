@@ -1,5 +1,7 @@
 package com.example.puyo_base_simulator.ui.components
 
+import android.graphics.Paint
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
@@ -46,7 +48,10 @@ fun FieldFrame(field: Field, tsumoInfo: TsumoInfo, size: Dp, duringChain: Boolea
             SideWall(size)
             Column {
                 CurrentTsumoFrame(tsumoInfo, size)
-                MainField(field, tsumoInfo, size, duringChain)
+                Box() {
+                    MainField(field, tsumoInfo, size, duringChain)
+                    GhostPuyoMask(size = size)
+                }
                 BottomWall(size)
             }
             SideWall(size)
@@ -90,11 +95,19 @@ fun MainField(field: Field, tsumoInfo: TsumoInfo, size: Dp, duringChain: Boolean
     }
 }
 
+@Composable
+fun GhostPuyoMask(size: Dp) {
+    Row {
+        for (c in 0..5) {
+            Cell(R.drawable.ghost_puyo_mask, size)
+        }
+    }
+}
 
 @Composable
 fun SideWall(size: Dp) {
     Column {
-        for (r in 0..12) {
+        for (r in 0..13) {
             Wall(size)
         }
     }
