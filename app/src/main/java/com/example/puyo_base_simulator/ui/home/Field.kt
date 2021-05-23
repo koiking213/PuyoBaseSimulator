@@ -1,6 +1,7 @@
 package com.example.puyo_base_simulator.ui.home
 
 import com.example.puyo_base_simulator.ui.home.PuyoColor.Companion.getPuyoColor
+import org.apache.commons.lang.SerializationUtils
 import java.io.Serializable
 import java.util.*
 
@@ -16,6 +17,14 @@ class Field : Serializable {
     var fieldPoint = 0  // 盤面でのポイント
     var bonus = 0
     var chainNum = 0
+    val disappearingField : Field
+        get() {
+            val f = SerializationUtils.clone(this) as Field
+            for (p in f.field.flatten()) {
+                if (p in f.disappearPuyo) p.color = PuyoColor.DISAPPEAR
+            }
+            return f
+        }
 
     fun addPuyo(column: Int, color: PuyoColor): Boolean {
         val row = heights[column-1] + 1
@@ -28,6 +37,7 @@ class Field : Serializable {
     fun allClear() = heights.all {it == 0}
 
     fun isDisappear(puyo: Puyo) = disappearPuyo.contains(puyo)
+
 
     fun evalNextField() {
         val newField = Field()
@@ -53,7 +63,7 @@ class Field : Serializable {
         }
 
         if (disappearPuyo.size == 0) {
-            chainNum = 1
+            chainNum = 0
             return
         }
         if (newField.allClear()) accumulatedPoint += allClearBonus
@@ -117,7 +127,7 @@ class Field : Serializable {
     }
 
     companion object {
-        private val chainBonusConstant = intArrayOf(0, 0, 8, 16, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 480, 512)
+        private val chainBonusConstant = intArrayOf(0, 8, 16, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 480, 512)
         private val colorBonusConstant = intArrayOf(0, 0, 3, 6, 12)
         private const val allClearBonus = 2100
         private fun connectionBonusConstant(connectionNum: Int): Int {

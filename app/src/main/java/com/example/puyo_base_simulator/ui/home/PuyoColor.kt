@@ -6,7 +6,8 @@ enum class PuyoColor(val char: Char) {
     BLUE('b'),
     YELLOW('y'),
     GREEN('g'),
-    PURPLE('p');
+    PURPLE('p'),
+    DISAPPEAR('*');
 
     companion object {
         fun getPuyoColor(c: Char) = values().find { it.char == c } ?: EMPTY
