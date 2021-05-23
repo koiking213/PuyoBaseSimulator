@@ -205,7 +205,9 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
 
     fun generateByPattern(pattern: String) {
         val seeds = Haipuyo.searchSeedWithPattern(pattern)
-        setSeed(seeds.random())
+        if (seeds.isNotEmpty()) {
+            setSeed(seeds.random())
+        }
     }
 
     fun randomGenerate() {
