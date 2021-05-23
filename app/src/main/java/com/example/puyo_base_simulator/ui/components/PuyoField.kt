@@ -1,5 +1,7 @@
 package com.example.puyo_base_simulator.ui.components
 
+import android.graphics.Paint
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
@@ -39,14 +41,17 @@ fun NextTsumoFrame(tsumoInfo: TsumoInfo, size: Dp) {
 }
 
 @Composable
-fun FieldFrame(field: Field, tsumoInfo: TsumoInfo, size: Dp) {
+fun FieldFrame(field: Field, tsumoInfo: TsumoInfo, size: Dp, duringChain: Boolean) {
     Row {
         Row(verticalAlignment = Alignment.Bottom)
         {
             SideWall(size)
             Column {
                 CurrentTsumoFrame(tsumoInfo, size)
-                MainField(field, tsumoInfo, size)
+                Box() {
+                    MainField(field, tsumoInfo, size, duringChain)
+                    GhostPuyoMask(size = size)
+                }
                 BottomWall(size)
             }
             SideWall(size)
@@ -80,17 +85,29 @@ fun Wall(size: Dp) {
 }
 
 @Composable
-fun MainField(field: Field, tsumoInfo: TsumoInfo, size: Dp) {
+fun MainField(field: Field, tsumoInfo: TsumoInfo, size: Dp, duringChain: Boolean) {
     val colors = Array(13) { i -> Array(6) { j -> puyoResourceId(field.field[i][j].color)} }
-    val colorsWithDot = dotColors(tsumoInfo = tsumoInfo, field = field, colors)
-    PuyoField(colorsWithDot.reversed().toTypedArray(), size)
+    if (duringChain) {
+        PuyoField(colors.reversed().toTypedArray(), size)
+    } else {
+        val colorsWithDot = dotColors(tsumoInfo = tsumoInfo, field = field, colors)
+        PuyoField(colorsWithDot.reversed().toTypedArray(), size)
+    }
 }
 
+@Composable
+fun GhostPuyoMask(size: Dp) {
+    Row {
+        for (c in 0..5) {
+            Cell(R.drawable.ghost_puyo_mask, size)
+        }
+    }
+}
 
 @Composable
 fun SideWall(size: Dp) {
     Column {
-        for (r in 0..12) {
+        for (r in 0..13) {
             Wall(size)
         }
     }

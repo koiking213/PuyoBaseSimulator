@@ -10,6 +10,7 @@ class Field : Serializable {
     var field = Array(13) { i -> Array(6) { j -> Puyo(i+1, j+1, PuyoColor.EMPTY)} }
     private fun getFieldContent(row: Int, column: Int) : Puyo { return field[row-1][column-1]}
     private var heights = Array(6 ) { 0 }
+    private var uppermostRowAvailable = Array(6) {true}
     fun getHeight(column: Int) : Int { return heights[column-1]}
     var disappearPuyo = mutableListOf<Puyo>()
     var accumulatedPoint = 0  // 試合の累計ポイント
@@ -28,7 +29,14 @@ class Field : Serializable {
 
     fun addPuyo(column: Int, color: PuyoColor): Boolean {
         val row = heights[column-1] + 1
-        if (row == 14) return false
+        if (row == 14) {
+            return if (uppermostRowAvailable[column-1]) {
+                uppermostRowAvailable[column-1] = false
+                true
+            } else {
+                false
+            }
+        }
         field[row-1][column-1] = Puyo(row, column, color)
         heights[column-1]++
         return true
