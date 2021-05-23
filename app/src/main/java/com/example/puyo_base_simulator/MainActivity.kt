@@ -177,7 +177,7 @@ class MainActivity : AppCompatActivity() {
                                 onFieldClick = presenter::load
                             )
                         }
-                        FieldFrame(field = currentField, tsumoInfo = tsumoInfo, 20.dp)
+                        FieldFrame(field = currentField, tsumoInfo = tsumoInfo, 20.dp, duringChain = duringChain)
                         Column(horizontalAlignment = Alignment.End) {
                             CurrentSeed(seed = seed)
                             FieldGeneration(

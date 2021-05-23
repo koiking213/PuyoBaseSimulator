@@ -39,14 +39,14 @@ fun NextTsumoFrame(tsumoInfo: TsumoInfo, size: Dp) {
 }
 
 @Composable
-fun FieldFrame(field: Field, tsumoInfo: TsumoInfo, size: Dp) {
+fun FieldFrame(field: Field, tsumoInfo: TsumoInfo, size: Dp, duringChain: Boolean) {
     Row {
         Row(verticalAlignment = Alignment.Bottom)
         {
             SideWall(size)
             Column {
                 CurrentTsumoFrame(tsumoInfo, size)
-                MainField(field, tsumoInfo, size)
+                MainField(field, tsumoInfo, size, duringChain)
                 BottomWall(size)
             }
             SideWall(size)
@@ -80,10 +80,14 @@ fun Wall(size: Dp) {
 }
 
 @Composable
-fun MainField(field: Field, tsumoInfo: TsumoInfo, size: Dp) {
+fun MainField(field: Field, tsumoInfo: TsumoInfo, size: Dp, duringChain: Boolean) {
     val colors = Array(13) { i -> Array(6) { j -> puyoResourceId(field.field[i][j].color)} }
-    val colorsWithDot = dotColors(tsumoInfo = tsumoInfo, field = field, colors)
-    PuyoField(colorsWithDot.reversed().toTypedArray(), size)
+    if (duringChain) {
+        PuyoField(colors.reversed().toTypedArray(), size)
+    } else {
+        val colorsWithDot = dotColors(tsumoInfo = tsumoInfo, field = field, colors)
+        PuyoField(colorsWithDot.reversed().toTypedArray(), size)
+    }
 }
 
 
