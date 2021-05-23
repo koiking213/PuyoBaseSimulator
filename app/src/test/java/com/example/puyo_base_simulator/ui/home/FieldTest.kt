@@ -42,9 +42,15 @@ class FieldTest {
         }
 
         // fail add puyo
+        var firstUppermost = true
         for (i in 0..19) {
             if (f.getHeight(1) == 13) {
-                Truth.assertThat(f.addPuyo(1, PuyoColor.RED)).isFalse()
+                if (firstUppermost) {
+                    Truth.assertThat(f.addPuyo(1, PuyoColor.RED)).isTrue()
+                    firstUppermost = false
+                } else {
+                    Truth.assertThat(f.addPuyo(1, PuyoColor.RED)).isFalse()
+                }
             } else {
                 Truth.assertThat(f.addPuyo(1, PuyoColor.RED)).isTrue()
             }
