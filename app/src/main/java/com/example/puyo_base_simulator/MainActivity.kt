@@ -47,6 +47,8 @@ class MainActivity : AppCompatActivity() {
         Text("試合の合計: ${chainInfo.accumulatedPoint}")
         if (chainInfo.chainNum != 0) {
             Text("${chainInfo.chainNum}連鎖")
+        } else {
+            Text("")
         }
     }
 
