@@ -3,12 +3,20 @@ package com.example.puyo_base_simulator.ui.home
 import android.app.Activity
 import android.content.Context
 import android.content.res.AssetManager
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.room.Room
 import com.example.puyo_base_simulator.data.AppDatabase
 import com.example.puyo_base_simulator.data.Base
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import org.apache.commons.lang.SerializationUtils
 import java.io.BufferedReader
 import java.io.IOException
@@ -18,10 +26,11 @@ import java.util.stream.Collectors
 import kotlin.math.roundToInt
 
 
-class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
+class HomePresenter internal constructor(asset: AssetManager, dataStore: DataStore<Preferences>) : ViewModel() {
     var fieldHistory = History<Field>()
     private var tsumoController: TsumoController
     private var mDB: AppDatabase? = null
+    private var settingRepository: SettingRepository
     val emptyTsumoInfo : TsumoInfo
         get() = TsumoInfo(
         Array(2) {PuyoColor.EMPTY},
@@ -52,6 +61,15 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
 
     fun normalChainSpeed() {
         chainSpeed = 500
+    }
+
+    val showDoubleNext: StateFlow<Boolean>
+        get() = settingRepository.showDoubleNextFlow.stateIn(viewModelScope, SharingStarted.Eagerly, true)
+
+    fun updateShowDoubleNext(show: Boolean) {
+        viewModelScope.launch {
+            settingRepository.updateShowDoubleNext(show)
+        }
     }
 
     private fun getDB(context: Context) : AppDatabase {
@@ -290,5 +308,6 @@ class HomePresenter internal constructor(asset: AssetManager) : ViewModel() {
         tsumoController = TsumoController(Haipuyo[seed], seed)
         _tsumoInfo.value = tsumoController.makeTsumoInfo()
         clearFieldHistory()
+        settingRepository  = SettingRepository(dataStore)
     }
 }

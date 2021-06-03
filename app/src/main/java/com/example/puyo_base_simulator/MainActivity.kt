@@ -6,22 +6,23 @@ import android.content.Context
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.filled.DoubleArrow
+import androidx.compose.material.icons.filled.Redo
+import androidx.compose.material.icons.filled.Undo
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -33,12 +34,14 @@ import com.example.puyo_base_simulator.ui.home.HomePresenter
 import kotlinx.coroutines.launch
 import kotlin.math.max
 
+val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
+
 @ExperimentalComposeUiApi
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MainApp(HomePresenter(assets), this, this)
+            MainApp(HomePresenter(assets, dataStore), this, this)
         }
     }
 
@@ -174,6 +177,7 @@ class MainActivity : AppCompatActivity() {
         val scope = rememberCoroutineScope()
         val duringChain = presenter.duringChain.observeAsState(false).value
         val chainInfo = presenter.chainInfo.observeAsState(ChainInfo(0, 0, 0, 0, 0)).value
+        val showDoubleNext by presenter.showDoubleNext.collectAsState()
 
         Scaffold(
             scaffoldState = scaffoldState,
@@ -210,7 +214,8 @@ class MainActivity : AppCompatActivity() {
                             field = currentField,
                             tsumoInfo = tsumoInfo,
                             20.dp,
-                            duringChain = duringChain
+                            duringChain = duringChain,
+                            showDoubleNext
                         )
                         Column(horizontalAlignment = Alignment.End) {
                             CurrentSeed(seed = seed)
@@ -278,14 +283,23 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
+
     @Composable
-    fun Settings(navController: NavController) {
+    fun Settings(navController: NavController, dataStore: DataStore<Preferences>, presenter: HomePresenter) {
+        val showDoubleNext by presenter.showDoubleNext.collectAsState()
         Scaffold(
             topBar = {
                 SettingAppBar(onBackClick = { navController.navigate("home") })
             },
             content = {
-                Text("there is some settings")
+                Column {
+                    Row {
+                        Text("ねくねくを表示")
+                        Checkbox(
+                            checked = showDoubleNext,
+                            onCheckedChange = { presenter.updateShowDoubleNext(it) })
+                    }
+                }
             }
         )
     }
@@ -305,7 +319,7 @@ class MainActivity : AppCompatActivity() {
             colors = colors
         ) {
             NavHost(navController, startDestination = "home") {
-                composable("settings") { Settings(navController) }
+                composable("settings") { Settings(navController, dataStore, presenter) }
                 composable("home") { Home(presenter, context, activity, navController) }
             }
         }

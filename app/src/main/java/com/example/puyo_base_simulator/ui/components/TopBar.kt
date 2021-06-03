@@ -21,6 +21,7 @@ fun HomeAppBar(
     TopAppBar(
         title = { Text("ぷよ土台シミュレータ") },
         actions = {
+            // TODO: IconButtonで置き換えられる？
             Icon(
                 imageVector = Icons.Filled.Settings,
                 modifier = Modifier

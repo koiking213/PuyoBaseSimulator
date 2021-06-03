@@ -35,13 +35,19 @@ fun CurrentTsumoFrame(tsumoInfo: TsumoInfo, size: Dp) {
 }
 
 @Composable
-fun NextTsumoFrame(tsumoInfo: TsumoInfo, size: Dp) {
-    val colors = createNextTsumoColorMap(tsumoInfo)
+fun NextTsumoFrame(tsumoInfo: TsumoInfo, size: Dp, showDoubleNext: Boolean) {
+    val colors = createNextTsumoColorMap(tsumoInfo, showDoubleNext)
     PuyoField(colors, size)
 }
 
 @Composable
-fun FieldFrame(field: Field, tsumoInfo: TsumoInfo, size: Dp, duringChain: Boolean) {
+fun FieldFrame(
+    field: Field,
+    tsumoInfo: TsumoInfo,
+    size: Dp,
+    duringChain: Boolean,
+    showDoubleNext: Boolean)
+{
     Row {
         Row(verticalAlignment = Alignment.Bottom)
         {
@@ -56,18 +62,18 @@ fun FieldFrame(field: Field, tsumoInfo: TsumoInfo, size: Dp, duringChain: Boolea
             }
             SideWall(size)
         }
-        NextTsumoFrame(tsumoInfo, size)
+        NextTsumoFrame(tsumoInfo, size, showDoubleNext)
     }
 }
 
 
-private fun createNextTsumoColorMap(tsumoInfo: TsumoInfo) : Array<Array<Int>>{
-    val ret = Array(4) {Array(2){puyoResourceId(PuyoColor.EMPTY)}}
+private fun createNextTsumoColorMap(tsumoInfo: TsumoInfo, showDoubleNext: Boolean) : Array<Array<Int>>{
+    val ret = Array(4) { Array(2) { puyoResourceId(PuyoColor.EMPTY) } }
     ret[0][0] = puyoResourceId(tsumoInfo.nextColor[0][0])
     ret[1][0] = puyoResourceId(tsumoInfo.nextColor[0][1])
     ret[2][1] = puyoResourceId(tsumoInfo.nextColor[1][0])
     ret[3][1] = puyoResourceId(tsumoInfo.nextColor[1][1])
-    return ret
+    return if (showDoubleNext) ret else ret.sliceArray(0..1)
 }
 
 private fun createCurrentTsumoColorMap(tsumoInfo: TsumoInfo) : Array<Array<Int>>{
