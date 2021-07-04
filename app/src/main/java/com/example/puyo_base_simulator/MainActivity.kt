@@ -28,8 +28,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.puyo_base_simulator.ui.components.*
-import com.example.puyo_base_simulator.ui.home.ChainInfo
-import com.example.puyo_base_simulator.ui.home.Field
+import com.example.puyo_base_simulator.data.ChainInfo
+import com.example.puyo_base_simulator.data.Field
 import com.example.puyo_base_simulator.ui.home.HomePresenter
 import kotlinx.coroutines.launch
 import kotlin.math.max

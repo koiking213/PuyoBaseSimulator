@@ -1,4 +1,4 @@
-package com.example.puyo_base_simulator.ui.home
+package com.example.puyo_base_simulator.data
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences

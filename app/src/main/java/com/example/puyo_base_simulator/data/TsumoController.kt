@@ -1,14 +1,18 @@
-package com.example.puyo_base_simulator.ui.home
+package com.example.puyo_base_simulator.data
 
-import com.example.puyo_base_simulator.ui.home.Placement.Companion.from
-import com.example.puyo_base_simulator.ui.home.PuyoColor.Companion.getPuyoColor
+import com.example.puyo_base_simulator.data.Placement.Companion.from
+import com.example.puyo_base_simulator.data.PuyoColor.Companion.getPuyoColor
+import com.example.puyo_base_simulator.utils.Rotation
 
 class TsumoController(private val tsumo: String, val seed: Int) {
     var tsumoCounter = 0
     var currentCursorColumnIndex = 3
     var currentCursorRotate = Rotation.DEGREE0 // 時計回り
     private var currentColor = arrayOf(PuyoColor.RED, PuyoColor.RED)
-    private var nextColor = arrayOf(arrayOf(PuyoColor.RED, PuyoColor.RED), arrayOf(PuyoColor.RED, PuyoColor.RED))
+    private var nextColor = arrayOf(arrayOf(PuyoColor.RED, PuyoColor.RED), arrayOf(
+        PuyoColor.RED,
+        PuyoColor.RED
+    ))
     var placementHistory = History<Placement>()
     fun addPlacementHistory() {
         placementHistory.undo() // 確定前の手を編集

@@ -1,4 +1,4 @@
-package com.example.puyo_base_simulator.ui.home
+package com.example.puyo_base_simulator.data
 
 // TODO: Historyデータ構造についてもっとちゃんと考えたほうが良さそう(indexとcontent.sizeの関係とか、初期値とかhistory追加のタイミングとか)
 // add (index=1, content.size=1)

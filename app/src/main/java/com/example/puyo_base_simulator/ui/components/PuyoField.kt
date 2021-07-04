@@ -1,6 +1,5 @@
 package com.example.puyo_base_simulator.ui.components
 
-import android.graphics.Paint
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,10 +7,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.Dp
 import com.example.puyo_base_simulator.R
-import com.example.puyo_base_simulator.ui.home.Field
-import com.example.puyo_base_simulator.ui.home.PuyoColor
-import com.example.puyo_base_simulator.ui.home.Rotation
-import com.example.puyo_base_simulator.ui.home.TsumoInfo
+import com.example.puyo_base_simulator.data.Field
+import com.example.puyo_base_simulator.data.PuyoColor
+import com.example.puyo_base_simulator.utils.Rotation
+import com.example.puyo_base_simulator.data.TsumoInfo
 import com.example.puyo_base_simulator.utils.puyoResourceId
 
 @Composable

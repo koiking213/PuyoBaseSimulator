@@ -21,8 +21,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
-import com.example.puyo_base_simulator.data.Base
-import com.example.puyo_base_simulator.ui.home.TsumoController
+import com.example.puyo_base_simulator.data.room.Base
+import com.example.puyo_base_simulator.data.TsumoController
 import com.example.puyo_base_simulator.utils.getColor
 
 

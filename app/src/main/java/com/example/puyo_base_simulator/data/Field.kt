@@ -1,13 +1,13 @@
-package com.example.puyo_base_simulator.ui.home
+package com.example.puyo_base_simulator.data
 
-import com.example.puyo_base_simulator.ui.home.PuyoColor.Companion.getPuyoColor
+import com.example.puyo_base_simulator.data.PuyoColor.Companion.getPuyoColor
 import org.apache.commons.lang.SerializationUtils
 import java.io.Serializable
 import java.util.*
 
 class Field : Serializable {
     var nextField: Field? = null
-    var field = Array(13) { i -> Array(6) { j -> Puyo(i+1, j+1, PuyoColor.EMPTY)} }
+    var field = Array(13) { i -> Array(6) { j -> Puyo(i+1, j+1, PuyoColor.EMPTY) } }
     private fun getFieldContent(row: Int, column: Int) : Puyo { return field[row-1][column-1]}
     private var heights = Array(6 ) { 0 }
     private var uppermostRowAvailable = Array(6) {true}
@@ -109,7 +109,7 @@ class Field : Serializable {
         if (row != 1) {
             neighbors.add(getFieldContent(row - 1,column))
         }
-        return neighbors.filter {it.color != PuyoColor.EMPTY}
+        return neighbors.filter {it.color != PuyoColor.EMPTY }
     }
 
     // 連結数
@@ -148,7 +148,7 @@ class Field : Serializable {
         fun from(fieldStr: String) : Field {
             val ret = Field()
             val colorString = Array(13) { i -> fieldStr.padEnd(6*13).substring(i*6, (i+1)*6) }
-            ret.field = Array(13) { i -> Array(6) { j -> Puyo(i+1, j+1, getPuyoColor(colorString[i][j]))} }
+            ret.field = Array(13) { i -> Array(6) { j -> Puyo(i+1, j+1, getPuyoColor(colorString[i][j])) } }
             for (col in 0..5) {
                 var i = 0
                 while (i < 13 && ret.field[i++][col].color != PuyoColor.EMPTY) {

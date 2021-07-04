@@ -1,4 +1,4 @@
-package com.example.puyo_base_simulator.data
+package com.example.puyo_base_simulator.data.room
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

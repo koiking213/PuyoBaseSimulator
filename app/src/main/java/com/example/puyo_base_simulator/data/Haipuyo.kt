@@ -1,4 +1,4 @@
-package com.example.puyo_base_simulator.ui.home
+package com.example.puyo_base_simulator.data
 
 import com.example.puyo_base_simulator.BuildConfig
 import java.io.BufferedReader

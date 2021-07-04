@@ -2,8 +2,9 @@
 
 package com.example.puyo_base_simulator.ui.home
 
-import com.example.puyo_base_simulator.ui.home.Field.Companion.from
-import com.example.puyo_base_simulator.ui.home.PuyoColor
+import com.example.puyo_base_simulator.data.Field
+import com.example.puyo_base_simulator.data.Field.Companion.from
+import com.example.puyo_base_simulator.data.PuyoColor
 import com.google.common.truth.Truth
 import org.apache.commons.lang.SerializationUtils
 import org.junit.Before

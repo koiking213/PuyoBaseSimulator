@@ -1,7 +1,7 @@
 package com.example.puyo_base_simulator.utils
 
 import com.example.puyo_base_simulator.R
-import com.example.puyo_base_simulator.ui.home.PuyoColor
+import com.example.puyo_base_simulator.data.PuyoColor
 
 
 fun getColor(c: Char): Int {

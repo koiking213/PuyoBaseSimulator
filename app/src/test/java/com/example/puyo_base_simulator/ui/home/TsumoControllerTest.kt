@@ -2,6 +2,10 @@
 
 package com.example.puyo_base_simulator.ui.home
 
+import com.example.puyo_base_simulator.data.Placement
+import com.example.puyo_base_simulator.data.PuyoColor
+import com.example.puyo_base_simulator.utils.Rotation
+import com.example.puyo_base_simulator.data.TsumoController
 import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.Test

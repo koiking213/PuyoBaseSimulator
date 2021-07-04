@@ -1,10 +1,14 @@
-package com.example.puyo_base_simulator.ui.home
+package com.example.puyo_base_simulator.data
+
+import com.example.puyo_base_simulator.utils.Point
+import com.example.puyo_base_simulator.utils.Rotation
 
 
 data class TsumoInfo(val currentColor: Array<PuyoColor>,
                      val nextColor: Array<Array<PuyoColor>>,
                      var column: Int,
-                     val rot: Rotation) {
+                     val rot: Rotation
+) {
     val currentMainPos = Point(1, column) // row, column
     val currentSubPos = when (rot) {
         Rotation.DEGREE0 -> Point(0, column)

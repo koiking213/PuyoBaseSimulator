@@ -1,4 +1,4 @@
-package com.example.puyo_base_simulator.ui.home
+package com.example.puyo_base_simulator.data
 
 enum class PuyoColor(val char: Char) {
     EMPTY(' '),

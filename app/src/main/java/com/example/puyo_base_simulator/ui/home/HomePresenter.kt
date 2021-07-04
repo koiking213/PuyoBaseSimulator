@@ -10,9 +10,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.room.Room
-import com.example.puyo_base_simulator.data.AppDatabase
-import com.example.puyo_base_simulator.data.Base
-import kotlinx.coroutines.flow.Flow
+import com.example.puyo_base_simulator.data.*
+import com.example.puyo_base_simulator.data.room.AppDatabase
+import com.example.puyo_base_simulator.data.room.Base
+import com.example.puyo_base_simulator.utils.Rotation
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -33,8 +34,8 @@ class HomePresenter internal constructor(asset: AssetManager, dataStore: DataSto
     private var settingRepository: SettingRepository
     val emptyTsumoInfo : TsumoInfo
         get() = TsumoInfo(
-        Array(2) {PuyoColor.EMPTY},
-        Array(2) {Array(2) {PuyoColor.EMPTY}},
+        Array(2) { PuyoColor.EMPTY},
+        Array(2) {Array(2) { PuyoColor.EMPTY}},
         3,
         Rotation.DEGREE0
         )

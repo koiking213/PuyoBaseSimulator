@@ -1,4 +1,4 @@
-package com.example.puyo_base_simulator.data
+package com.example.puyo_base_simulator.data.room
 
 import androidx.room.Database
 import androidx.room.RoomDatabase

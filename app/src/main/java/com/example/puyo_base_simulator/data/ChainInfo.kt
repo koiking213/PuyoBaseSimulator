@@ -1,4 +1,4 @@
-package com.example.puyo_base_simulator.ui.home
+package com.example.puyo_base_simulator.data
 
 data class ChainInfo (
     val bonus: Int,
