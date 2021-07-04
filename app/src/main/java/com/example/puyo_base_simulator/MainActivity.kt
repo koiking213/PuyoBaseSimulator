@@ -50,8 +50,8 @@ class MainActivity : AppCompatActivity() {
     fun ChainInfoArea(chainInfo: ChainInfo) {
         val puyoNum = chainInfo.disappearPuyo
         Text("${chainInfo.bonus} * ${puyoNum * 10} = ${chainInfo.bonus * puyoNum * 10}")
-        Text("連鎖の合計: ${chainInfo.chainPoint}")
-        Text("試合の合計: ${chainInfo.accumulatedPoint}")
+        Text("連鎖合計: ${chainInfo.chainPoint}")
+        Text("試合合計: ${chainInfo.accumulatedPoint}")
         if (chainInfo.chainNum != 0) {
             Text("${chainInfo.chainNum}連鎖")
         } else {
@@ -285,7 +285,7 @@ class MainActivity : AppCompatActivity() {
 
 
     @Composable
-    fun Settings(navController: NavController, dataStore: DataStore<Preferences>, presenter: HomePresenter) {
+    fun Settings(navController: NavController, presenter: HomePresenter) {
         val showDoubleNext by presenter.showDoubleNext.collectAsState()
         Scaffold(
             topBar = {
@@ -307,7 +307,6 @@ class MainActivity : AppCompatActivity() {
     @Composable
     fun MainApp(presenter: HomePresenter, context: Context, activity: Activity) {
         val navController = rememberNavController()
-        val scaffoldState = rememberScaffoldState()
         val colors = lightColors(
             //surface = Color(0xffd5d5d5),
             secondary = Color(0xFFB0D169),
@@ -319,7 +318,7 @@ class MainActivity : AppCompatActivity() {
             colors = colors
         ) {
             NavHost(navController, startDestination = "home") {
-                composable("settings") { Settings(navController, dataStore, presenter) }
+                composable("settings") { Settings(navController, presenter) }
                 composable("home") { Home(presenter, context, activity, navController) }
             }
         }

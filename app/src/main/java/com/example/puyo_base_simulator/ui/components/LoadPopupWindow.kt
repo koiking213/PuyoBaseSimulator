@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import com.example.puyo_base_simulator.data.Base
@@ -121,9 +122,10 @@ private fun FieldPickerItem(base: Base) {
             } else {
                 ""
             }
+            ,fontSize=9.sp
         )
-        Text("${numOfPlacement}手目")
-        Text("${base.point}点")
+        Text("${numOfPlacement}手目", fontSize=9.sp)
+        Text("${base.point}点", fontSize=9.sp)
 
         val colors = fieldStrToColors(base.field)
         PuyoField(colors.reversed().toTypedArray(), 10.dp)
