@@ -44,8 +44,7 @@ fun FieldFrame(
     field: Field,
     tsumoInfo: TsumoInfo,
     size: Dp,
-    duringChain: Boolean,
-    showDoubleNext: Boolean)
+    duringChain: Boolean)
 {
     Row {
         Row(verticalAlignment = Alignment.Bottom)
@@ -61,7 +60,6 @@ fun FieldFrame(
             }
             SideWall(size)
         }
-        NextTsumoFrame(tsumoInfo, size, showDoubleNext)
     }
 }
 

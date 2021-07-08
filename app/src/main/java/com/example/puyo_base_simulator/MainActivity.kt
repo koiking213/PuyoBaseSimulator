@@ -8,10 +8,9 @@ import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
+import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DoubleArrow
-import androidx.compose.material.icons.filled.Redo
-import androidx.compose.material.icons.filled.Undo
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -65,19 +64,49 @@ class MainActivity : AppCompatActivity() {
         onLoadClick: () -> Unit,
         enabled: Boolean = true,
     ) {
-        Row(
+        Column (
             modifier = Modifier.padding(5.dp)
         ) {
-            ActionButton(
-                text = "SAVE",
-                onClick = onSaveClick,
-                enabled = enabled,
-            )
-            ActionButton(
-                text = "LOAD",
-                onClick = onLoadClick,
-                enabled = enabled,
-            )
+            Row(
+                modifier = Modifier.padding(5.dp).weight(1f)
+            ) {
+                Icon(
+                    Icons.Filled.SentimentVerySatisfied,
+                    contentDescription = "",
+                )
+                ActionButton(
+                    text = "SAVE",
+                    onClick = onSaveClick,
+                    enabled = enabled,
+                    modifier = Modifier.weight(1f)
+                )
+                ActionButton(
+                    text = "LOAD",
+                    onClick = onLoadClick,
+                    enabled = enabled,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            Row(
+                modifier = Modifier.padding(5.dp).weight(1f)
+            ) {
+                Icon(
+                    Icons.Filled.SentimentVeryDissatisfied,
+                    contentDescription = "",
+                )
+                ActionButton(
+                    text = "STOCK",
+                    onClick = onSaveClick,
+                    enabled = enabled,
+                    modifier = Modifier.weight(1f)
+                )
+                ActionButton(
+                    text = "POP",
+                    onClick = onLoadClick,
+                    enabled = enabled,
+                    modifier = Modifier.weight(1f)
+                )
+            }
         }
     }
 
@@ -111,7 +140,7 @@ class MainActivity : AppCompatActivity() {
                 onClick = onRandomGenClicked,
                 enabled = enabled,
                 modifier = Modifier
-                    .height(size)
+                    .height(size*2/3)
                     .width(size * 3)
             )
         }
@@ -215,17 +244,21 @@ class MainActivity : AppCompatActivity() {
                             tsumoInfo = tsumoInfo,
                             20.dp,
                             duringChain = duringChain,
-                            showDoubleNext
                         )
                         Column(horizontalAlignment = Alignment.End) {
-                            CurrentSeed(seed = seed)
-                            FieldGeneration(
-                                size = 60.dp,
-                                onSeedGenClicked = presenter::setSeed,
-                                onPatternGenClicked = presenter::generateByPattern,
-                                onRandomGenClicked = presenter::randomGenerate,
-                                enabled = !duringChain,
-                            )
+                            Row {
+                                NextTsumoFrame(tsumoInfo, 20.dp, showDoubleNext)
+                                Column(horizontalAlignment = Alignment.End) {
+                                    CurrentSeed(seed = seed)
+                                    FieldGeneration(
+                                        size = 60.dp,
+                                        onSeedGenClicked = presenter::setSeed,
+                                        onPatternGenClicked = presenter::generateByPattern,
+                                        onRandomGenClicked = presenter::randomGenerate,
+                                        enabled = !duringChain,
+                                    )
+                                }
+                            }
                             ChainInfoArea(chainInfo)
                             SaveLoad(
                                 onLoadClick = {
