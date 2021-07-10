@@ -3,6 +3,7 @@ package com.example.puyo_base_simulator.ui.home
 import android.app.Activity
 import android.content.Context
 import android.content.res.AssetManager
+import android.database.sqlite.SQLiteConstraintException
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.LiveData
@@ -13,6 +14,8 @@ import androidx.room.Room
 import com.example.puyo_base_simulator.data.*
 import com.example.puyo_base_simulator.data.room.AppDatabase
 import com.example.puyo_base_simulator.data.room.Base
+import com.example.puyo_base_simulator.data.room.SeedDatabase
+import com.example.puyo_base_simulator.data.room.SeedEntity
 import com.example.puyo_base_simulator.utils.Rotation
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -30,7 +33,8 @@ import kotlin.math.roundToInt
 class HomePresenter internal constructor(asset: AssetManager, dataStore: DataStore<Preferences>) : ViewModel() {
     var fieldHistory = History<Field>()
     private var tsumoController: TsumoController
-    private var mDB: AppDatabase? = null
+    private var fieldDB: AppDatabase? = null
+    private var seedDB: SeedDatabase? = null
     private var settingRepository: SettingRepository
     val emptyTsumoInfo : TsumoInfo
         get() = TsumoInfo(
@@ -73,16 +77,30 @@ class HomePresenter internal constructor(asset: AssetManager, dataStore: DataSto
         }
     }
 
-    private fun getDB(context: Context) : AppDatabase {
-        if (mDB == null) {
+    private fun getFieldDB(context: Context) : AppDatabase {
+        if (fieldDB == null) {
             val result = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java, "database-name"
             ).allowMainThreadQueries()
                     .build()
-            mDB = result
+            fieldDB = result
         }
-        return mDB!!
+        return fieldDB!!
+    }
+
+    private fun getSeedDB(context: Context) : SeedDatabase {
+        val db = seedDB
+        return if (db == null) {
+            val result = Room.databaseBuilder(
+                context.applicationContext,
+                SeedDatabase::class.java, "seed-database"
+            ).allowMainThreadQueries().build()
+            seedDB = result
+            result
+        } else {
+           db
+        }
     }
 
     fun rotateLeft() {
@@ -174,9 +192,34 @@ class HomePresenter internal constructor(asset: AssetManager, dataStore: DataSto
         } else {
             field.toString()
         }
-        getDB(context).baseDao().insert(base)
+        getFieldDB(context).baseDao().insert(base)
         _tsumoInfo.value = tsumoController.makeTsumoInfo()
         return true
+    }
+
+    fun stockSeed(context: Context) : Boolean {
+        val entity = SeedEntity()
+        entity.seed = seed.value!!
+        try {
+            getSeedDB(context).seedDao().insert(entity)
+        } catch (e: SQLiteConstraintException) {
+            return false
+        }
+        return true
+    }
+
+    fun forgetSeed(context: Context, seed: Int) {
+        val entity = SeedEntity()
+        entity.seed = seed
+        getSeedDB(context).seedDao().delete(entity)
+    }
+
+    fun stockedSeeds(context: Context) : List<Int>{
+        return getSeedDB(context).seedDao().all.map {it.seed}
+    }
+
+    fun getTsumo(seed: Int, index: Int) : List<PuyoColor>{
+        return TsumoController.getPair(Haipuyo[seed], index)
     }
 
     fun load(base: Base) {
@@ -273,20 +316,20 @@ class HomePresenter internal constructor(asset: AssetManager, dataStore: DataSto
         if (seed !in 0..65535) {
             throw NumberFormatException("should enter 0-65535")
         }
-        val bases = getDB(context).baseDao().findByHash(seed)
+        val bases = getFieldDB(context).baseDao().findByHash(seed)
         return bases.toMutableList()
     }
 
     fun searchByPattern(pattern : String, context: Context) : MutableList<Base> {
         val seeds = Haipuyo.searchSeedWithPattern(pattern)
         val seedsChunks = seeds.chunked(100)
-        val bases = seedsChunks.parallelStream().map { seed: List<Int> -> getDB(context).baseDao().findByAllHash(seed) }.flatMap { obj: List<Base> -> obj.stream() }.collect(
+        val bases = seedsChunks.parallelStream().map { seed: List<Int> -> getFieldDB(context).baseDao().findByAllHash(seed) }.flatMap { obj: List<Base> -> obj.stream() }.collect(
             Collectors.toList())
         return bases.toMutableList()
     }
 
     fun showAll (context: Context) : MutableList<Base> {
-        val bases = getDB(context).baseDao().all
+        val bases = getFieldDB(context).baseDao().all
         return bases.toMutableList()
     }
 
