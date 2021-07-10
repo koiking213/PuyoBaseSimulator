@@ -62,13 +62,17 @@ class MainActivity : AppCompatActivity() {
     fun SaveLoad(
         onSaveClick: () -> Unit,
         onLoadClick: () -> Unit,
+        onStockClick: () -> Unit,
+        onPopClick: () -> Unit,
         enabled: Boolean = true,
     ) {
         Column (
             modifier = Modifier.padding(5.dp)
         ) {
             Row(
-                modifier = Modifier.padding(5.dp).weight(1f)
+                modifier = Modifier
+                    .padding(5.dp)
+                    .weight(1f)
             ) {
                 Icon(
                     Icons.Filled.SentimentVerySatisfied,
@@ -88,7 +92,9 @@ class MainActivity : AppCompatActivity() {
                 )
             }
             Row(
-                modifier = Modifier.padding(5.dp).weight(1f)
+                modifier = Modifier
+                    .padding(5.dp)
+                    .weight(1f)
             ) {
                 Icon(
                     Icons.Filled.SentimentVeryDissatisfied,
@@ -96,13 +102,13 @@ class MainActivity : AppCompatActivity() {
                 )
                 ActionButton(
                     text = "STOCK",
-                    onClick = onSaveClick,
+                    onClick = onStockClick,
                     enabled = enabled,
                     modifier = Modifier.weight(1f)
                 )
                 ActionButton(
                     text = "POP",
-                    onClick = onLoadClick,
+                    onClick = onPopClick,
                     enabled = enabled,
                     modifier = Modifier.weight(1f)
                 )
@@ -140,7 +146,7 @@ class MainActivity : AppCompatActivity() {
                 onClick = onRandomGenClicked,
                 enabled = enabled,
                 modifier = Modifier
-                    .height(size*2/3)
+                    .height(size * 2 / 3)
                     .width(size * 3)
             )
         }
@@ -202,6 +208,7 @@ class MainActivity : AppCompatActivity() {
         val historySliderValue = presenter.historySliderValue.observeAsState(0f).value
         val historySize = presenter.historySize.observeAsState(0).value
         val (showLoadPopup, setShowLoadPopup) = remember { mutableStateOf(false) }
+        val (showSeedPopup, setShowSeedPopup) = remember { mutableStateOf(false) }
         val scaffoldState = rememberScaffoldState()
         val scope = rememberCoroutineScope()
         val duringChain = presenter.duringChain.observeAsState(false).value
@@ -239,6 +246,15 @@ class MainActivity : AppCompatActivity() {
                                 onFieldClick = presenter::load
                             )
                         }
+                        if (showSeedPopup) {
+                            SeedPopupWindow(
+                                seeds = presenter.stockedSeeds(context),
+                                closeFun = { setShowSeedPopup(false) },
+                                getTsumoFun = presenter::getTsumo,
+                                onSeedClick = presenter::setSeed,
+                                onItemRemoveClick = {presenter.forgetSeed(context, it)},
+                            )
+                        }
                         FieldFrame(
                             field = currentField,
                             tsumoInfo = tsumoInfo,
@@ -267,8 +283,18 @@ class MainActivity : AppCompatActivity() {
                                 onSaveClick = {
                                     presenter.save(context)
                                     scope.launch {
-                                        scaffoldState.snackbarHostState.showSnackbar("saved.")
+                                        scaffoldState.snackbarHostState.showSnackbar("field saved.")
                                     }
+                                },
+                                onStockClick = {
+                                    if (presenter.stockSeed(context)) {
+                                        scope.launch {
+                                            scaffoldState.snackbarHostState.showSnackbar("seed stocked.")
+                                        }
+                                    }
+                                },
+                                onPopClick = {
+                                    setShowSeedPopup(true)
                                 },
                                 enabled = !duringChain,
                             )

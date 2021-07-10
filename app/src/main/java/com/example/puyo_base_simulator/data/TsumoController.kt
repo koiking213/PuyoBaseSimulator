@@ -151,6 +151,9 @@ class TsumoController(private val tsumo: String, val seed: Int) {
         fun getNumOfPlacement(placementOrder: String) : Int {
             return 1 + placementOrder.count { it == ';' }
         }
+        fun getPair(tsumo: String, index: Int) : List<PuyoColor>{
+            return mutableListOf(getPuyoColor(tsumo[index*2 + 1]), getPuyoColor(tsumo[index*2]))
+        }
     }
 
     init {
