@@ -168,6 +168,13 @@ class MainActivity : AppCompatActivity() {
         enabled: Boolean,
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
+            SliderFrame(
+                index = sliderValue,
+                max = max,
+                onValueChange = onSliderChange,
+                enabled = enabled,
+                modifier = Modifier.height(size/2)
+            )
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
@@ -185,12 +192,6 @@ class MainActivity : AppCompatActivity() {
                     onClick = onRedoClick
                 )
             }
-            SliderFrame(
-                index = sliderValue,
-                max = max,
-                onValueChange = onSliderChange,
-                enabled = enabled,
-            )
         }
 
     }
