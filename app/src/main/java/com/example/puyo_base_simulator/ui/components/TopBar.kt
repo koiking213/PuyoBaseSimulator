@@ -9,6 +9,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -16,16 +17,24 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun HomeAppBar(
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    onMenuClick: () -> Unit,
 ) {
     TopAppBar(
         title = { Text("ぷよ土台シミュレータ") },
         actions = {
-            // TODO: IconButtonで置き換えられる？
             Icon(
                 imageVector = Icons.Filled.Settings,
                 modifier = Modifier
                     .clickable(onClick = onSettingsClick)
+                    .padding(horizontal = 12.dp, vertical = 16.dp)
+                    .height(24.dp),
+                contentDescription = ""
+            )
+            Icon(
+                imageVector = Icons.Filled.Menu,
+                modifier = Modifier
+                    .clickable(onClick = onMenuClick)
                     .padding(horizontal = 12.dp, vertical = 16.dp)
                     .height(24.dp),
                 contentDescription = ""

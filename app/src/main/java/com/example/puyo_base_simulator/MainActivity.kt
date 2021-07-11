@@ -48,72 +48,29 @@ class MainActivity : AppCompatActivity() {
     @Composable
     fun ChainInfoArea(chainInfo: ChainInfo) {
         val puyoNum = chainInfo.disappearPuyo
-        Text("${chainInfo.bonus} * ${puyoNum * 10} = ${chainInfo.bonus * puyoNum * 10}")
-        Text("連鎖合計: ${chainInfo.chainPoint}")
-        Text("試合合計: ${chainInfo.accumulatedPoint}")
-        if (chainInfo.chainNum != 0) {
-            Text("${chainInfo.chainNum}連鎖")
-        } else {
-            Text("")
+        Column() {
+            Text("${chainInfo.bonus} * ${puyoNum * 10} = ${chainInfo.bonus * puyoNum * 10}")
+            Text("連鎖合計: ${chainInfo.chainPoint}")
+            Text("試合合計: ${chainInfo.accumulatedPoint}")
+            if (chainInfo.chainNum != 0) {
+                Text("${chainInfo.chainNum}連鎖")
+            } else {
+                Text("")
+            }
         }
     }
 
     @Composable
-    fun SaveLoad(
-        onSaveClick: () -> Unit,
-        onLoadClick: () -> Unit,
-        onStockClick: () -> Unit,
-        onPopClick: () -> Unit,
-        enabled: Boolean = true,
+    fun RandomSeedButton(
+        onRandomGenClicked: () -> Unit,
+        enabled: Boolean,
     ) {
-        Column (
-            modifier = Modifier.padding(5.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .padding(5.dp)
-                    .weight(1f)
-            ) {
-                Icon(
-                    Icons.Filled.SentimentVerySatisfied,
-                    contentDescription = "",
-                )
-                ActionButton(
-                    text = "SAVE",
-                    onClick = onSaveClick,
-                    enabled = enabled,
-                    modifier = Modifier.weight(1f)
-                )
-                ActionButton(
-                    text = "LOAD",
-                    onClick = onLoadClick,
-                    enabled = enabled,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-            Row(
-                modifier = Modifier
-                    .padding(5.dp)
-                    .weight(1f)
-            ) {
-                Icon(
-                    Icons.Filled.SentimentVeryDissatisfied,
-                    contentDescription = "",
-                )
-                ActionButton(
-                    text = "STOCK",
-                    onClick = onStockClick,
-                    enabled = enabled,
-                    modifier = Modifier.weight(1f)
-                )
-                ActionButton(
-                    text = "POP",
-                    onClick = onPopClick,
-                    enabled = enabled,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
+        ActionButton(
+            text = "new seed",
+            onClick = onRandomGenClicked,
+            enabled = enabled,
+            modifier = Modifier
+        )
     }
 
     // いい感じに大きさを決めたい
@@ -122,11 +79,10 @@ class MainActivity : AppCompatActivity() {
         size: Dp,
         onSeedGenClicked: (Int) -> Unit,
         onPatternGenClicked: (String) -> Unit,
-        onRandomGenClicked: () -> Unit,
         enabled: Boolean,
     ) {
         Column(
-            horizontalAlignment = Alignment.End,
+            horizontalAlignment = Alignment.Start,
             modifier = Modifier.padding(5.dp),
         ) {
             SeedInputField(
@@ -141,14 +97,6 @@ class MainActivity : AppCompatActivity() {
                 textLabel = "generate by pattern",
                 enabled = enabled
             )
-            ActionButton(
-                text = "generate randomly",
-                onClick = onRandomGenClicked,
-                enabled = enabled,
-                modifier = Modifier
-                    .height(size * 2 / 3)
-                    .width(size * 3)
-            )
         }
     }
 
@@ -157,44 +105,6 @@ class MainActivity : AppCompatActivity() {
         Text("seed: $seed")
     }
 
-    @Composable
-    fun HistoryControlArea(
-        onUndoClick: () -> Unit,
-        onRedoClick: () -> Unit,
-        onSliderChange: (Float) -> Unit,
-        sliderValue: Float,
-        max: Int,
-        size: Dp,
-        enabled: Boolean,
-    ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            SliderFrame(
-                index = sliderValue,
-                max = max,
-                onValueChange = onSliderChange,
-                enabled = enabled,
-                modifier = Modifier.height(size/2)
-            )
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                ActionIcon(
-                    icon = Icons.Filled.Undo,
-                    size = size,
-                    enabled = enabled,
-                    onClick = onUndoClick
-                )
-                ActionIcon(
-                    icon = Icons.Filled.Redo,
-                    size = size,
-                    enabled = enabled,
-                    onClick = onRedoClick
-                )
-            }
-        }
-
-    }
 
     @Composable
     fun Home(
@@ -219,7 +129,10 @@ class MainActivity : AppCompatActivity() {
         Scaffold(
             scaffoldState = scaffoldState,
             topBar = {
-                HomeAppBar(onSettingsClick = { navController.navigate("settings") })
+                HomeAppBar(
+                    onSettingsClick = { navController.navigate("settings") },
+                    onMenuClick = { navController.navigate("menu") },
+                )
             },
             content = {
                 Column(
@@ -262,43 +175,67 @@ class MainActivity : AppCompatActivity() {
                             20.dp,
                             duringChain = duringChain,
                         )
-                        Column(horizontalAlignment = Alignment.End) {
-                            Row {
-                                NextTsumoFrame(tsumoInfo, 20.dp, showDoubleNext)
-                                Column(horizontalAlignment = Alignment.End) {
+                        Column() {
+                            Row (modifier = Modifier.weight(1f)) {
+                                Box (
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .wrapContentWidth(Alignment.Start)
+                                ) {
+                                    NextTsumoFrame(
+                                        tsumoInfo,
+                                        20.dp,
+                                        showDoubleNext,
+                                    )
+                                }
+                                Column(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .wrapContentWidth(Alignment.End)
+                                ) {
                                     CurrentSeed(seed = seed)
-                                    FieldGeneration(
-                                        size = 60.dp,
-                                        onSeedGenClicked = presenter::setSeed,
-                                        onPatternGenClicked = presenter::generateByPattern,
+                                    RandomSeedButton(
                                         onRandomGenClicked = presenter::randomGenerate,
                                         enabled = !duringChain,
                                     )
                                 }
                             }
-                            ChainInfoArea(chainInfo)
-                            SaveLoad(
-                                onLoadClick = {
-                                    setShowLoadPopup(true)
-                                },
-                                onSaveClick = {
-                                    presenter.save(context)
-                                    scope.launch {
-                                        scaffoldState.snackbarHostState.showSnackbar("field saved.")
-                                    }
-                                },
-                                onStockClick = {
-                                    if (presenter.stockSeed(context)) {
+                            Box (
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f)
+                                    .wrapContentWidth(Alignment.End)
+                            ) {
+                                ChainInfoArea(chainInfo)
+                            }
+                            Box (
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .wrapContentWidth(Alignment.End)
+                            ) {
+                                SaveLoadArea(
+                                    onLoadClick = {
+                                        setShowLoadPopup(true)
+                                    },
+                                    onSaveClick = {
+                                        presenter.save(context)
                                         scope.launch {
-                                            scaffoldState.snackbarHostState.showSnackbar("seed stocked.")
+                                            scaffoldState.snackbarHostState.showSnackbar("field saved.")
                                         }
-                                    }
-                                },
-                                onPopClick = {
-                                    setShowSeedPopup(true)
-                                },
-                                enabled = !duringChain,
-                            )
+                                    },
+                                    onStockClick = {
+                                        if (presenter.stockSeed(context)) {
+                                            scope.launch {
+                                                scaffoldState.snackbarHostState.showSnackbar("seed stocked.")
+                                            }
+                                        }
+                                    },
+                                    onPopClick = {
+                                        setShowSeedPopup(true)
+                                    },
+                                    enabled = !duringChain,
+                                )
+                            }
                         }
                     }
                     Box(
@@ -365,6 +302,32 @@ class MainActivity : AppCompatActivity() {
     }
 
     @Composable
+    fun Menu(navController: NavController, presenter: HomePresenter) {
+        Scaffold(
+            topBar = {
+                SettingAppBar(onBackClick = { navController.navigate("home") })
+            },
+            content = {
+                Column {
+                    Text("新規ツモ生成")
+                    FieldGeneration(
+                        size = 60.dp,
+                        onSeedGenClicked = {
+                            presenter.setSeed(it)
+                            navController.navigate("home")
+                        },
+                        onPatternGenClicked = {
+                            presenter.generateByPattern(it)
+                            navController.navigate("home")
+                        },
+                        enabled = true,
+                    )
+                }
+            }
+        )
+    }
+
+    @Composable
     fun MainApp(presenter: HomePresenter, context: Context, activity: Activity) {
         val navController = rememberNavController()
         val colors = lightColors(
@@ -378,6 +341,7 @@ class MainActivity : AppCompatActivity() {
             colors = colors
         ) {
             NavHost(navController, startDestination = "home") {
+                composable("menu") { Menu(navController, presenter) }
                 composable("settings") { Settings(navController, presenter) }
                 composable("home") { Home(presenter, context, activity, navController) }
             }
