@@ -1,10 +1,11 @@
 package com.example.puyo_base_simulator.data
 
 import com.example.puyo_base_simulator.utils.Rotation
+import java.io.Serializable
 
 class Placement(val currentCursorColumnIndex: Int,
                 var currentCursorRotate: Rotation,
-                var tsumoCounter: Int) {
+                var tsumoCounter: Int) : Serializable {
 
     companion object {
         @JvmStatic

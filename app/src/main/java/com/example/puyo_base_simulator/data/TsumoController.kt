@@ -3,8 +3,9 @@ package com.example.puyo_base_simulator.data
 import com.example.puyo_base_simulator.data.Placement.Companion.from
 import com.example.puyo_base_simulator.data.PuyoColor.Companion.getPuyoColor
 import com.example.puyo_base_simulator.utils.Rotation
+import java.io.Serializable
 
-class TsumoController(private val tsumo: String, val seed: Int) {
+class TsumoController(private val tsumo: String, val seed: Int) : Serializable{
     var tsumoCounter = 0
     var currentCursorColumnIndex = 3
     var currentCursorRotate = Rotation.DEGREE0 // 時計回り
@@ -75,7 +76,7 @@ class TsumoController(private val tsumo: String, val seed: Int) {
                 arrayOf(getPuyoColor(tsumo[tsumoCounter + 4]), getPuyoColor(tsumo[tsumoCounter + 5])))
     }
 
-    private fun incrementTsumo() {
+    fun incrementTsumo() {
         tsumoCounter += 2
         setTsumo()
     }

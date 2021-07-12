@@ -1,6 +1,7 @@
 package com.example.puyo_base_simulator.data
 
 import com.example.puyo_base_simulator.data.PuyoColor.Companion.getPuyoColor
+import com.example.puyo_base_simulator.utils.Rotation
 import org.apache.commons.lang.SerializationUtils
 import java.io.Serializable
 import java.util.*
@@ -46,6 +47,23 @@ class Field : Serializable {
 
     fun isDisappear(puyo: Puyo) = disappearPuyo.contains(puyo)
 
+    fun setPairOnField(tsumoInfo: TsumoInfo): Field? {
+        val col = tsumoInfo.column
+        val mainColor = tsumoInfo.currentColor[0]
+        val subColor = tsumoInfo.currentColor[1]
+        val newField = SerializationUtils.clone(this) as Field
+        val success = when (tsumoInfo.rot) {
+            Rotation.DEGREE0 -> newField.addPuyo(col, mainColor) and newField.addPuyo(col, subColor)
+            Rotation.DEGREE90 -> newField.addPuyo(col, mainColor) and newField.addPuyo(col + 1, subColor)
+            Rotation.DEGREE180 -> newField.addPuyo(col, subColor) and newField.addPuyo(col, mainColor) // 上下が逆転している
+            Rotation.DEGREE270 -> newField.addPuyo(col, mainColor) and newField.addPuyo(col - 1, subColor)
+        }
+        return if (success) newField else null
+    }
+
+    fun getLast() : Field {
+        return this.nextField?.getLast() ?: this
+    }
 
     fun evalNextField() {
         val newField = Field()

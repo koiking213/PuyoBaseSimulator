@@ -8,7 +8,6 @@ import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
@@ -26,6 +25,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.puyo_base_simulator.data.AllClearInfo
 import com.example.puyo_base_simulator.ui.components.*
 import com.example.puyo_base_simulator.data.ChainInfo
 import com.example.puyo_base_simulator.data.Field
@@ -125,6 +125,7 @@ class MainActivity : AppCompatActivity() {
         val duringChain = presenter.duringChain.observeAsState(false).value
         val chainInfo = presenter.chainInfo.observeAsState(ChainInfo(0, 0, 0, 0, 0)).value
         val showDoubleNext by presenter.showDoubleNext.collectAsState()
+        val allClearInfo = presenter.allClearInfo.observeAsState(AllClearInfo()).value
 
         Scaffold(
             scaffoldState = scaffoldState,
@@ -199,6 +200,17 @@ class MainActivity : AppCompatActivity() {
                                         enabled = !duringChain,
                                     )
                                 }
+                            }
+                            Box (
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f)
+                                    .wrapContentWidth(Alignment.End)
+                            ) {
+                                AllClearInfoArea(
+                                    info = allClearInfo,
+                                    onCheckClick = presenter::checkAllClear,
+                                    enabled = !duringChain)
                             }
                             Box (
                                 modifier = Modifier

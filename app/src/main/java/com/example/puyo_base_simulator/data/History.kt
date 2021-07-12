@@ -1,17 +1,23 @@
 package com.example.puyo_base_simulator.data
 
+import java.io.Serializable
+
 // TODO: Historyデータ構造についてもっとちゃんと考えたほうが良さそう(indexとcontent.sizeの関係とか、初期値とかhistory追加のタイミングとか)
 // add (index=1, content.size=1)
 // -> add (index=2, content.size=2)
 // -> undo (index=1, content.size=2, return content[0])
 // -> redo (index=2, content.size=2, return content[1])
 // currentでcontent[index]を返す
-open class History<T> () : Iterable<T> {
+open class History<T> () : Iterable<T>, Serializable {
     private var content = mutableListOf<T>()
     var index = -1
 
     open fun add(elm: T) {
-        content = content.subList(0, index+1)
+        // indexが2, sizeが4のとき
+        // original: subList(0, 3) -> {0, 1, 2}
+        // new: 4 - (2+1) = 1
+        //content = content.subList(0, index+1)
+        content.dropLast(content.size -  (index+1))
         content.add(elm)
         index++
     }

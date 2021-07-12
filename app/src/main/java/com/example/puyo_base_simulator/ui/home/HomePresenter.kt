@@ -21,7 +21,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import org.apache.commons.lang.SerializationUtils
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -57,6 +56,8 @@ class HomePresenter internal constructor(asset: AssetManager, dataStore: DataSto
     val duringChain = _duringChain
     private val _chainInfo = MutableLiveData(ChainInfo(0, 0, 0, 0, 0))
     val chainInfo = _chainInfo
+    private val _allClearInfo = MutableLiveData(AllClearInfo())
+    val allClearInfo: LiveData<AllClearInfo> = _allClearInfo
 
     var chainSpeed: Long = 500
 
@@ -123,22 +124,8 @@ class HomePresenter internal constructor(asset: AssetManager, dataStore: DataSto
         _tsumoInfo.value = tsumoController.makeTsumoInfo()
     }
 
-    private fun setPairOnField(field: Field, tsumoInfo: TsumoInfo): Field? {
-        val col = tsumoInfo.column
-        val mainColor = tsumoInfo.currentColor[0]
-        val subColor = tsumoInfo.currentColor[1]
-        val newField = SerializationUtils.clone(field) as Field
-        val success = when (tsumoInfo.rot) {
-            Rotation.DEGREE0 -> newField.addPuyo(col, mainColor) and newField.addPuyo(col, subColor)
-            Rotation.DEGREE90 -> newField.addPuyo(col, mainColor) and newField.addPuyo(col + 1, subColor)
-            Rotation.DEGREE180 -> newField.addPuyo(col, subColor) and newField.addPuyo(col, mainColor) // 上下が逆転している
-            Rotation.DEGREE270 -> newField.addPuyo(col, mainColor) and newField.addPuyo(col - 1, subColor)
-        }
-        return if (success) newField else null
-    }
-
     fun dropDown(activity: Activity) {
-        val newField = setPairOnField(currentField.value!!, tsumoController.makeTsumoInfo()) ?: return
+        val newField = currentField.value!!.setPairOnField(tsumoController.makeTsumoInfo()) ?: return
         tsumoController.addPlacementHistory()
         newField.evalNextField()
         _currentField.value = newField
@@ -164,10 +151,8 @@ class HomePresenter internal constructor(asset: AssetManager, dataStore: DataSto
     fun redo(activity: Activity) {
         fieldHistory.redo() ?: return
         _historySliderValue.value = fieldHistory.index.toFloat()
-        val field = setPairOnField(
-            currentField.value!!,
-            tsumoController.makeTsumoInfo(tsumoController.currentPlacementHistory())
-        )!!
+        val tsumoInfo = tsumoController.makeTsumoInfo(tsumoController.currentPlacementHistory())
+        val field = currentField.value!!.setPairOnField(tsumoInfo)!!
         tsumoController.redoPlacementHistory()
         field.evalNextField()
         _currentField.value = field
@@ -227,7 +212,7 @@ class HomePresenter internal constructor(asset: AssetManager, dataStore: DataSto
         clearFieldHistory()
         var f = Field()
         for (p in tsumoController.stringToPlacementOrder(base.placementHistory)) {
-            f = setPairOnField(f, tsumoController.makeTsumoInfo(p))!!
+            f = f.setPairOnField(tsumoController.makeTsumoInfo(p))!!
             f.evalNextField()
             f = getLastField(f)
             fieldHistory.add(f)
@@ -331,6 +316,10 @@ class HomePresenter internal constructor(asset: AssetManager, dataStore: DataSto
     fun showAll (context: Context) : MutableList<Base> {
         val bases = getFieldDB(context).baseDao().all
         return bases.toMutableList()
+    }
+
+    fun checkAllClear() {
+        _allClearInfo.value = searchAllClearFields(_currentField.value!!, tsumoController, 1)
     }
 
     companion object {
