@@ -11,10 +11,11 @@ fun searchAllClearFields(field: Field, tsumoController: TsumoController, depth: 
 
     for (i in 0..depth) {
         val tsumoInfo = controller.makeTsumoInfo()
-        fields = fields.flatMap { generateAllFields(it, tsumoInfo) }
-        val allClearFields = getAllClearFields(fields)
+        val newFields = fields.flatMap { generateAllFields(it, tsumoInfo) }.distinctBy { it.toString()}
+        val allClearFields = getAllClearFields(newFields)
         if (allClearFields.isNotEmpty()) allClearInfo.add(i, allClearFields)
         controller.incrementTsumo()
+        fields = newFields.map {it.getLast()}.distinctBy { it.toString() }
     }
     return allClearInfo
 }
@@ -23,7 +24,6 @@ fun searchAllClearFields(field: Field, tsumoController: TsumoController, depth: 
 fun getAllClearFields(fields: List<Field>) : List<Field> {
     val ret = mutableListOf<Field>()
     for (f in fields) {
-        f.evalNextField()
         if (f.getLast().allClear()) ret.add(f)
     }
     return ret
@@ -49,6 +49,7 @@ fun generateAllFields(field: Field, tsumoInfo: TsumoInfo) : List<Field> {
     val allTsumo = generateAllTsumoPattern(tsumoInfo)
     for (tsumo in allTsumo) {
         val newField = field.setPairOnField(tsumo) ?: continue
+        newField.evalNextField()
         ret.add(newField)
     }
     return ret
