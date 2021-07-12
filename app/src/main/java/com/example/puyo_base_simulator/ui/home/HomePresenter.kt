@@ -17,10 +17,12 @@ import com.example.puyo_base_simulator.data.room.Base
 import com.example.puyo_base_simulator.data.room.SeedDatabase
 import com.example.puyo_base_simulator.data.room.SeedEntity
 import com.example.puyo_base_simulator.utils.Rotation
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -58,6 +60,8 @@ class HomePresenter internal constructor(asset: AssetManager, dataStore: DataSto
     val chainInfo = _chainInfo
     private val _allClearInfo = MutableLiveData(AllClearInfo())
     val allClearInfo: LiveData<AllClearInfo> = _allClearInfo
+    private val _allClearLoading = MutableLiveData(false)
+    val allClearLoading = _allClearLoading
 
     var chainSpeed: Long = 500
 
@@ -319,7 +323,15 @@ class HomePresenter internal constructor(asset: AssetManager, dataStore: DataSto
     }
 
     fun checkAllClear() {
-        _allClearInfo.value = searchAllClearFields(_currentField.value!!, tsumoController, 1)
+        viewModelScope.launch {
+            _allClearLoading.value = true
+            var result : AllClearInfo
+            withContext(Dispatchers.Default) {
+                result = searchAllClearFields(_currentField.value!!, tsumoController, 2)
+            }
+            _allClearInfo.value = result
+            _allClearLoading.value = false
+        }
     }
 
     companion object {

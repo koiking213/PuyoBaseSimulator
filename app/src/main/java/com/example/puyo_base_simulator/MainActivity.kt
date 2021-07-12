@@ -126,6 +126,7 @@ class MainActivity : AppCompatActivity() {
         val chainInfo = presenter.chainInfo.observeAsState(ChainInfo(0, 0, 0, 0, 0)).value
         val showDoubleNext by presenter.showDoubleNext.collectAsState()
         val allClearInfo = presenter.allClearInfo.observeAsState(AllClearInfo()).value
+        val allClearLoading = presenter.allClearLoading.observeAsState(false).value
 
         Scaffold(
             scaffoldState = scaffoldState,
@@ -210,7 +211,9 @@ class MainActivity : AppCompatActivity() {
                                 AllClearInfoArea(
                                     info = allClearInfo,
                                     onCheckClick = presenter::checkAllClear,
-                                    enabled = !duringChain)
+                                    enabled = !duringChain,
+                                    loading = allClearLoading,
+                                )
                             }
                             Box (
                                 modifier = Modifier
