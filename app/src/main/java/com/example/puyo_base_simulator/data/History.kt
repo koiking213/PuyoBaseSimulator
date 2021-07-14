@@ -13,11 +13,7 @@ open class History<T> () : Iterable<T>, Serializable {
     var index = -1
 
     open fun add(elm: T) {
-        // indexが2, sizeが4のとき
-        // original: subList(0, 3) -> {0, 1, 2}
-        // new: 4 - (2+1) = 1
-        //content = content.subList(0, index+1)
-        content.dropLast(content.size -  (index+1))
+        content = content.take(index + 1).toMutableList()
         content.add(elm)
         index++
     }
