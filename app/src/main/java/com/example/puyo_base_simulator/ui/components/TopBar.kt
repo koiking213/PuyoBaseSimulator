@@ -8,7 +8,7 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
@@ -51,7 +51,7 @@ fun SettingAppBar(
         title = { Text("設定") },
         navigationIcon = {
             IconButton(onClick = onBackClick) {
-                Icon(Icons.Filled.ChevronLeft, null)
+                Icon(Icons.Filled.KeyboardArrowLeft, null)
             }
         }
     )

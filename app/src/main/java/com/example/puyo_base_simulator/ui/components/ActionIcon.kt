@@ -10,13 +10,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
 
 
 @Composable
 fun ActionIcon(
-    icon: ImageVector,
+    icon: Painter,
     size: Dp,
     enabled: Boolean = true,
     onClick: () -> Unit

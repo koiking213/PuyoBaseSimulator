@@ -6,7 +6,7 @@ import com.example.puyo_base_simulator.data.Field
 import com.example.puyo_base_simulator.data.Field.Companion.from
 import com.example.puyo_base_simulator.data.PuyoColor
 import com.google.common.truth.Truth
-import org.apache.commons.lang.SerializationUtils
+import org.apache.commons.lang3.SerializationUtils
 import org.junit.Before
 import org.junit.Test
 import java.util.*
