@@ -9,9 +9,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.min
 import com.example.puyo_base_simulator.R
 
 @Composable
@@ -38,6 +40,10 @@ fun CursorKeys(
     size: Dp,
     enabled: Boolean,
 ) {
+
+    val windowSize = LocalConfiguration.current.screenWidthDp.dp
+    val iconSize = min(size, windowSize / 6)  // Adjust the icon size based on the window size
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.padding(5.dp)
@@ -46,10 +52,10 @@ fun CursorKeys(
             horizontalArrangement= Arrangement.SpaceBetween,
             modifier = Modifier.padding(5.dp)
         ) {
-            ActionIcon(icon = rememberVectorPainter(Icons.Filled.ArrowBack), size = size, enabled = enabled, onClick = onLeftClick)
-            ActionIcon(icon = rememberVectorPainter(Icons.Filled.ArrowForward), size = size, enabled = enabled, onClick = onRightClick)
+            ActionIcon(icon = rememberVectorPainter(Icons.Filled.ArrowBack), size = iconSize, enabled = enabled, onClick = onLeftClick)
+            ActionIcon(icon = rememberVectorPainter(Icons.Filled.ArrowForward), size = iconSize, enabled = enabled, onClick = onRightClick)
         }
-        ActionIcon(icon = painterResource(R.drawable.ic_baseline_arrow_downward_24), size = size, enabled = enabled, onClick = onDownClick)
+        ActionIcon(icon = painterResource(R.drawable.ic_baseline_arrow_downward_24), size = iconSize, enabled = enabled, onClick = onDownClick)
     }
 }
 
@@ -60,22 +66,24 @@ fun RotationKeys(
     size: Dp,
     enabled: Boolean,
 ) {
+    val windowSize = LocalConfiguration.current.screenWidthDp.dp
+    val iconSize = min(size, windowSize / 6)  // Adjust the icon size based on the window size
     Column(
         modifier = Modifier.padding(5.dp)
     ) {
         Column(
             horizontalAlignment = Alignment.End,
             modifier = Modifier
-                .width(size * 2)
+                .width(iconSize * 2)
                 .padding(5.dp)
         ) {
-            ActionIcon(icon = painterResource(id = R.drawable.ic_baseline_rotate_right_24), size = size, enabled = enabled, onClick = onAClick)
+            ActionIcon(icon = painterResource(id = R.drawable.ic_baseline_rotate_right_24), size = iconSize, enabled = enabled, onClick = onAClick)
         }
         Column(
             horizontalAlignment = Alignment.Start,
-            modifier = Modifier.width(size)
+            modifier = Modifier.width(iconSize)
         ) {
-            ActionIcon(icon = painterResource(id = R.drawable.ic_baseline_rotate_left_24), size = size, enabled = enabled, onClick = onBClick)
+            ActionIcon(icon = painterResource(id = R.drawable.ic_baseline_rotate_left_24), size = iconSize, enabled = enabled, onClick = onBClick)
         }
     }
 }

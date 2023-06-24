@@ -20,7 +20,7 @@ fun ActionIcon(
     icon: Painter,
     size: Dp,
     enabled: Boolean = true,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Box (
             ) {
