@@ -45,7 +45,7 @@ fun CursorKeys(
 ) {
 
     val windowSize = LocalConfiguration.current.screenWidthDp.dp
-    val iconSize = min(size, windowSize / 6)  // Adjust the icon size based on the window size
+    val iconSize = min(size, windowSize / 5)  // Adjust the icon size based on the window size
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -70,7 +70,7 @@ fun RotationKeys(
     modifier: Modifier = Modifier,
 ) {
     val windowSize = LocalConfiguration.current.screenWidthDp.dp
-    val iconSize = min(size, windowSize / 6)  // Adjust the icon size based on the window size
+    val iconSize = min(size, windowSize / 5)  // Adjust the icon size based on the window size
     Box(
         modifier = modifier
             .padding(5.dp)

@@ -13,7 +13,9 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.min
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -137,14 +139,19 @@ class MainActivity : ComponentActivity() {
         val showDoubleNext by presenter.showDoubleNext.collectAsState()
         val allClearInfo = presenter.allClearInfo.observeAsState(AllClearInfo()).value
         val allClearLoading = presenter.allClearLoading.observeAsState(false).value
-    
+        val windowWidth = LocalConfiguration.current.screenWidthDp.dp
+        val windowHeight = LocalConfiguration.current.screenHeightDp.dp
+        val isFloatWindow = (windowHeight < 600.dp)
+
         Scaffold(
             scaffoldState = scaffoldState,
             topBar = {
-                HomeAppBar(
-                    onSettingsClick = { navController.navigate("settings") },
-                    onMenuClick = { navController.navigate("menu") },
-                )
+                if (!isFloatWindow) {
+                    HomeAppBar(
+                        onSettingsClick = { navController.navigate("settings") },
+                        onMenuClick = { navController.navigate("menu") },
+                    )
+                }
             },
             content = {
                 Column(
@@ -181,10 +188,11 @@ class MainActivity : ComponentActivity() {
                                 onItemRemoveClick = {presenter.forgetSeed(context, it)},
                             )
                         }
+                        val puyoSize = if (isFloatWindow) windowWidth / 20 else 20.dp
                         FieldFrame(
                             field = currentField,
                             tsumoInfo = tsumoInfo,
-                            20.dp,
+                            puyoSize,
                             duringChain = duringChain,
                         )
                         Column() {
@@ -196,7 +204,7 @@ class MainActivity : ComponentActivity() {
                                 ) {
                                     NextTsumoFrame(
                                         tsumoInfo,
-                                        20.dp,
+                                        puyoSize,
                                         showDoubleNext,
                                     )
                                 }
