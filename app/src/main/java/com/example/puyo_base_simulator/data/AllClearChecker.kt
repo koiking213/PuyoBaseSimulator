@@ -1,7 +1,7 @@
 package com.example.puyo_base_simulator.data
 
 import com.example.puyo_base_simulator.utils.Rotation
-import org.apache.commons.lang.SerializationUtils
+import org.apache.commons.lang3.SerializationUtils
 
 // 幅優先探索
 fun searchAllClearFields(field: Field, tsumoController: TsumoController, depth: Int) : AllClearInfo {

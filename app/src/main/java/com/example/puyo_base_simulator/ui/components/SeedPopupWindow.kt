@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Dp
@@ -113,7 +114,7 @@ private fun SeedPickerItem(
         }
         val field = Array(tsumoNum * 2) { i -> if (i % 2 == 0) colors[i / 2] else emptyPair }
         PuyoField(transpose(field), 12.dp)
-        ActionIcon(icon = Icons.Filled.Clear, size = 20.dp) {
+        ActionIcon(icon = rememberVectorPainter(image = Icons.Filled.Clear), size = 20.dp) {
             onItemRemoveClick(seed)
             setDeleted(true)
         }

@@ -4,13 +4,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Icon
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.SentimentVeryDissatisfied
-import androidx.compose.material.icons.filled.SentimentVerySatisfied
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.example.puyo_base_simulator.R
 
 
 @Composable
@@ -30,7 +28,7 @@ fun SaveLoadArea(
                 .weight(1f)
         ) {
             Icon(
-                Icons.Filled.SentimentVerySatisfied,
+                painterResource(id = R.drawable.ic_baseline_sentiment_very_satisfied_24),
                 contentDescription = "",
             )
             ActionButton(
@@ -52,7 +50,7 @@ fun SaveLoadArea(
                 .weight(1f)
         ) {
             Icon(
-                Icons.Filled.SentimentVeryDissatisfied,
+                painterResource(id = R.drawable.ic_baseline_sentiment_very_dissatisfied_24),
                 contentDescription = "",
             )
             ActionButton(

@@ -2,7 +2,7 @@ package com.example.puyo_base_simulator.data
 
 import com.example.puyo_base_simulator.data.PuyoColor.Companion.getPuyoColor
 import com.example.puyo_base_simulator.utils.Rotation
-import org.apache.commons.lang.SerializationUtils
+import org.apache.commons.lang3.SerializationUtils
 import java.io.Serializable
 import java.util.*
 

@@ -4,18 +4,17 @@ package com.example.puyo_base_simulator
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.datastore.core.DataStore
@@ -25,22 +24,33 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.puyo_base_simulator.ui.components.HomeAppBar
+import com.example.puyo_base_simulator.ui.theme.PuyoBaseSimulatorTheme
+import kotlinx.coroutines.launch
+import kotlin.math.max
+
 import com.example.puyo_base_simulator.data.AllClearInfo
 import com.example.puyo_base_simulator.ui.components.*
 import com.example.puyo_base_simulator.data.ChainInfo
 import com.example.puyo_base_simulator.data.Field
 import com.example.puyo_base_simulator.ui.home.HomePresenter
-import kotlinx.coroutines.launch
-import kotlin.math.max
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
 @ExperimentalComposeUiApi
-class MainActivity : AppCompatActivity() {
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MainApp(HomePresenter(assets, dataStore), this, this)
+            PuyoBaseSimulatorTheme {
+                // A surface container using the 'background' color from the theme
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colors.background
+                ) {
+                    MainApp(HomePresenter(assets, dataStore), context = this, activity = this)
+                }
+            }
         }
     }
 
@@ -59,7 +69,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
+    
     @Composable
     fun RandomSeedButton(
         onRandomGenClicked: () -> Unit,
@@ -72,7 +82,7 @@ class MainActivity : AppCompatActivity() {
             modifier = Modifier
         )
     }
-
+    
     // いい感じに大きさを決めたい
     @Composable
     fun FieldGeneration(
@@ -99,12 +109,12 @@ class MainActivity : AppCompatActivity() {
             )
         }
     }
-
+    
     @Composable
     fun CurrentSeed(seed: Int) {
         Text("seed: $seed")
     }
-
+    
 
     @Composable
     fun Home(
@@ -127,7 +137,7 @@ class MainActivity : AppCompatActivity() {
         val showDoubleNext by presenter.showDoubleNext.collectAsState()
         val allClearInfo = presenter.allClearInfo.observeAsState(AllClearInfo()).value
         val allClearLoading = presenter.allClearLoading.observeAsState(false).value
-
+    
         Scaffold(
             scaffoldState = scaffoldState,
             topBar = {
@@ -268,7 +278,7 @@ class MainActivity : AppCompatActivity() {
                         )
                         if (duringChain) {
                             ActionIcon(
-                                icon = Icons.Filled.DoubleArrow,
+                                icon = painterResource(id = R.drawable.ic_baseline_double_arrow_24),
                                 size = 40.dp,
                                 enabled = true,
                                 onClick = presenter::fastenChainSpeed
