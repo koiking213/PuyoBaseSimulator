@@ -220,26 +220,28 @@ class MainActivity : ComponentActivity() {
                                     )
                                 }
                             }
-                            Box (
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .weight(1f)
-                                    .wrapContentWidth(Alignment.End)
-                            ) {
-                                AllClearInfoArea(
-                                    info = allClearInfo,
-                                    onCheckClick = presenter::checkAllClear,
-                                    enabled = !duringChain,
-                                    loading = allClearLoading,
-                                )
-                            }
-                            Box (
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .weight(1f)
-                                    .wrapContentWidth(Alignment.End)
-                            ) {
-                                ChainInfoArea(chainInfo)
+                            if (!isFloatWindow) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .weight(1f)
+                                        .wrapContentWidth(Alignment.End)
+                                ) {
+                                    AllClearInfoArea(
+                                        info = allClearInfo,
+                                        onCheckClick = presenter::checkAllClear,
+                                        enabled = !duringChain,
+                                        loading = allClearLoading,
+                                    )
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .weight(1f)
+                                        .wrapContentWidth(Alignment.End)
+                                ) {
+                                    ChainInfoArea(chainInfo)
+                                }
                             }
                             Box (
                                 modifier = Modifier
