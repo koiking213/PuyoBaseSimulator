@@ -234,14 +234,14 @@ class MainActivity : ComponentActivity() {
                                         loading = allClearLoading,
                                     )
                                 }
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .weight(1f)
-                                        .wrapContentWidth(Alignment.End)
-                                ) {
-                                    ChainInfoArea(chainInfo)
-                                }
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f)
+                                    .wrapContentWidth(Alignment.End)
+                            ) {
+                                ChainInfoArea(chainInfo)
                             }
                             Box (
                                 modifier = Modifier
