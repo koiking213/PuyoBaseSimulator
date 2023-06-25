@@ -20,7 +20,8 @@ fun ActionIcon(
     icon: Painter,
     size: Dp,
     enabled: Boolean = true,
-    onClick: () -> Unit
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
 ) {
     Box (
             ) {
@@ -29,7 +30,7 @@ fun ActionIcon(
                 icon,
                 contentDescription = "",
                 tint = MaterialTheme.colors.primary,
-                modifier = Modifier
+                modifier = modifier
                         .size(size)
                         .clickable(onClick = onClick)
             )
@@ -38,7 +39,7 @@ fun ActionIcon(
                 icon,
                 contentDescription = "",
                 tint = Color(0xffe0e0e0),
-                modifier = Modifier.size(size)
+                modifier = modifier.size(size)
             )
         }
     }
